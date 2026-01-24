@@ -18,6 +18,9 @@ import AdminSections from "./pages/AdminSections";
 import AdminSectionHero from "./pages/AdminSectionHero";
 import GalleryPage from "./pages/GalleryPage";
 import AdminRoles from "./pages/AdminRoles";
+import AboutPage from "./pages/AboutPage";
+import ProgramsPage from "./pages/ProgramsPage";
+import ClubsPage from "./pages/ClubsPage";
 
 const queryClient = new QueryClient();
 
@@ -29,6 +32,9 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/programs" element={<ProgramsPage />} />
+          <Route path="/clubs" element={<ClubsPage />} />
           <Route path="/gallery" element={<GalleryPage />} />
           <Route path="/news" element={<NewsIndex />} />
           <Route path="/news/:slug" element={<NewsPost />} />

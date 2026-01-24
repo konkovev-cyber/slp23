@@ -15,14 +15,15 @@
  const Navigation = () => {
    const [isOpen, setIsOpen] = useState(false);
  
-    const navItems = [
-      { label: "Главная", href: "#home" },
-     { label: "Программы", href: "#programs" },
-     { label: "Кружки", href: "#clubs" },
-     { label: "Новости", href: "#news" },
-      { label: "Галерея", href: "/gallery" },
-     { label: "Контакты", href: "#contacts" },
-   ];
+     const navItems = [
+       { label: "Главная", href: "#home" },
+       { label: "О школе", href: "/about" },
+       { label: "Программы", href: "/programs" },
+       { label: "Кружки", href: "/clubs" },
+       { label: "Новости", href: "/news" },
+       { label: "Галерея", href: "/gallery" },
+       { label: "Контакты", href: "#contacts" },
+     ];
 
     const location = useLocation();
     const isHome = location.pathname === "/";
@@ -95,7 +96,7 @@
                    </NavigationMenuContent>
                  </NavigationMenuItem>
  
-                  {navItems.slice(1).map((item) => (
+                   {navItems.slice(1).map((item) => (
                    <NavigationMenuItem key={item.href}>
                       {item.href.startsWith("/") ? (
                         <NavigationMenuLink asChild className="text-foreground hover:text-primary transition-colors font-medium px-4 py-2">
@@ -170,8 +171,8 @@
                  </div>
                </div>
                
-                {navItems.map((item) =>
-                  item.href.startsWith("/") ? (
+                 {navItems.map((item) =>
+                   item.href.startsWith("/") ? (
                     <Link
                       key={item.href}
                       to={item.href}
