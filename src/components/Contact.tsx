@@ -1,4 +1,4 @@
- import { useState } from "react";
+ import { useEffect, useMemo, useRef, useState } from "react";
  import { motion } from "framer-motion";
  import { Card } from "@/components/ui/card";
  import { Input } from "@/components/ui/input";
@@ -37,6 +37,50 @@
    const sendToTelegram = () => {
      window.open('https://t.me/lichnost_PLUS', '_blank');
    };
+
+    const constructorHash = "4f61ac17bbf756654de58429231d443241ac89a38745ebe8760ff57bfecb15e8";
+    const scriptSrc = useMemo(
+      () =>
+        `https://api-maps.yandex.ru/services/constructor/1.0/js/?um=constructor%3A${constructorHash}&width=100%25&height=300&lang=ru_RU&scroll=true`,
+      []
+    );
+    const iframeSrc = useMemo(
+      () => `https://yandex.ru/map-widget/v1/?um=constructor%3A${constructorHash}&source=constructor&scroll=true`,
+      []
+    );
+    const openMapUrl = useMemo(
+      () => `https://yandex.ru/maps/?um=constructor%3A${constructorHash}&source=constructorLink`,
+      []
+    );
+
+    const mapHostRef = useRef<HTMLDivElement | null>(null);
+    const [mapFailed, setMapFailed] = useState(false);
+
+    useEffect(() => {
+      const host = mapHostRef.current;
+      if (!host) return;
+
+      setMapFailed(false);
+      host.innerHTML = "";
+
+      const script = document.createElement("script");
+      script.type = "text/javascript";
+      script.async = true;
+      script.charset = "utf-8";
+      script.src = scriptSrc;
+      script.onerror = () => setMapFailed(true);
+      host.appendChild(script);
+
+      const timeout = window.setTimeout(() => {
+        // Если конструктор не отрисовался — показываем fallback
+        if (!host.querySelector("iframe")) setMapFailed(true);
+      }, 3500);
+
+      return () => {
+        window.clearTimeout(timeout);
+        host.innerHTML = "";
+      };
+    }, [scriptSrc]);
  
    return (
      <section id="contacts" className="py-20 bg-background">
@@ -57,7 +101,8 @@
            <div className="flex flex-wrap justify-center gap-4 mt-8">
              <Button
                onClick={sendToWhatsApp}
-               className="bg-[#25D366] hover:bg-[#20BD5A] text-white gap-2"
+                variant="secondary"
+                className="gap-2"
                size="lg"
              >
                <SiWhatsapp className="w-5 h-5" />
@@ -65,7 +110,8 @@
              </Button>
              <Button
                onClick={sendToTelegram}
-               className="bg-[#0088cc] hover:bg-[#0077b5] text-white gap-2"
+                variant="outline"
+                className="gap-2"
                size="lg"
              >
                <SiTelegram className="w-5 h-5" />
@@ -147,14 +193,28 @@
              {/* Yandex Map */}
              <Card className="p-0 overflow-hidden">
                <div className="w-full h-[300px]">
-                 <iframe
-                   src="https://yandex.ru/map-widget/v1/?um=constructor%3A8e3d4f5c6b7a8d9e0f1a2b3c4d5e6f7a&amp;source=constructor"
-                   width="100%"
-                   height="300"
-                   frameBorder="0"
-                   title="Карта расположения школы"
-                 />
+                  {mapFailed ? (
+                    <iframe
+                      src={iframeSrc}
+                      width="100%"
+                      height="300"
+                      frameBorder={0}
+                      title="Карта расположения школы"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div ref={mapHostRef} className="w-full h-[300px]" />
+                  )}
                </div>
+
+                <div className="p-4 border-t border-border flex items-center justify-between gap-3">
+                  <div className="text-sm text-muted-foreground">Открыть карту в отдельном окне</div>
+                  <Button asChild size="sm">
+                    <a href={openMapUrl} target="_blank" rel="noreferrer">
+                      Открыть на Яндекс.Картах
+                    </a>
+                  </Button>
+                </div>
              </Card>
            </motion.div>
  
