@@ -1,3 +1,4 @@
+import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -7,6 +8,8 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
+import { Button } from "@/components/ui/button";
+import { extractFirstImageUrl } from "@/lib/news-images";
  
  const newsItems = [
    {
@@ -78,32 +81,46 @@ import { ru } from "date-fns/locale";
     category: string;
     excerpt: string | null;
     image_url: string | null;
+    content: string;
     published_at: string;
   };
  
  const News = () => {
+     const [page, setPage] = useState(1);
+
     const { data: posts = [] } = useQuery({
       queryKey: ["posts", "home_preview"],
       queryFn: async () => {
         const { data, error } = await supabase
           .from("posts")
-          .select("id,title,slug,category,excerpt,image_url,published_at")
+           .select("id,title,slug,category,excerpt,image_url,content,published_at")
           .order("published_at", { ascending: false })
-          .limit(6);
+           .limit(40);
         if (error) throw error;
         return (data ?? []) as PostPreview[];
       },
     });
 
-    const items = posts.length
-      ? posts.map((p) => ({
+     const pageSize = 4;
+     const totalPages = Math.max(1, Math.ceil(posts.length / pageSize));
+     const safePage = Math.min(page, totalPages);
+     const pagedPosts = useMemo(() => {
+       const start = (safePage - 1) * pageSize;
+       return posts.slice(start, start + pageSize);
+     }, [posts, safePage]);
+
+     const items = posts.length
+       ? pagedPosts.map((p) => ({
           id: p.id,
           title: p.title,
           description: p.excerpt ?? "Открыть новость",
           date: format(new Date(p.published_at), "d MMMM yyyy", { locale: ru }),
           category: p.category,
           icon: Calendar,
-          image: p.image_url ?? "/placeholder.svg",
+           image:
+             p.image_url ??
+             extractFirstImageUrl(p.content ?? "") ??
+             "/placeholder.svg",
           href: `/news/${p.slug}`,
         }))
       : newsItems.map((i) => ({
@@ -132,7 +149,7 @@ import { ru } from "date-fns/locale";
            </p>
          </motion.div>
  
-         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {items.map((item, index) => {
              const Icon = item.icon;
              return (
@@ -143,13 +160,15 @@ import { ru } from "date-fns/locale";
                  viewport={{ once: true }}
                  transition={{ duration: 0.5, delay: index * 0.1 }}
                >
-                  <Link to={item.href} className="block">
-                    <Card className="h-full hover:shadow-lg transition-all duration-300 group cursor-pointer overflow-hidden">
-                   <div className="relative h-48 overflow-hidden bg-muted">
+                   <Link to={item.href} className="block">
+                     <Card className="h-full hover:shadow-lg transition-all duration-300 group cursor-pointer overflow-hidden">
+                    <div className="relative h-36 overflow-hidden bg-muted">
                      <img
                        src={item.image}
                        alt={item.title}
                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        loading="lazy"
+                        decoding="async"
                      />
                      <div className="absolute top-4 left-4">
                        <Badge className={categoryColors[item.category] || "bg-primary/10 text-primary"}>
@@ -158,7 +177,7 @@ import { ru } from "date-fns/locale";
                      </div>
                    </div>
                    
-                   <CardHeader>
+                    <CardHeader className="py-4">
                      <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
                        <Icon className="w-4 h-4" />
                        <span>{item.date}</span>
@@ -179,6 +198,32 @@ import { ru } from "date-fns/locale";
              );
            })}
          </div>
+
+          {posts.length > pageSize ? (
+            <div className="mt-8 flex flex-col items-center gap-3">
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={safePage <= 1}
+                >
+                  Назад
+                </Button>
+                <div className="text-sm text-muted-foreground">
+                  Страница {safePage} из {totalPages}
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={safePage >= totalPages}
+                >
+                  Вперёд
+                </Button>
+              </div>
+            </div>
+          ) : null}
        </div>
      </section>
    );
