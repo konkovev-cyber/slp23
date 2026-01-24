@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Users, Award } from "lucide-react";
+ import { Calendar, Users, Award, ChevronLeft, ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -48,24 +48,6 @@ import { extractFirstImageUrl } from "@/lib/news-images";
      icon: Calendar,
      image: "/placeholder.svg",
    },
-   {
-     id: 5,
-     title: "Проектная неделя «Наука и творчество»",
-     description: "Ученики 4-7 классов представили свои проекты на тему интеграции науки и искусства. Проекты поразили жюри своей креативностью!",
-     date: "20 декабря 2025",
-     category: "Достижения",
-     icon: Award,
-     image: "/placeholder.svg",
-   },
-   {
-     id: 6,
-     title: "Экскурсия в музей космонавтики",
-     description: "Ученики 3-5 классов посетили музей космонавтики и планетарий. Дети узнали много нового о космосе и истории освоения космоса.",
-     date: "18 декабря 2025",
-     category: "Мероприятия",
-     icon: Users,
-     image: "/placeholder.svg",
-   },
  ];
  
  const categoryColors: Record<string, string> = {
@@ -86,7 +68,7 @@ import { extractFirstImageUrl } from "@/lib/news-images";
   };
  
  const News = () => {
-     const [page, setPage] = useState(1);
+     const [scrollIndex, setScrollIndex] = useState(0);
 
     const { data: posts = [] } = useQuery({
       queryKey: ["posts", "home_preview"],
@@ -95,22 +77,20 @@ import { extractFirstImageUrl } from "@/lib/news-images";
           .from("posts")
            .select("id,title,slug,category,excerpt,image_url,content,published_at")
           .order("published_at", { ascending: false })
-           .limit(40);
+            .limit(8);
         if (error) throw error;
         return (data ?? []) as PostPreview[];
       },
     });
 
-     const pageSize = 4;
-     const totalPages = Math.max(1, Math.ceil(posts.length / pageSize));
-     const safePage = Math.min(page, totalPages);
-     const pagedPosts = useMemo(() => {
-       const start = (safePage - 1) * pageSize;
-       return posts.slice(start, start + pageSize);
-     }, [posts, safePage]);
-
-     const items = posts.length
-       ? pagedPosts.map((p) => ({
+      const allItems = useMemo(() => {
+        if (!posts.length) {
+          return newsItems.map((i) => ({
+            ...i,
+            href: "/news",
+          }));
+        }
+        return posts.map((p) => ({
           id: p.id,
           title: p.title,
           description: p.excerpt ?? "Открыть новость",
@@ -122,11 +102,23 @@ import { extractFirstImageUrl } from "@/lib/news-images";
              extractFirstImageUrl(p.content ?? "") ??
              "/placeholder.svg",
           href: `/news/${p.slug}`,
-        }))
-      : newsItems.map((i) => ({
-          ...i,
-          href: "/news",
         }));
+      }, [posts]);
+ 
+     const displayItems = useMemo(() => {
+       return allItems.slice(scrollIndex, scrollIndex + 4);
+     }, [allItems, scrollIndex]);
+ 
+     const canScrollLeft = scrollIndex > 0;
+     const canScrollRight = scrollIndex + 4 < allItems.length;
+ 
+     const handleScroll = (direction: 'left' | 'right') => {
+       if (direction === 'left') {
+         setScrollIndex(Math.max(0, scrollIndex - 1));
+       } else {
+         setScrollIndex(Math.min(allItems.length - 4, scrollIndex + 1));
+       }
+     };
 
    return (
      <section className="py-20 bg-background" id="news">
@@ -150,7 +142,7 @@ import { extractFirstImageUrl } from "@/lib/news-images";
          </motion.div>
  
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {items.map((item, index) => {
+             {displayItems.map((item, index) => {
              const Icon = item.icon;
              return (
                <motion.div
@@ -199,34 +191,36 @@ import { extractFirstImageUrl } from "@/lib/news-images";
            })}
          </div>
 
-          {posts.length > pageSize ? (
-            <div className="mt-8 flex flex-col items-center gap-3">
-              <div className="flex items-center gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  disabled={safePage <= 1}
-                >
-                  Назад
-                </Button>
-                <div className="text-sm text-muted-foreground">
-                  Страница {safePage} из {totalPages}
-                </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={safePage >= totalPages}
-                >
-                  Вперёд
-                </Button>
-              </div>
+           {allItems.length > 4 && (
+             <div className="mt-8 flex justify-center items-center gap-3">
+               <Button
+                 type="button"
+                 variant="outline"
+                 size="icon"
+                 onClick={() => handleScroll('left')}
+                 disabled={!canScrollLeft}
+                 className="rounded-full"
+               >
+                 <ChevronLeft className="h-4 w-4" />
+               </Button>
+               <div className="text-sm text-muted-foreground">
+                 {scrollIndex + 1}-{Math.min(scrollIndex + 4, allItems.length)} из {allItems.length}
+               </div>
+               <Button
+                 type="button"
+                 variant="outline"
+                 size="icon"
+                 onClick={() => handleScroll('right')}
+                 disabled={!canScrollRight}
+                 className="rounded-full"
+               >
+                 <ChevronRight className="h-4 w-4" />
+               </Button>
             </div>
-          ) : null}
-       </div>
-     </section>
-   );
- };
- 
- export default News;
+           ) : null}
+        </div>
+      </section>
+    );
+  };
+  
+  export default News;
