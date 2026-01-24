@@ -23,20 +23,20 @@
      { label: "Контакты", href: "#contacts" },
    ];
  
-   const aboutItems = [
-     { label: "Структура и органы управления", href: "#structure" },
-     { label: "Образование", href: "#education" },
-     { label: "Документы", href: "#documents" },
-     { label: "Руководство", href: "#management" },
-     { label: "Педагогический состав", href: "#teachers" },
-     { label: "Материально-техническое обеспечение", href: "#facilities" },
-     { label: "Платные образовательные услуги", href: "#paid-services" },
-     { label: "Финансово-хозяйственная деятельность", href: "#finance" },
-     { label: "Вакантные места для приема", href: "#vacancies" },
-     { label: "Стипендии и меры поддержки", href: "#scholarships" },
-     { label: "Международное сотрудничество", href: "#international" },
-     { label: "Организация питания", href: "#catering" },
-   ];
+  const aboutItems = [
+    { label: "Основные сведения", href: "/svedeniya#basic" },
+    { label: "Структура и органы управления", href: "/svedeniya#structure" },
+    { label: "Документы", href: "/svedeniya#documents" },
+    { label: "Образование", href: "/svedeniya#education" },
+    { label: "Образовательные стандарты", href: "/svedeniya#standards" },
+    { label: "Руководство", href: "/svedeniya#management" },
+    { label: "Педагогический состав", href: "/svedeniya#teachers" },
+    { label: "Материально‑техническое обеспечение", href: "/svedeniya#facilities" },
+    { label: "Платные образовательные услуги", href: "/svedeniya#paid-services" },
+    { label: "Финансово‑хозяйственная деятельность", href: "/svedeniya#finance" },
+    { label: "Вакантные места для приёма", href: "/svedeniya#vacancies" },
+    { label: "Доступная среда", href: "/svedeniya#accessibility" },
+  ];
  
    return (
      <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border">
