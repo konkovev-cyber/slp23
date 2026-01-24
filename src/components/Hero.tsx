@@ -1,7 +1,7 @@
  import { motion } from "framer-motion";
  import { Button } from "@/components/ui/button";
  import { ArrowRight, Calendar, GraduationCap } from "lucide-react";
- import heroImage from "@/assets/hero-children.jpg";
+import heroImage from "@/assets/hero-main.jpg";
 import { useContent } from "@/hooks/use-content";
 
 type HeroContent = {

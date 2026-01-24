@@ -17,6 +17,7 @@ import AdminAccess from "./pages/AdminAccess";
 import AdminSections from "./pages/AdminSections";
 import AdminSectionHero from "./pages/AdminSectionHero";
 import GalleryPage from "./pages/GalleryPage";
+import AdminRoles from "./pages/AdminRoles";
 
 const queryClient = new QueryClient();
 
@@ -49,6 +50,16 @@ const App = () => (
               <ProtectedRoute redirectTo="/">
                 <AdminLayout title="Доступ">
                   <AdminAccess />
+                </AdminLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/roles"
+            element={
+              <ProtectedRoute redirectTo="/">
+                <AdminLayout title="Роли">
+                  <AdminRoles />
                 </AdminLayout>
               </ProtectedRoute>
             }
