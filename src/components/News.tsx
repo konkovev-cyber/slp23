@@ -217,7 +217,7 @@ import { extractFirstImageUrl } from "@/lib/news-images";
                  <ChevronRight className="h-4 w-4" />
                </Button>
             </div>
-           ) : null}
+         )}
         </div>
       </section>
     );
