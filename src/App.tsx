@@ -18,6 +18,7 @@ import AdminSections from "./pages/AdminSections";
 import AdminSectionHero from "./pages/AdminSectionHero";
 import GalleryPage from "./pages/GalleryPage";
 import AdminRoles from "./pages/AdminRoles";
+import AdminNews from "./pages/AdminNews";
 import AboutPage from "./pages/AboutPage";
 import ProgramsPage from "./pages/ProgramsPage";
 import ClubsPage from "./pages/ClubsPage";
@@ -43,7 +44,7 @@ const App = () => (
           <Route
             path="/admin/dashboard"
             element={
-              <ProtectedRoute redirectTo="/">
+              <ProtectedRoute redirectTo="/admin">
                 <AdminLayout title="Дашборд">
                   <AdminDashboard />
                 </AdminLayout>
@@ -53,17 +54,15 @@ const App = () => (
           <Route
             path="/admin/access"
             element={
-              <ProtectedRoute redirectTo="/">
-                <AdminLayout title="Доступ">
-                  <AdminAccess />
-                </AdminLayout>
-              </ProtectedRoute>
+              <AdminLayout title="Доступ">
+                <AdminAccess />
+              </AdminLayout>
             }
           />
           <Route
             path="/admin/roles"
             element={
-              <ProtectedRoute redirectTo="/">
+              <ProtectedRoute redirectTo="/admin">
                 <AdminLayout title="Роли">
                   <AdminRoles />
                 </AdminLayout>
@@ -71,9 +70,19 @@ const App = () => (
             }
           />
           <Route
+            path="/admin/news"
+            element={
+              <ProtectedRoute redirectTo="/admin">
+                <AdminLayout title="Новости">
+                  <AdminNews />
+                </AdminLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/admin/sections"
             element={
-              <ProtectedRoute redirectTo="/">
+              <ProtectedRoute redirectTo="/admin">
                 <AdminLayout title="Секции">
                   <AdminSections />
                 </AdminLayout>
@@ -83,7 +92,7 @@ const App = () => (
           <Route
             path="/admin/sections/hero"
             element={
-              <ProtectedRoute redirectTo="/">
+              <ProtectedRoute redirectTo="/admin">
                 <AdminLayout title="Hero">
                   <AdminSectionHero />
                 </AdminLayout>
@@ -93,7 +102,7 @@ const App = () => (
           <Route
             path="/admin/sections/:id"
             element={
-              <ProtectedRoute redirectTo="/">
+              <ProtectedRoute redirectTo="/admin">
                 <AdminLayout title="Редактор секции">
                   <AdminSectionHero />
                 </AdminLayout>
@@ -103,7 +112,7 @@ const App = () => (
           <Route
             path="/admin/media"
             element={
-              <ProtectedRoute redirectTo="/">
+              <ProtectedRoute redirectTo="/admin">
                 <AdminLayout title="Медиа">
                   <AdminMedia />
                 </AdminLayout>

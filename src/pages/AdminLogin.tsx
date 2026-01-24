@@ -34,7 +34,8 @@ export default function AdminLogin() {
     try {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
-      navigate("/admin/media", { replace: true });
+      // Route is protected; if role check isn't ready yet, ProtectedRoute will send user back to /admin.
+      navigate("/admin/dashboard", { replace: true });
     } catch (err: any) {
       toast({
         title: "Не удалось войти",
