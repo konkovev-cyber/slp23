@@ -17,6 +17,7 @@ export default function AdminAccess() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isCreating, setIsCreating] = useState(false);
+  const [isBootstrapping, setIsBootstrapping] = useState(false);
 
   const normalizedEmail = useMemo(() => email.trim().toLowerCase(), [email]);
 
@@ -74,6 +75,30 @@ export default function AdminAccess() {
     }
   };
 
+  const bootstrapFirstAdmin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!normalizedEmail) return;
+    setIsBootstrapping(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("bootstrap-admin", {
+        body: { email: normalizedEmail, ...(password ? { password } : {}) },
+      });
+      if (error) throw error;
+      toast({
+        title: "Роль admin назначена",
+        description: `Готово: ${data?.email ?? normalizedEmail}. Теперь войдите под этим аккаунтом и откройте дашборд.`,
+      });
+    } catch (err: any) {
+      toast({
+        title: "Не удалось назначить admin",
+        description: err?.message ?? "Если администратор уже существует, bootstrap будет заблокирован.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsBootstrapping(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <Helmet>
@@ -128,13 +153,14 @@ export default function AdminAccess() {
 
       <Card className="p-5 space-y-4">
         <div>
-          <div className="text-sm font-medium text-foreground">Создать админа</div>
+          <div className="text-sm font-medium text-foreground">Назначить администратора</div>
           <div className="text-sm text-muted-foreground mt-1">
-            Кнопка защищена: работает только для текущего администратора.
+            Если админов ещё нет — используйте «Сделать admin (первый админ)».
+            Если админ уже есть — роли выдаются через «Управление ролями».
           </div>
         </div>
 
-        <form className="grid gap-4" onSubmit={createAdmin}>
+        <form className="grid gap-4" onSubmit={bootstrapFirstAdmin}>
           <div className="grid gap-2">
             <Label htmlFor="new_admin_email">Email</Label>
             <Input
@@ -155,14 +181,21 @@ export default function AdminAccess() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               autoComplete="new-password"
-              required
             />
+            <div className="text-xs text-muted-foreground">
+              Пароль нужен только если аккаунта ещё нет и его надо создать. Если аккаунт уже существует — можно оставить пустым.
+            </div>
           </div>
 
           <div className="flex flex-col gap-2 sm:flex-row">
-            <Button type="submit" disabled={isCreating}>
-              {isCreating ? "Создаём…" : "Создать админа"}
+            <Button type="submit" disabled={isBootstrapping || !normalizedEmail}>
+              {isBootstrapping ? "Назначаем…" : "Сделать admin (первый админ)"}
             </Button>
+
+            <Button type="button" variant="outline" onClick={createAdmin} disabled={isCreating || !normalizedEmail || !password}>
+              {isCreating ? "Создаём…" : "Создать админа (нужен текущий admin)"}
+            </Button>
+
             <Button type="button" variant="outline" asChild>
               <a href="/admin/roles">Управление ролями</a>
             </Button>
