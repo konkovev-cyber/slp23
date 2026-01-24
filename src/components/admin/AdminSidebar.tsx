@@ -1,5 +1,5 @@
 import { useLocation } from "react-router-dom";
-import { LayoutDashboard, Images, ShieldCheck, LayoutTemplate } from "lucide-react";
+import { LayoutDashboard, Images, ShieldCheck, LayoutTemplate, UserCog } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import {
   Sidebar,
@@ -18,6 +18,7 @@ const items = [
   { title: "Секции", url: "/admin/sections", icon: LayoutTemplate },
   { title: "Медиа", url: "/admin/media", icon: Images },
   { title: "Доступ", url: "/admin/access", icon: ShieldCheck },
+  { title: "Роли", url: "/admin/roles", icon: UserCog },
 ];
 
 export default function AdminSidebar() {
