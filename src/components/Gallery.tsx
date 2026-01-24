@@ -35,7 +35,14 @@
 import gallery31 from "@/assets/gallery/31.jpg";
 import gallery32 from "@/assets/gallery/32.jpg";
  
- const galleryImages = [
+ export type GalleryImage = {
+   id: number;
+   src: string;
+   title: string;
+   category: string;
+ };
+
+ export const galleryImages: GalleryImage[] = [
    {
      id: 1,
      src: gallery1,

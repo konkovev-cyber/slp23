@@ -16,6 +16,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import AdminAccess from "./pages/AdminAccess";
 import AdminSections from "./pages/AdminSections";
 import AdminSectionHero from "./pages/AdminSectionHero";
+import GalleryPage from "./pages/GalleryPage";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +28,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/gallery" element={<GalleryPage />} />
           <Route path="/news" element={<NewsIndex />} />
           <Route path="/news/:slug" element={<NewsPost />} />
           <Route path="/svedeniya" element={<Svedeniya />} />

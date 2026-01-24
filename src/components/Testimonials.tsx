@@ -1,9 +1,7 @@
- import { motion } from "framer-motion";
- import { Card } from "@/components/ui/card";
- import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
- import { useState } from "react";
- import { ChevronLeft, ChevronRight, Quote } from "lucide-react";
- import { Button } from "@/components/ui/button";
+import { motion } from "framer-motion";
+import { Card } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Quote } from "lucide-react";
  
  const testimonials = [
    {
@@ -43,20 +41,9 @@
    },
  ];
  
- const Testimonials = () => {
-   const [currentIndex, setCurrentIndex] = useState(0);
- 
-   const nextSlide = () => {
-     setCurrentIndex((prev) => (prev + 1) % testimonials.length);
-   };
- 
-   const prevSlide = () => {
-     setCurrentIndex((prev) => (prev - 1 + testimonials.length) % testimonials.length);
-   };
- 
-   const goToSlide = (index: number) => {
-     setCurrentIndex(index);
-   };
+  const Testimonials = () => {
+    const top = testimonials.slice(0, 3);
+    const rest = testimonials.slice(3);
  
    return (
      <section className="py-20 bg-muted/30" id="testimonials">
@@ -76,78 +63,71 @@
            </p>
          </motion.div>
  
-         <div className="relative max-w-4xl mx-auto">
-           {/* Main Testimonial Card */}
-           <motion.div
-             key={currentIndex}
-             initial={{ opacity: 0, x: 100 }}
-             animate={{ opacity: 1, x: 0 }}
-             exit={{ opacity: 0, x: -100 }}
-             transition={{ duration: 0.5 }}
-           >
-             <Card className="p-8 md:p-12 bg-card shadow-lg relative">
-               <Quote className="absolute top-6 right-6 w-12 h-12 text-primary/20" />
-               
-               <div className="flex flex-col md:flex-row items-center md:items-start gap-6 mb-6">
-                 <Avatar className="w-20 h-20 border-4 border-primary/20">
-                   <AvatarImage src={testimonials[currentIndex].image} />
-                   <AvatarFallback className="bg-primary text-primary-foreground text-2xl">
-                     {testimonials[currentIndex].name.charAt(0)}
-                   </AvatarFallback>
-                 </Avatar>
-                 
-                 <div className="text-center md:text-left">
-                   <h3 className="text-xl font-bold text-foreground">
-                     {testimonials[currentIndex].name}
-                   </h3>
-                   <p className="text-muted-foreground">
-                     {testimonials[currentIndex].role}
-                   </p>
-                 </div>
-               </div>
- 
-               <p className="text-lg text-foreground/90 italic leading-relaxed">
-                 "{testimonials[currentIndex].text}"
-               </p>
-             </Card>
-           </motion.div>
- 
-           {/* Navigation Buttons */}
-           <div className="flex items-center justify-center gap-4 mt-8">
-             <Button
-               variant="outline"
-               size="icon"
-               onClick={prevSlide}
-               className="rounded-full"
-             >
-               <ChevronLeft className="w-5 h-5" />
-             </Button>
- 
-             {/* Dots */}
-             <div className="flex gap-2">
-               {testimonials.map((_, index) => (
-                 <button
-                   key={index}
-                   onClick={() => goToSlide(index)}
-                   className={`w-3 h-3 rounded-full transition-all ${
-                     index === currentIndex
-                       ? "bg-primary w-8"
-                       : "bg-muted-foreground/30 hover:bg-muted-foreground/50"
-                   }`}
-                 />
-               ))}
-             </div>
- 
-             <Button
-               variant="outline"
-               size="icon"
-               onClick={nextSlide}
-               className="rounded-full"
-             >
-               <ChevronRight className="w-5 h-5" />
-             </Button>
-           </div>
-         </div>
+          <div className="max-w-6xl mx-auto">
+            <div className="grid gap-4 md:grid-cols-3">
+              {top.map((t, idx) => (
+                <motion.div
+                  key={t.id}
+                  initial={{ opacity: 0, y: 12 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.35, delay: idx * 0.05 }}
+                >
+                  <Card className="p-6 bg-card shadow-lg relative h-full">
+                    <Quote className="absolute top-5 right-5 w-10 h-10 text-primary/20" />
+
+                    <div className="flex items-center gap-4 mb-4">
+                      <Avatar className="w-12 h-12 border-4 border-primary/20">
+                        <AvatarImage src={t.image} />
+                        <AvatarFallback className="bg-primary text-primary-foreground text-lg">
+                          {t.name.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <div className="font-semibold text-foreground leading-tight">{t.name}</div>
+                        <div className="text-sm text-muted-foreground">{t.role}</div>
+                      </div>
+                    </div>
+
+                    <p className="text-foreground/90 italic leading-relaxed">"{t.text}"</p>
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
+
+            {rest.length ? (
+              <div className="mt-8">
+                <div className="text-sm text-muted-foreground mb-3">
+                  Ещё отзывы — прокрутите вправо
+                </div>
+                <div className="flex gap-4 overflow-x-auto pb-2 snap-x snap-mandatory">
+                  {rest.map((t) => (
+                    <Card
+                      key={t.id}
+                      className="p-6 bg-card shadow-lg relative min-w-[280px] max-w-[320px] snap-start"
+                    >
+                      <Quote className="absolute top-5 right-5 w-10 h-10 text-primary/20" />
+
+                      <div className="flex items-center gap-4 mb-4">
+                        <Avatar className="w-12 h-12 border-4 border-primary/20">
+                          <AvatarImage src={t.image} />
+                          <AvatarFallback className="bg-primary text-primary-foreground text-lg">
+                            {t.name.charAt(0)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <div className="font-semibold text-foreground leading-tight">{t.name}</div>
+                          <div className="text-sm text-muted-foreground">{t.role}</div>
+                        </div>
+                      </div>
+
+                      <p className="text-foreground/90 italic leading-relaxed">"{t.text}"</p>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+          </div>
        </div>
      </section>
    );

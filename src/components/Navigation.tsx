@@ -1,4 +1,5 @@
- import { useState } from "react";
+  import { useState } from "react";
+  import { Link, useLocation } from "react-router-dom";
  import { Menu, X, Phone, ChevronDown } from "lucide-react";
  import { Button } from "@/components/ui/button";
  import { motion, AnimatePresence } from "framer-motion";
@@ -14,14 +15,17 @@
  const Navigation = () => {
    const [isOpen, setIsOpen] = useState(false);
  
-   const navItems = [
-     { label: "Главная", href: "#home" },
+    const navItems = [
+      { label: "Главная", href: "#home" },
      { label: "Программы", href: "#programs" },
      { label: "Кружки", href: "#clubs" },
      { label: "Новости", href: "#news" },
-     { label: "Галерея", href: "#gallery" },
+      { label: "Галерея", href: "/gallery" },
      { label: "Контакты", href: "#contacts" },
    ];
+
+    const location = useLocation();
+    const isHome = location.pathname === "/";
  
   const aboutItems = [
     { label: "Основные сведения", href: "/svedeniya#basic" },
@@ -61,7 +65,7 @@
            <div className="hidden lg:flex items-center space-x-8">
              <NavigationMenu>
                <NavigationMenuList>
-                 {navItems.slice(0, 1).map((item) => (
+                  {navItems.slice(0, 1).map((item) => (
                    <NavigationMenuItem key={item.href}>
                      <NavigationMenuLink
                        href={item.href}
@@ -91,14 +95,20 @@
                    </NavigationMenuContent>
                  </NavigationMenuItem>
  
-                 {navItems.slice(1).map((item) => (
+                  {navItems.slice(1).map((item) => (
                    <NavigationMenuItem key={item.href}>
-                     <NavigationMenuLink
-                       href={item.href}
-                       className="text-foreground hover:text-primary transition-colors font-medium px-4 py-2"
-                     >
-                       {item.label}
-                     </NavigationMenuLink>
+                      {item.href.startsWith("/") ? (
+                        <NavigationMenuLink asChild className="text-foreground hover:text-primary transition-colors font-medium px-4 py-2">
+                          <Link to={item.href}>{item.label}</Link>
+                        </NavigationMenuLink>
+                      ) : (
+                        <NavigationMenuLink
+                          href={isHome ? item.href : `/${item.href}`}
+                          className="text-foreground hover:text-primary transition-colors font-medium px-4 py-2"
+                        >
+                          {item.label}
+                        </NavigationMenuLink>
+                      )}
                    </NavigationMenuItem>
                  ))}
                </NavigationMenuList>
@@ -113,11 +123,9 @@
                  <span>+7 (928) 261-99-28</span>
                </a>
              </div>
-             <Button asChild variant="default" className="bg-accent hover:bg-accent/90 text-accent-foreground">
-               <a href="#contacts">
-               Записаться
-               </a>
-             </Button>
+              <Button asChild variant="default" className="bg-accent hover:bg-accent/90 text-accent-foreground">
+                <a href={isHome ? "#contacts" : "/#contacts"}>Записаться</a>
+              </Button>
            </div>
  
            {/* Mobile Menu Button */}
@@ -162,26 +170,37 @@
                  </div>
                </div>
                
-               {navItems.map((item) => (
-                 <a
-                   key={item.href}
-                   href={item.href}
-                   onClick={() => setIsOpen(false)}
-                   className="block py-2 text-foreground hover:text-primary transition-colors font-medium"
-                 >
-                   {item.label}
-                 </a>
-               ))}
+                {navItems.map((item) =>
+                  item.href.startsWith("/") ? (
+                    <Link
+                      key={item.href}
+                      to={item.href}
+                      onClick={() => setIsOpen(false)}
+                      className="block py-2 text-foreground hover:text-primary transition-colors font-medium"
+                    >
+                      {item.label}
+                    </Link>
+                  ) : (
+                    <a
+                      key={item.href}
+                      href={isHome ? item.href : `/${item.href}`}
+                      onClick={() => setIsOpen(false)}
+                      className="block py-2 text-foreground hover:text-primary transition-colors font-medium"
+                    >
+                      {item.label}
+                    </a>
+                  )
+                )}
                <div className="pt-4 border-t border-border space-y-3">
                  <a href="tel:+79282619928" className="flex items-center space-x-2 text-muted-foreground">
                    <Phone className="w-4 h-4" />
                    <span>+7 (928) 261-99-28</span>
                  </a>
-                 <Button asChild className="w-full bg-accent hover:bg-accent/90 text-accent-foreground">
-                   <a href="#contacts" onClick={() => setIsOpen(false)}>
-                   Записаться на экскурсию
-                   </a>
-                 </Button>
+                  <Button asChild className="w-full bg-accent hover:bg-accent/90 text-accent-foreground">
+                    <a href={isHome ? "#contacts" : "/#contacts"} onClick={() => setIsOpen(false)}>
+                      Записаться на экскурсию
+                    </a>
+                  </Button>
                </div>
              </div>
            </motion.div>

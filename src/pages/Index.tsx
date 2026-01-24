@@ -6,7 +6,7 @@
 import Clubs from "@/components/Clubs";
  import Testimonials from "@/components/Testimonials";
  import News from "@/components/News";
- import Gallery from "@/components/Gallery";
+import GalleryPreview from "@/components/GalleryPreview";
  import Contact from "@/components/Contact";
  import Footer from "@/components/Footer";
 
@@ -21,7 +21,7 @@ const Index = () => {
       <Clubs />
      <Testimonials />
      <News />
-     <Gallery />
+      <GalleryPreview />
        <Contact />
        <Footer />
     </div>
