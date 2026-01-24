@@ -21,12 +21,12 @@ export function useIsAdmin(userId: string | null): State {
         return;
       }
       setIsLoading(true);
-      const { data, error } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", userId)
-        .eq("role", "admin")
-        .limit(1);
+
+      // Use a SECURITY DEFINER DB function to avoid any RLS edge-cases.
+      const { data, error } = await supabase.rpc("has_role", {
+        _user_id: userId,
+        _role: "admin",
+      });
       if (cancelled) return;
       if (error) {
         // If RLS blocks or any error occurs, treat as not admin.
@@ -34,7 +34,8 @@ export function useIsAdmin(userId: string | null): State {
         setIsLoading(false);
         return;
       }
-      setIsAdmin((data?.length ?? 0) > 0);
+
+      setIsAdmin(Boolean(data));
       setIsLoading(false);
     };
     run();
