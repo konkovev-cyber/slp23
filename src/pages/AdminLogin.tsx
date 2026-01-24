@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -17,11 +17,6 @@ export default function AdminLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  useEffect(() => {
-    // Already signed in → go to media by default.
-    if (userId) navigate("/admin/media", { replace: true });
-  }, [navigate, userId]);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,6 +48,28 @@ export default function AdminLogin() {
         <p className="text-sm text-muted-foreground mt-1">
           Доступ только для администраторов.
         </p>
+
+        {userId ? (
+          <div className="mt-6 space-y-3">
+            <Button className="w-full" onClick={() => navigate("/admin/dashboard")}> 
+              Перейти в дашборд
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              onClick={async () => {
+                await supabase.auth.signOut();
+                navigate("/", { replace: true });
+              }}
+            >
+              Выйти
+            </Button>
+            <div className="text-xs text-muted-foreground">
+              Если нужно войти под другим аккаунтом — сначала выйдите.
+            </div>
+          </div>
+        ) : (
 
         <form onSubmit={onSubmit} className="mt-6 space-y-4">
           <div className="space-y-2">
@@ -92,6 +109,7 @@ export default function AdminLogin() {
             На сайт
           </Button>
         </form>
+        )}
       </Card>
     </div>
   );

@@ -13,6 +13,9 @@ import AdminLogin from "./pages/AdminLogin";
 import ProtectedRoute from "@/components/admin/ProtectedRoute";
 import AdminLayout from "@/components/admin/AdminLayout";
 import AdminDashboard from "./pages/AdminDashboard";
+import AdminAccess from "./pages/AdminAccess";
+import AdminSections from "./pages/AdminSections";
+import AdminSectionHero from "./pages/AdminSectionHero";
 
 const queryClient = new QueryClient();
 
@@ -34,6 +37,46 @@ const App = () => (
               <ProtectedRoute redirectTo="/">
                 <AdminLayout title="Дашборд">
                   <AdminDashboard />
+                </AdminLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/access"
+            element={
+              <ProtectedRoute redirectTo="/">
+                <AdminLayout title="Доступ">
+                  <AdminAccess />
+                </AdminLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/sections"
+            element={
+              <ProtectedRoute redirectTo="/">
+                <AdminLayout title="Секции">
+                  <AdminSections />
+                </AdminLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/sections/hero"
+            element={
+              <ProtectedRoute redirectTo="/">
+                <AdminLayout title="Hero">
+                  <AdminSectionHero />
+                </AdminLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/sections/:id"
+            element={
+              <ProtectedRoute redirectTo="/">
+                <AdminLayout title="Редактор секции">
+                  <AdminSectionHero />
                 </AdminLayout>
               </ProtectedRoute>
             }
