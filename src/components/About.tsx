@@ -2,7 +2,9 @@
  import { Card } from "@/components/ui/card";
  import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
  import { Award, Building2, BookOpen } from "lucide-react";
- import facilitiesImage from "@/assets/facilities.jpg";
+import facilitiesClassroomImage from "@/assets/facilities-classroom.jpg";
+import facilitiesHallImage from "@/assets/facilities-hall.jpg";
+import directorKianImage from "@/assets/director-kian.jpg";
  
  const About = () => {
    return (
@@ -30,7 +32,7 @@
              transition={{ duration: 0.6 }}
            >
              <img
-               src={facilitiesImage}
+                src={facilitiesClassroomImage}
                alt="Современные классы школы"
                className="rounded-2xl shadow-xl w-full"
              />
@@ -82,6 +84,23 @@
                </TabsContent>
  
                <TabsContent value="facilities" className="space-y-4">
+				  <Card className="p-6 bg-card border-border">
+				    <div className="grid gap-4 sm:grid-cols-2">
+				      <img
+				        src={facilitiesClassroomImage}
+				        alt="Учебный класс школы"
+				        className="w-full rounded-xl"
+				        loading="lazy"
+				      />
+				      <img
+				        src={facilitiesHallImage}
+				        alt="Зал для занятий и тренировок"
+				        className="w-full rounded-xl"
+				        loading="lazy"
+				      />
+				    </div>
+				  </Card>
+
                  <Card className="p-6 bg-card border-border">
                    <div className="flex items-start space-x-4">
                      <div className="w-12 h-12 bg-success/10 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -108,14 +127,20 @@
  
                <TabsContent value="leadership" className="space-y-4">
                  <Card className="p-6 bg-card border-border">
-                   <h4 className="font-bold text-foreground mb-3">Директор школы</h4>
-                   <p className="text-muted-foreground mb-2">
-                     <strong className="text-foreground">Иванова Мария Петровна</strong>
-                   </p>
-                   <p className="text-muted-foreground">
-                     Кандидат педагогических наук, стаж работы в образовании — 20 лет. 
-                     Награждена знаком «Почётный работник образования».
-                   </p>
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-6">
+                      <img
+                        src={directorKianImage}
+                        alt="Директор школы — Киян Юлия Юрьевна"
+                        className="w-full max-w-[220px] rounded-xl object-cover"
+                        loading="lazy"
+                      />
+                      <div className="min-w-0">
+                        <h4 className="font-bold text-foreground mb-2">Директор школы</h4>
+                        <p className="text-muted-foreground mb-2">
+                          <strong className="text-foreground">Киян Юлия Юрьевна</strong>
+                        </p>
+                      </div>
+                    </div>
                  </Card>
  
                  <Card className="p-6 bg-card border-border">
