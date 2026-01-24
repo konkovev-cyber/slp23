@@ -40,9 +40,6 @@ const Navigation = () => {
     { label: "Доступная среда", href: "/svedeniya#dostupnaya-sreda" },
     { label: "Международное сотрудничество", href: "/svedeniya#mezhdunarodnoe-sotrudnichestvo" },
   ];
-             animate={{ opacity: 1, x: 0 }}
-             className="flex items-center space-x-3"
-           >
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border">
