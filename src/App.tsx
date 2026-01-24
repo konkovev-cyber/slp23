@@ -8,6 +8,7 @@ import NotFound from "./pages/NotFound";
 import NewsIndex from "./pages/NewsIndex";
 import NewsPost from "./pages/NewsPost";
 import Svedeniya from "./pages/Svedeniya";
+import AdminMedia from "./pages/AdminMedia";
 
 const queryClient = new QueryClient();
 
@@ -22,6 +23,7 @@ const App = () => (
           <Route path="/news" element={<NewsIndex />} />
           <Route path="/news/:slug" element={<NewsPost />} />
           <Route path="/svedeniya" element={<Svedeniya />} />
+          <Route path="/admin/media" element={<AdminMedia />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
