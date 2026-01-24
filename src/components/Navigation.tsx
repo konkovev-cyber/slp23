@@ -65,10 +65,10 @@
            <div className="hidden lg:flex items-center space-x-8">
              <NavigationMenu>
                <NavigationMenuList>
-                  {navItems.slice(0, 1).map((item) => (
+                   {navItems.slice(0, 1).map((item) => (
                    <NavigationMenuItem key={item.href}>
                      <NavigationMenuLink
-                       href={item.href}
+                        href={isHome ? item.href : `/${item.href}`}
                        className="text-foreground hover:text-primary transition-colors font-medium px-4 py-2"
                      >
                        {item.label}
