@@ -8,7 +8,7 @@ type Props = {
   redirectTo?: string;
 };
 
-export default function ProtectedRoute({ children, redirectTo = "/" }: Props) {
+export default function ProtectedRoute({ children, redirectTo = "/admin" }: Props) {
   const { isLoading, userId } = useAuth();
   const { isLoading: isRoleLoading, isAdmin } = useIsAdmin(userId);
 
