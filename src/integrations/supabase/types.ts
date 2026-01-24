@@ -14,6 +14,53 @@ export type Database = {
   }
   public: {
     Tables: {
+      navigation_items: {
+        Row: {
+          area: string
+          created_at: string
+          href: string
+          id: string
+          is_visible: boolean
+          kind: string
+          label: string
+          parent_id: string | null
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          area: string
+          created_at?: string
+          href: string
+          id?: string
+          is_visible?: boolean
+          kind?: string
+          label: string
+          parent_id?: string | null
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          area?: string
+          created_at?: string
+          href?: string
+          id?: string
+          is_visible?: boolean
+          kind?: string
+          label?: string
+          parent_id?: string | null
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "navigation_items_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "navigation_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       posts: {
         Row: {
           category: string
@@ -56,6 +103,54 @@ export type Database = {
           source_id?: string | null
           title?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      site_content: {
+        Row: {
+          content: Json
+          created_at: string
+          id: string
+          is_visible: boolean
+          section_name: string
+          updated_at: string
+        }
+        Insert: {
+          content?: Json
+          created_at?: string
+          id: string
+          is_visible?: boolean
+          section_name: string
+          updated_at?: string
+        }
+        Update: {
+          content?: Json
+          created_at?: string
+          id?: string
+          is_visible?: boolean
+          section_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      site_settings: {
+        Row: {
+          created_at: string
+          key: string
+          updated_at: string
+          value: Json
+        }
+        Insert: {
+          created_at?: string
+          key: string
+          updated_at?: string
+          value?: Json
+        }
+        Update: {
+          created_at?: string
+          key?: string
+          updated_at?: string
+          value?: Json
         }
         Relationships: []
       }
