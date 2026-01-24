@@ -12,6 +12,26 @@
  import gallery8 from "@/assets/gallery/8.jpg";
  import gallery9 from "@/assets/gallery/9.jpg";
  import gallery10 from "@/assets/gallery/10.jpg";
+ import gallery11 from "@/assets/gallery/11.jpg";
+ import gallery12 from "@/assets/gallery/12.jpg";
+ import gallery13 from "@/assets/gallery/13.jpg";
+ import gallery14 from "@/assets/gallery/14.jpg";
+ import gallery15 from "@/assets/gallery/15.jpg";
+ import gallery16 from "@/assets/gallery/16.jpg";
+ import gallery17 from "@/assets/gallery/17.jpg";
+ import gallery18 from "@/assets/gallery/18.jpg";
+ import gallery19 from "@/assets/gallery/19.jpg";
+ import gallery20 from "@/assets/gallery/20.jpg";
+ import gallery21 from "@/assets/gallery/21.jpg";
+ import gallery22 from "@/assets/gallery/22.jpg";
+ import gallery23 from "@/assets/gallery/23.jpg";
+ import gallery24 from "@/assets/gallery/24.jpg";
+ import gallery25 from "@/assets/gallery/25.jpg";
+ import gallery26 from "@/assets/gallery/26.jpg";
+ import gallery27 from "@/assets/gallery/27.jpg";
+ import gallery28 from "@/assets/gallery/28.jpg";
+ import gallery29 from "@/assets/gallery/29.jpg";
+ import gallery30 from "@/assets/gallery/30.jpg";
  
  const galleryImages = [
    {
@@ -73,6 +93,126 @@
      src: gallery10,
      title: "Работа с педагогом",
      category: "Обучение",
+   },
+   {
+     id: 11,
+     src: gallery11,
+     title: "Здание школы",
+     category: "Школа",
+   },
+   {
+     id: 12,
+     src: gallery12,
+     title: "Класс для занятий",
+     category: "Школа",
+   },
+   {
+     id: 13,
+     src: gallery13,
+     title: "Спортивный зал",
+     category: "Спорт",
+   },
+   {
+     id: 14,
+     src: gallery14,
+     title: "Ученик за чтением",
+     category: "Обучение",
+   },
+   {
+     id: 15,
+     src: gallery15,
+     title: "На уроке",
+     category: "Ученики",
+   },
+   {
+     id: 16,
+     src: gallery16,
+     title: "Игра со словами",
+     category: "Обучение",
+   },
+   {
+     id: 17,
+     src: gallery17,
+     title: "Изучаем буквы",
+     category: "Обучение",
+   },
+   {
+     id: 18,
+     src: gallery18,
+     title: "Развивающие игры",
+     category: "Обучение",
+   },
+   {
+     id: 19,
+     src: gallery19,
+     title: "Творчество с красками",
+     category: "Творчество",
+   },
+   {
+     id: 20,
+     src: gallery20,
+     title: "Работа над проектом",
+     category: "Обучение",
+   },
+   {
+     id: 21,
+     src: gallery21,
+     title: "Командная работа",
+     category: "Обучение",
+   },
+   {
+     id: 22,
+     src: gallery22,
+     title: "Занятие с педагогом",
+     category: "Обучение",
+   },
+   {
+     id: 23,
+     src: gallery23,
+     title: "Хореография",
+     category: "Творчество",
+   },
+   {
+     id: 24,
+     src: gallery24,
+     title: "Библиотека",
+     category: "Школа",
+   },
+   {
+     id: 25,
+     src: gallery25,
+     title: "Дружный класс",
+     category: "Ученики",
+   },
+   {
+     id: 26,
+     src: gallery26,
+     title: "Группа с преподавателем",
+     category: "Ученики",
+   },
+   {
+     id: 27,
+     src: gallery27,
+     title: "Первый день в школе",
+     category: "Школьная жизнь",
+   },
+   {
+     id: 28,
+     src: gallery28,
+     title: "Торжественное событие",
+     category: "Мероприятия",
+   },
+   {
+     id: 29,
+     src: gallery29,
+     title: "День знаний",
+     category: "Мероприятия",
+   },
+   {
+     id: 30,
+     src: gallery30,
+     title: "Активные занятия",
+     category: "Школьная жизнь",
    },
  ];
  
