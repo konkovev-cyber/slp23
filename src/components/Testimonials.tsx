@@ -42,9 +42,6 @@ import { Quote } from "lucide-react";
  ];
  
   const Testimonials = () => {
-    const top = testimonials.slice(0, 3);
-    const rest = testimonials.slice(3);
- 
    return (
      <section className="py-20 bg-muted/30" id="testimonials">
        <div className="container mx-auto px-4">
@@ -64,14 +61,19 @@ import { Quote } from "lucide-react";
          </motion.div>
  
           <div className="max-w-6xl mx-auto">
-            <div className="grid gap-4 md:grid-cols-3">
-              {top.map((t, idx) => (
+            <div className="text-sm text-muted-foreground mb-3">
+              Прокрутите вправо, чтобы посмотреть остальные отзывы
+            </div>
+
+            <div className="flex gap-4 overflow-x-auto pb-2 snap-x snap-mandatory">
+              {testimonials.map((t, idx) => (
                 <motion.div
                   key={t.id}
                   initial={{ opacity: 0, y: 12 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.35, delay: idx * 0.05 }}
+                  className="snap-start shrink-0 basis-full sm:basis-1/2 md:basis-1/3"
                 >
                   <Card className="p-6 bg-card shadow-lg relative h-full">
                     <Quote className="absolute top-5 right-5 w-10 h-10 text-primary/20" />
@@ -94,39 +96,6 @@ import { Quote } from "lucide-react";
                 </motion.div>
               ))}
             </div>
-
-            {rest.length ? (
-              <div className="mt-8">
-                <div className="text-sm text-muted-foreground mb-3">
-                  Ещё отзывы — прокрутите вправо
-                </div>
-                <div className="flex gap-4 overflow-x-auto pb-2 snap-x snap-mandatory">
-                  {rest.map((t) => (
-                    <Card
-                      key={t.id}
-                      className="p-6 bg-card shadow-lg relative min-w-[280px] max-w-[320px] snap-start"
-                    >
-                      <Quote className="absolute top-5 right-5 w-10 h-10 text-primary/20" />
-
-                      <div className="flex items-center gap-4 mb-4">
-                        <Avatar className="w-12 h-12 border-4 border-primary/20">
-                          <AvatarImage src={t.image} />
-                          <AvatarFallback className="bg-primary text-primary-foreground text-lg">
-                            {t.name.charAt(0)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <div className="font-semibold text-foreground leading-tight">{t.name}</div>
-                          <div className="text-sm text-muted-foreground">{t.role}</div>
-                        </div>
-                      </div>
-
-                      <p className="text-foreground/90 italic leading-relaxed">"{t.text}"</p>
-                    </Card>
-                  ))}
-                </div>
-              </div>
-            ) : null}
           </div>
        </div>
      </section>

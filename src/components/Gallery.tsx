@@ -1,6 +1,6 @@
- import { useState } from "react";
+ import { useEffect, useMemo, useState } from "react";
  import { motion, AnimatePresence } from "framer-motion";
- import { X, ZoomIn } from "lucide-react";
+ import { ChevronLeft, ChevronRight, X, ZoomIn } from "lucide-react";
  import { Button } from "@/components/ui/button";
  import gallery1 from "@/assets/gallery/1.jpg";
  import gallery2 from "@/assets/gallery/2.jpg";
@@ -243,9 +243,13 @@ import gallery32 from "@/assets/gallery/32.jpg";
  
    const categories = ["Все", ...Array.from(new Set(galleryImages.map(img => img.category)))];
  
-   const filteredImages = filter === "Все" 
-     ? galleryImages 
-     : galleryImages.filter(img => img.category === filter);
+    const filteredImages = useMemo(
+      () =>
+        filter === "Все"
+          ? galleryImages
+          : galleryImages.filter((img) => img.category === filter),
+      [filter]
+    );
  
    const openLightbox = (id: number) => {
      setSelectedImage(id);
@@ -257,7 +261,37 @@ import gallery32 from "@/assets/gallery/32.jpg";
      document.body.style.overflow = 'unset';
    };
  
-   const currentImage = galleryImages.find(img => img.id === selectedImage);
+    const activeIndex = selectedImage
+      ? filteredImages.findIndex((img) => img.id === selectedImage)
+      : -1;
+
+    const currentImage = activeIndex >= 0 ? filteredImages[activeIndex] : undefined;
+
+    const goPrev = () => {
+      if (!filteredImages.length || activeIndex < 0) return;
+      const prev = (activeIndex - 1 + filteredImages.length) % filteredImages.length;
+      setSelectedImage(filteredImages[prev].id);
+    };
+
+    const goNext = () => {
+      if (!filteredImages.length || activeIndex < 0) return;
+      const next = (activeIndex + 1) % filteredImages.length;
+      setSelectedImage(filteredImages[next].id);
+    };
+
+    useEffect(() => {
+      if (!selectedImage) return;
+
+      const onKeyDown = (e: KeyboardEvent) => {
+        if (e.key === "Escape") closeLightbox();
+        if (e.key === "ArrowLeft") goPrev();
+        if (e.key === "ArrowRight") goNext();
+      };
+
+      window.addEventListener("keydown", onKeyDown);
+      return () => window.removeEventListener("keydown", onKeyDown);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedImage, filter]);
  
    return (
      <section className="py-20 bg-muted/30" id="gallery">
@@ -340,6 +374,32 @@ import gallery32 from "@/assets/gallery/32.jpg";
                >
                  <X className="w-6 h-6" />
                </Button>
+
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-white hover:bg-white/20"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    goPrev();
+                  }}
+                >
+                  <ChevronLeft className="w-7 h-7" />
+                </Button>
+
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-white hover:bg-white/20"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    goNext();
+                  }}
+                >
+                  <ChevronRight className="w-7 h-7" />
+                </Button>
  
                <motion.div
                  initial={{ scale: 0.8, opacity: 0 }}
