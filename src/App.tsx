@@ -9,6 +9,8 @@ import NewsIndex from "./pages/NewsIndex";
 import NewsPost from "./pages/NewsPost";
 import Svedeniya from "./pages/Svedeniya";
 import AdminMedia from "./pages/AdminMedia";
+import AdminLogin from "./pages/AdminLogin";
+import ProtectedRoute from "@/components/admin/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
@@ -23,7 +25,15 @@ const App = () => (
           <Route path="/news" element={<NewsIndex />} />
           <Route path="/news/:slug" element={<NewsPost />} />
           <Route path="/svedeniya" element={<Svedeniya />} />
-          <Route path="/admin/media" element={<AdminMedia />} />
+          <Route path="/admin" element={<AdminLogin />} />
+          <Route
+            path="/admin/media"
+            element={
+              <ProtectedRoute redirectTo="/">
+                <AdminMedia />
+              </ProtectedRoute>
+            }
+          />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
