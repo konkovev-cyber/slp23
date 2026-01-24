@@ -32,6 +32,8 @@
  import gallery28 from "@/assets/gallery/28.jpg";
  import gallery29 from "@/assets/gallery/29.jpg";
  import gallery30 from "@/assets/gallery/30.jpg";
+import gallery31 from "@/assets/gallery/31.jpg";
+import gallery32 from "@/assets/gallery/32.jpg";
  
  const galleryImages = [
    {
@@ -214,6 +216,18 @@
      title: "Активные занятия",
      category: "Школьная жизнь",
    },
+  {
+    id: 31,
+    src: gallery31,
+    title: "Наш класс",
+    category: "Ученики",
+  },
+  {
+    id: 32,
+    src: gallery32,
+    title: "Момент с мероприятия",
+    category: "Мероприятия",
+  },
  ];
  
  const Gallery = () => {
