@@ -2,61 +2,77 @@
  import { motion, AnimatePresence } from "framer-motion";
  import { X, ZoomIn } from "lucide-react";
  import { Button } from "@/components/ui/button";
+ import gallery1 from "@/assets/gallery/1.jpg";
+ import gallery2 from "@/assets/gallery/2.jpg";
+ import gallery3 from "@/assets/gallery/3.jpg";
+ import gallery4 from "@/assets/gallery/4.jpg";
+ import gallery5 from "@/assets/gallery/5.jpg";
+ import gallery6 from "@/assets/gallery/6.jpg";
+ import gallery7 from "@/assets/gallery/7.jpg";
+ import gallery8 from "@/assets/gallery/8.jpg";
+ import gallery9 from "@/assets/gallery/9.jpg";
+ import gallery10 from "@/assets/gallery/10.jpg";
  
  const galleryImages = [
    {
      id: 1,
-     src: "/placeholder.svg",
-     title: "Новогодний праздник 2025",
-     category: "Мероприятия",
+     src: gallery1,
+     title: "Урок и командная работа",
+     category: "Обучение",
    },
    {
      id: 2,
-     src: "/placeholder.svg",
-     title: "Урок робототехники",
-     category: "Кружки",
+     src: gallery2,
+     title: "Занятие в классе",
+     category: "Обучение",
    },
    {
      id: 3,
-     src: "/placeholder.svg",
-     title: "Проектная защита",
-     category: "Образование",
+     src: gallery3,
+     title: "Эмоции и вовлечённость",
+     category: "Школьная жизнь",
    },
    {
      id: 4,
-     src: "/placeholder.svg",
-     title: "Спортивные соревнования",
-     category: "Спорт",
+     src: gallery4,
+     title: "Командный дух",
+     category: "Школьная жизнь",
    },
    {
      id: 5,
-     src: "/placeholder.svg",
-     title: "Творческая мастерская",
-     category: "Кружки",
+     src: gallery5,
+     title: "Дружная команда",
+     category: "Школьная жизнь",
    },
    {
      id: 6,
-     src: "/placeholder.svg",
-     title: "День открытых дверей",
-     category: "Мероприятия",
+     src: gallery6,
+     title: "Наши ученики",
+     category: "Ученики",
    },
    {
      id: 7,
-     src: "/placeholder.svg",
-     title: "Экскурсия в музей",
-     category: "Мероприятия",
+     src: gallery7,
+     title: "Фото на память",
+     category: "Ученики",
    },
    {
      id: 8,
-     src: "/placeholder.svg",
-     title: "Выступление хора",
-     category: "Творчество",
+     src: gallery8,
+     title: "Математика вокруг нас",
+     category: "Обучение",
    },
    {
      id: 9,
-     src: "/placeholder.svg",
-     title: "Научная лаборатория",
-     category: "Образование",
+     src: gallery9,
+     title: "Поддержка и наставничество",
+     category: "Обучение",
+   },
+   {
+     id: 10,
+     src: gallery10,
+     title: "Работа с педагогом",
+     category: "Обучение",
    },
  ];
  

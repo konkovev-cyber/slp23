@@ -31,15 +31,28 @@
                </span>
              </div>
  
-             <h1 className="text-foreground leading-tight">
-               Раскрываем потенциал <br />
-               <span className="text-primary">каждого ребёнка</span>
-             </h1>
+              <h1 className="text-foreground leading-tight">
+                «Личность ПЛЮС» —
+                <br />
+                <span className="text-primary">частная общеобразовательная школа</span>
+              </h1>
  
-             <p className="text-xl text-muted-foreground max-w-2xl">
-               Частная школа дополнительного образования для детей 6–16 лет. 
-               Гармоничное развитие личности через индивидуальный подход и современные методики.
-             </p>
+              <p className="text-xl text-muted-foreground max-w-2xl">
+                Дополнительное образование с углублённым изучением математики, физики и английского языка.
+                Обучаем детей с 0 по 9 класс.
+              </p>
+
+              <ul className="text-muted-foreground space-y-2 max-w-2xl">
+                <li>— Подготовка к школе (пребывание полный день)</li>
+                <li>— Кружки и секции помимо основных предметов</li>
+                <li>— Безопасность: собственная территория под охраной и постоянным контролем</li>
+                <li>— До 16 учеников в классе — больше внимания каждому ребёнку</li>
+                <li>— Дети ходят в школу с удовольствием, а вы освобождены от домашних уроков</li>
+              </ul>
+
+              <p className="text-foreground font-semibold">
+                Подать заявку или узнать подробности: <a className="text-primary hover:underline" href="tel:+79282619928">+7 928 261-99-28</a>
+              </p>
  
              <div className="flex flex-col sm:flex-row gap-4 pt-4">
                <Button 
