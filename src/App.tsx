@@ -11,6 +11,8 @@ import Svedeniya from "./pages/Svedeniya";
 import AdminMedia from "./pages/AdminMedia";
 import AdminLogin from "./pages/AdminLogin";
 import ProtectedRoute from "@/components/admin/ProtectedRoute";
+import AdminLayout from "@/components/admin/AdminLayout";
+import AdminDashboard from "./pages/AdminDashboard";
 
 const queryClient = new QueryClient();
 
@@ -27,10 +29,22 @@ const App = () => (
           <Route path="/svedeniya" element={<Svedeniya />} />
           <Route path="/admin" element={<AdminLogin />} />
           <Route
+            path="/admin/dashboard"
+            element={
+              <ProtectedRoute redirectTo="/">
+                <AdminLayout title="Дашборд">
+                  <AdminDashboard />
+                </AdminLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/admin/media"
             element={
               <ProtectedRoute redirectTo="/">
-                <AdminMedia />
+                <AdminLayout title="Медиа">
+                  <AdminMedia />
+                </AdminLayout>
               </ProtectedRoute>
             }
           />
