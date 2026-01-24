@@ -3,7 +3,7 @@
  import { Badge } from "@/components/ui/badge";
  import { Button } from "@/components/ui/button";
  import { BookOpen, Palette, Calculator, Globe, Music, Dumbbell, ChevronRight } from "lucide-react";
- import activitiesImage from "@/assets/activities.jpg";
+import programsImage from "@/assets/programs.jpg";
  
  const programs = [
    {
@@ -109,9 +109,10 @@
              className="flex flex-col justify-center"
            >
              <img
-               src={activitiesImage}
-               alt="Дети на занятиях"
+                src={programsImage}
+                alt="Занятия по образовательным программам"
                className="rounded-2xl shadow-xl w-full mb-6"
+                loading="lazy"
              />
              <Card className="p-6 bg-primary text-primary-foreground">
                <h3 className="text-2xl font-bold mb-3">Индивидуальный подход</h3>
