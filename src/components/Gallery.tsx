@@ -1,4 +1,4 @@
- import { useEffect, useMemo, useState } from "react";
+  import { useEffect, useMemo, useState } from "react";
  import { motion, AnimatePresence } from "framer-motion";
  import { ChevronLeft, ChevronRight, X, ZoomIn } from "lucide-react";
  import { Button } from "@/components/ui/button";
@@ -240,6 +240,7 @@ import gallery32 from "@/assets/gallery/32.jpg";
  const Gallery = () => {
    const [selectedImage, setSelectedImage] = useState<number | null>(null);
    const [filter, setFilter] = useState<string>("Все");
+    const [page, setPage] = useState(1);
  
    const categories = ["Все", ...Array.from(new Set(galleryImages.map(img => img.category)))];
  
@@ -250,6 +251,19 @@ import gallery32 from "@/assets/gallery/32.jpg";
           : galleryImages.filter((img) => img.category === filter),
       [filter]
     );
+
+    const pageSize = 12;
+    const totalPages = Math.max(1, Math.ceil(filteredImages.length / pageSize));
+    const safePage = Math.min(page, totalPages);
+    const pagedImages = useMemo(() => {
+      const start = (safePage - 1) * pageSize;
+      return filteredImages.slice(start, start + pageSize);
+    }, [filteredImages, safePage]);
+
+    useEffect(() => {
+      // Reset pagination when filter changes.
+      setPage(1);
+    }, [filter]);
  
    const openLightbox = (id: number) => {
      setSelectedImage(id);
@@ -326,22 +340,24 @@ import gallery32 from "@/assets/gallery/32.jpg";
            </div>
          </motion.div>
  
-         {/* Gallery Grid */}
-         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-           {filteredImages.map((image, index) => (
+          {/* Gallery Grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+            {pagedImages.map((image, index) => (
              <motion.div
                key={image.id}
                initial={{ opacity: 0, scale: 0.9 }}
                whileInView={{ opacity: 1, scale: 1 }}
                viewport={{ once: true }}
                transition={{ duration: 0.3, delay: index * 0.05 }}
-               className="relative group cursor-pointer aspect-square overflow-hidden rounded-lg bg-muted"
+                className="relative group cursor-pointer aspect-[4/3] overflow-hidden rounded-lg bg-muted"
                onClick={() => openLightbox(image.id)}
              >
                <img
                  src={image.src}
                  alt={image.title}
                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                  loading="lazy"
+                  decoding="async"
                />
                
                {/* Overlay */}
@@ -355,6 +371,51 @@ import gallery32 from "@/assets/gallery/32.jpg";
              </motion.div>
            ))}
          </div>
+
+          {/* Pagination */}
+          {totalPages > 1 ? (
+            <div className="mt-10 flex flex-col items-center gap-3">
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={safePage <= 1}
+                >
+                  Назад
+                </Button>
+                <div className="text-sm text-muted-foreground">
+                  Страница {safePage} из {totalPages}
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={safePage >= totalPages}
+                >
+                  Вперёд
+                </Button>
+              </div>
+
+              <div className="flex flex-wrap justify-center gap-2">
+                {Array.from({ length: totalPages }).map((_, i) => {
+                  const n = i + 1;
+                  return (
+                    <Button
+                      key={n}
+                      type="button"
+                      size="sm"
+                      variant={n === safePage ? "default" : "outline"}
+                      onClick={() => setPage(n)}
+                      className="min-w-10"
+                    >
+                      {n}
+                    </Button>
+                  );
+                })}
+              </div>
+            </div>
+          ) : null}
  
          {/* Lightbox */}
          <AnimatePresence>

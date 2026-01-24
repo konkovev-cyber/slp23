@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { galleryImages } from "@/components/Gallery";
 
 export default function GalleryPreview() {
-  const preview = galleryImages.slice(0, 9);
+  const preview = galleryImages.slice(0, 4);
 
   return (
     <section className="py-20 bg-muted/30" aria-labelledby="gallery-preview-title">
@@ -31,7 +31,7 @@ export default function GalleryPreview() {
           </Button>
         </motion.div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {preview.map((img, idx) => (
             <motion.div
               key={img.id}
@@ -39,12 +39,13 @@ export default function GalleryPreview() {
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.25, delay: idx * 0.03 }}
-              className="relative overflow-hidden rounded-lg bg-muted aspect-square"
+              className="relative overflow-hidden rounded-lg bg-muted aspect-[4/3]"
             >
               <img
                 src={img.src}
                 alt={img.title}
                 loading="lazy"
+                decoding="async"
                 className="w-full h-full object-cover"
               />
             </motion.div>
