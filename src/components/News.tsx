@@ -1,7 +1,12 @@
- import { motion } from "framer-motion";
- import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
- import { Badge } from "@/components/ui/badge";
- import { Calendar, Users, Award } from "lucide-react";
+import { motion } from "framer-motion";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Calendar, Users, Award } from "lucide-react";
+import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { format } from "date-fns";
+import { ru } from "date-fns/locale";
  
  const newsItems = [
    {
@@ -65,8 +70,47 @@
    "Мероприятия": "bg-blue-500/10 text-blue-700 border-blue-500/20",
    "Анонсы": "bg-orange-500/10 text-orange-700 border-orange-500/20",
  };
+
+  type PostPreview = {
+    id: string;
+    title: string;
+    slug: string;
+    category: string;
+    excerpt: string | null;
+    image_url: string | null;
+    published_at: string;
+  };
  
  const News = () => {
+    const { data: posts = [] } = useQuery({
+      queryKey: ["posts", "home_preview"],
+      queryFn: async () => {
+        const { data, error } = await supabase
+          .from("posts")
+          .select("id,title,slug,category,excerpt,image_url,published_at")
+          .order("published_at", { ascending: false })
+          .limit(6);
+        if (error) throw error;
+        return (data ?? []) as PostPreview[];
+      },
+    });
+
+    const items = posts.length
+      ? posts.map((p) => ({
+          id: p.id,
+          title: p.title,
+          description: p.excerpt ?? "Открыть новость",
+          date: format(new Date(p.published_at), "d MMMM yyyy", { locale: ru }),
+          category: p.category,
+          icon: Calendar,
+          image: p.image_url ?? "/placeholder.svg",
+          href: `/news/${p.slug}`,
+        }))
+      : newsItems.map((i) => ({
+          ...i,
+          href: "/news",
+        }));
+
    return (
      <section className="py-20 bg-background" id="news">
        <div className="container mx-auto px-4">
@@ -77,16 +121,19 @@
            transition={{ duration: 0.5 }}
            className="text-center mb-12"
          >
-           <h2 className="text-4xl font-bold text-foreground mb-4">
-             Новости и события
-           </h2>
+            <div className="flex flex-col items-center gap-4">
+              <h2 className="text-4xl font-bold text-foreground">Новости и события</h2>
+              <Link to="/news" className="text-primary hover:underline">
+                Все новости →
+              </Link>
+            </div>
            <p className="text-muted-foreground max-w-2xl mx-auto">
              Последние новости, анонсы мероприятий и достижения наших учеников
            </p>
          </motion.div>
  
          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-           {newsItems.map((item, index) => {
+            {items.map((item, index) => {
              const Icon = item.icon;
              return (
                <motion.div
@@ -96,7 +143,8 @@
                  viewport={{ once: true }}
                  transition={{ duration: 0.5, delay: index * 0.1 }}
                >
-                 <Card className="h-full hover:shadow-lg transition-all duration-300 group cursor-pointer overflow-hidden">
+                  <Link to={item.href} className="block">
+                    <Card className="h-full hover:shadow-lg transition-all duration-300 group cursor-pointer overflow-hidden">
                    <div className="relative h-48 overflow-hidden bg-muted">
                      <img
                        src={item.image}
@@ -125,7 +173,8 @@
                        {item.description}
                      </CardDescription>
                    </CardContent>
-                 </Card>
+                    </Card>
+                  </Link>
                </motion.div>
              );
            })}
