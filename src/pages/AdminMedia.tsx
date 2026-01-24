@@ -110,26 +110,26 @@ export default function AdminMedia() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="space-y-6">
       <Helmet>
         <title>Admin Media</title>
         <meta name="robots" content="noindex,nofollow" />
       </Helmet>
 
-      <header className="border-b border-border bg-background/80 backdrop-blur">
-        <div className="container mx-auto px-4 py-6 space-y-2">
-          <h1 className="text-2xl font-bold text-foreground">Медиа</h1>
-          <p className="text-sm text-muted-foreground">
-            Загрузка и управление файлами в хранилище. Рекомендуемые папки: hero/, about/, programs/, gallery/.
-          </p>
-        </div>
-      </header>
+      <div>
+        <h1 className="text-2xl font-bold text-foreground">Медиа</h1>
+        <p className="text-sm text-muted-foreground mt-1">
+          Загрузка и управление файлами в хранилище. Рекомендуемые папки: hero/, about/, programs/, gallery/.
+        </p>
+      </div>
 
-      <main className="container mx-auto px-4 py-8">
-        <Tabs value={bucket} onValueChange={(v) => {
+      <Tabs
+        value={bucket}
+        onValueChange={(v) => {
           setBucket(v as BucketId);
           setPath("");
-        }}>
+        }}
+      >
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <TabsList>
               <TabsTrigger value="images">images</TabsTrigger>
@@ -283,7 +283,6 @@ export default function AdminMedia() {
             </div>
           </TabsContent>
         </Tabs>
-      </main>
     </div>
   );
 }
