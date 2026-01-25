@@ -34,9 +34,10 @@
      window.open(`https://wa.me/79282619928?text=${message}`, '_blank');
    };
  
-   const sendToTelegram = () => {
-     window.open('https://t.me/lichnost_PLUS', '_blank');
-   };
+  const sendToTelegram = () => {
+    // Контакт для всех обращений в Telegram
+    window.open("https://t.me/julia_slp", "_blank");
+  };
 
     const constructorHash = "4f61ac17bbf756654de58429231d443241ac89a38745ebe8760ff57bfecb15e8";
     const scriptSrc = useMemo(

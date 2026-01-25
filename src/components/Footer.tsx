@@ -1,5 +1,4 @@
- import { Youtube } from "lucide-react";
- import { SiVk, SiTelegram } from "react-icons/si";
+import { SiInstagram, SiTelegram, SiVk } from "react-icons/si";
  
  const Footer = () => {
    return (
@@ -48,9 +47,14 @@
                <a href="https://t.me/lichnost_PLUS" target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-primary-foreground/10 hover:bg-primary-foreground/20 rounded-lg flex items-center justify-center transition-colors">
                  <SiTelegram className="w-5 h-5" />
                </a>
-               <a href="https://www.youtube.com/@user-ki6kz5jw4o" target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-primary-foreground/10 hover:bg-primary-foreground/20 rounded-lg flex items-center justify-center transition-colors">
-                 <Youtube className="w-5 h-5" />
-               </a>
+                <a
+                  href="https://www.instagram.com/lichnost_plus_gk/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-10 h-10 bg-primary-foreground/10 hover:bg-primary-foreground/20 rounded-lg flex items-center justify-center transition-colors"
+                >
+                  <SiInstagram className="w-5 h-5" />
+                </a>
              </div>
              <p className="text-primary-foreground/80 text-sm mt-4">
                <a href="mailto:slichnost5@mail.ru" className="hover:text-primary-foreground transition-colors">
