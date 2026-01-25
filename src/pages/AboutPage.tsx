@@ -1,6 +1,7 @@
 import { Helmet } from "react-helmet-async";
 import Navigation from "@/components/Navigation";
 import About from "@/components/About";
+import TeachingStaff from "@/components/TeachingStaff";
 import Footer from "@/components/Footer";
 
 export default function AboutPage() {
@@ -15,6 +16,7 @@ export default function AboutPage() {
       <Navigation />
       <main className="pt-20">
         <About />
+        <TeachingStaff />
       </main>
       <Footer />
     </div>
