@@ -9,21 +9,44 @@ import Clubs from "@/components/Clubs";
 import GalleryPreview from "@/components/GalleryPreview";
  import Contact from "@/components/Contact";
  import Footer from "@/components/Footer";
+ import { useContent } from "@/hooks/use-content";
 
 const Index = () => {
+  // Видимость управляется через site_content.is_visible и действует только на главной.
+  // Если записи в БД нет — считаем блок видимым (fallback).
+  const { data: featuresRow } = useContent("features");
+  const { data: aboutRow } = useContent("about");
+  const { data: programsRow } = useContent("programs");
+  const { data: clubsRow } = useContent("clubs");
+  const { data: testimonialsRow } = useContent("testimonials");
+  const { data: newsRow } = useContent("news_home");
+  const { data: galleryRow } = useContent("gallery");
+  const { data: contactRow } = useContent("contact");
+  const { data: footerRow } = useContent("footer");
+
+  const showFeatures = featuresRow?.is_visible ?? true;
+  const showAbout = aboutRow?.is_visible ?? true;
+  const showPrograms = programsRow?.is_visible ?? true;
+  const showClubs = clubsRow?.is_visible ?? true;
+  const showTestimonials = testimonialsRow?.is_visible ?? true;
+  const showNews = newsRow?.is_visible ?? true;
+  const showGallery = galleryRow?.is_visible ?? true;
+  const showContact = contactRow?.is_visible ?? true;
+  const showFooter = footerRow?.is_visible ?? true;
+
   return (
      <div className="min-h-screen bg-background">
        <Navigation />
        <Hero />
-       <Features />
-       <About />
-       <Programs />
-      <Clubs />
-     <Testimonials />
-     <News />
-      <GalleryPreview />
-       <Contact />
-       <Footer />
+        {showFeatures ? <Features /> : null}
+        {showAbout ? <About /> : null}
+        {showPrograms ? <Programs /> : null}
+        {showClubs ? <Clubs /> : null}
+        {showTestimonials ? <Testimonials /> : null}
+        {showNews ? <News /> : null}
+        {showGallery ? <GalleryPreview /> : null}
+        {showContact ? <Contact /> : null}
+        {showFooter ? <Footer /> : null}
     </div>
   );
 };
