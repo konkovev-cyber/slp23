@@ -5,6 +5,7 @@
 import facilitiesClassroomImage from "@/assets/facilities-classroom.jpg";
 import facilitiesHallImage from "@/assets/facilities-hall.jpg";
 import directorKianImage from "@/assets/director-kian.jpg";
+import aboutVideo from "@/assets/about-video.mov";
  
  const About = () => {
    return (
@@ -31,11 +32,16 @@ import directorKianImage from "@/assets/director-kian.jpg";
              viewport={{ once: true }}
              transition={{ duration: 0.6 }}
            >
-             <img
-                src={facilitiesClassroomImage}
-               alt="Современные классы школы"
-               className="rounded-2xl shadow-xl w-full"
-             />
+              <video
+                className="rounded-2xl shadow-xl w-full"
+                src={aboutVideo}
+                autoPlay
+                muted
+                loop
+                playsInline
+                controls
+                preload="metadata"
+              />
            </motion.div>
  
            <motion.div
