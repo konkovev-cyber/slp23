@@ -47,7 +47,7 @@ const Navigation = () => {
     { label: "Пед. состав", href: "/svedeniya#pedagogicheskij-sostav" },
   ];
 
-  const navLinkClass = "text-[11px] font-bold uppercase tracking-widest text-foreground/80 hover:text-primary px-4 py-2 transition-all";
+  const navLinkClass = "text-[11px] font-bold uppercase tracking-widest text-foreground/80 hover:text-primary px-4 h-10 flex items-center transition-all hover:bg-transparent focus:bg-transparent data-[state=open]:bg-transparent data-[active]:bg-transparent";
 
   return (
     <nav className={cn(
@@ -71,7 +71,9 @@ const Navigation = () => {
             <NavigationMenu>
               <NavigationMenuList className="gap-0.5">
                 <NavigationMenuItem>
-                  <Link to="/" className={navLinkClass}>Главная</Link>
+                  <Link to="/">
+                    <NavigationMenuLink className={navLinkClass}>Главная</NavigationMenuLink>
+                  </Link>
                 </NavigationMenuItem>
                 <NavigationMenuItem>
                   <NavigationMenuTrigger className={cn("bg-transparent", navLinkClass)}>Школа</NavigationMenuTrigger>
@@ -88,10 +90,14 @@ const Navigation = () => {
                   </NavigationMenuContent>
                 </NavigationMenuItem>
                 <NavigationMenuItem>
-                  <Link to="/gallery" className={navLinkClass}>Галерея</Link>
+                  <Link to="/gallery">
+                    <NavigationMenuLink className={navLinkClass}>Галерея</NavigationMenuLink>
+                  </Link>
                 </NavigationMenuItem>
                 <NavigationMenuItem>
-                  <Link to="/news" className={navLinkClass}>Новости</Link>
+                  <Link to="/news">
+                    <NavigationMenuLink className={navLinkClass}>Новости</NavigationMenuLink>
+                  </Link>
                 </NavigationMenuItem>
                 <NavigationMenuItem>
                   <NavigationMenuTrigger className={cn("bg-transparent", navLinkClass)}>Сведения</NavigationMenuTrigger>
@@ -106,7 +112,9 @@ const Navigation = () => {
                   </NavigationMenuContent>
                 </NavigationMenuItem>
                 <NavigationMenuItem>
-                  <Link to="/contact" className={navLinkClass}>Контакты</Link>
+                  <Link to="/contact">
+                    <NavigationMenuLink className={navLinkClass}>Контакты</NavigationMenuLink>
+                  </Link>
                 </NavigationMenuItem>
               </NavigationMenuList>
             </NavigationMenu>
