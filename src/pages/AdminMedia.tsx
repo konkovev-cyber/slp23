@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
+import ImageUploader, { type ImageValue } from "@/components/admin/ImageUploader";
 import { Folder, FileImage, RefreshCw, Trash2, ChevronRight, Info, HardDrive, UploadCloud, FolderOpen, ExternalLink, Activity } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
