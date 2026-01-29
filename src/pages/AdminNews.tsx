@@ -7,6 +7,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -15,17 +23,17 @@ import {
   DialogTrigger
 } from "@/components/ui/dialog";
 import {
-  Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
-  TableRow
+  TableRow,
 } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import ImageUploader, { ImageValue } from "@/components/admin/ImageUploader";
 import { format } from "date-fns";
-import { Plus, Trash2, Edit2, Download, AlertCircle } from "lucide-react";
+import { ru } from "date-fns/locale";
+import { Plus, Trash2, Edit2, Download, AlertCircle, Share2, Globe, Send } from "lucide-react";
 
 type Post = {
   id: string;
@@ -62,7 +70,6 @@ export default function AdminNews() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [isVkOpen, setIsVkOpen] = useState(false);
   const [isLoadingFill, setIsLoadingFill] = useState(false);
 
   // Import State
@@ -84,7 +91,7 @@ export default function AdminNews() {
     slug: "",
     excerpt: "",
     content: "",
-    category: "news",
+    category: "Анонсы",
     published_at: new Date().toISOString().slice(0, 16),
     image_value: null,
   });
@@ -185,7 +192,7 @@ export default function AdminNews() {
       slug: "",
       excerpt: "",
       content: "",
-      category: "news",
+      category: "Анонсы",
       published_at: new Date().toISOString().slice(0, 16),
       image_value: null,
     });
@@ -245,9 +252,6 @@ export default function AdminNews() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={() => setIsVkOpen(true)}>
-            <Download className="w-4 h-4 mr-2" /> Импорт VK
-          </Button>
           <Dialog open={isCreateOpen} onOpenChange={(open) => {
             setIsCreateOpen(open);
             if (!open) resetForm();
@@ -257,100 +261,142 @@ export default function AdminNews() {
                 <Plus className="w-4 h-4 mr-2" /> Добавить новость
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
-                <DialogTitle>{formData.id ? "Редактировать новость" : "Новая новость"}</DialogTitle>
+                <DialogTitle className="text-xl">
+                  {formData.id ? "Редактировать новость" : "Новая новость"}
+                </DialogTitle>
               </DialogHeader>
-              <div className="space-y-4 py-4">
 
-                {/* Import Section */}
+              <div className="space-y-6 py-4">
+                {/* Unified Import Section */}
                 {!formData.id && (
-                  <div className="p-4 bg-muted/50 rounded-lg space-y-2 border border-border">
-                    <Label className="text-xs uppercase text-muted-foreground">Импорт по ссылке (Telegram / VK / Сайт)</Label>
-                    <div className="flex gap-2">
-                      <Input
-                        value={importUrl}
-                        onChange={(e) => setImportUrl(e.target.value)}
-                        placeholder="https://t.me/lichnost_PLUS/461"
-                        className="bg-background"
-                      />
-                      <Button variant="secondary" onClick={handleFetchMetadata} disabled={isFetchingInfo}>
-                        {isFetchingInfo ? "Загрузка..." : "Заполнить"}
-                      </Button>
+                  <div className="bg-primary/5 p-4 rounded-xl border border-primary/10 shadow-sm">
+                    <div className="flex flex-col gap-2">
+                      <Label className="text-xs font-semibold text-primary/70 uppercase tracking-wider">
+                        Импорт из соцсетей (VK, Telegram)
+                      </Label>
+                      <div className="flex items-center gap-2">
+                        <div className="relative flex-1">
+                          <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground mr-2" />
+                          <Input
+                            value={importUrl}
+                            onChange={(e) => setImportUrl(e.target.value)}
+                            placeholder="Вставьте ссылку на пост VK или Telegram..."
+                            className="bg-background h-10 pl-9"
+                          />
+                        </div>
+                        <Button
+                          variant="default"
+                          onClick={handleFetchMetadata}
+                          disabled={isFetchingInfo || !importUrl}
+                          className="shrink-0 gap-2"
+                        >
+                          {isFetchingInfo ? (
+                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                          ) : (
+                            <Download className="w-4 h-4" />
+                          )}
+                          Импорт
+                        </Button>
+                      </div>
+                      <p className="text-[10px] text-muted-foreground mt-1 px-1">
+                        Поддерживаются ссылки вида vk.com/wall... и t.me/...
+                      </p>
                     </div>
-                    <p className="text-xs text-muted-foreground">
-                      Вставьте ссылку на пост, и мы попытаемся достать заголовок, текст и картинку.
-                    </p>
                   </div>
                 )}
 
-                <div className="grid gap-2">
-                  <Label>Заголовок</Label>
-                  <Input
-                    value={formData.title}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    placeholder="Мы открыли набор..."
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="grid gap-2">
-                    <Label>Slug (URL)</Label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="md:col-span-2 space-y-2">
+                    <Label className="font-medium">Заголовок</Label>
                     <Input
-                      value={formData.slug}
-                      onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                      placeholder="my-otkryli-nabor"
+                      value={formData.title}
+                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                      placeholder="Заголовок новости"
+                      className="text-lg font-medium"
                     />
                   </div>
-                  <div className="grid gap-2">
-                    <Label>Дата публикации</Label>
+
+                  <div className="space-y-2">
+                    <Label className="font-medium">Категория</Label>
+                    <Select
+                      value={formData.category}
+                      onValueChange={(val) => setFormData({ ...formData, category: val })}
+                    >
+                      <SelectTrigger className="h-10">
+                        <SelectValue placeholder="Выберите категорию" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Новости">Новости</SelectItem>
+                        <SelectItem value="Анонсы">Анонсы</SelectItem>
+                        <SelectItem value="Мероприятия">Мероприятия</SelectItem>
+                        <SelectItem value="Достижения">Достижения</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="font-medium">Дата публикации</Label>
                     <Input
                       type="datetime-local"
                       value={formData.published_at}
                       onChange={(e) => setFormData({ ...formData, published_at: e.target.value })}
+                      className="h-10"
+                    />
+                  </div>
+
+                  <div className="md:col-span-2 space-y-2">
+                    <Label className="font-medium">Slug (URL)</Label>
+                    <Input
+                      value={formData.slug}
+                      onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+                      placeholder="my-news-post"
+                      className="font-mono text-sm bg-muted/30"
+                    />
+                  </div>
+
+                  <div className="md:col-span-2 space-y-2">
+                    <Label className="font-medium">Краткое описание (excerpt)</Label>
+                    <Textarea
+                      value={formData.excerpt}
+                      onChange={(e) => setFormData({ ...formData, excerpt: e.target.value })}
+                      rows={3}
+                      placeholder="Краткое содержание для карточки..."
+                      className="resize-none"
+                    />
+                  </div>
+
+                  <div className="md:col-span-2 space-y-2">
+                    <Label className="font-medium">Полный текст (content)</Label>
+                    <Textarea
+                      value={formData.content}
+                      onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                      rows={8}
+                      placeholder="Основной текст новости..."
+                    />
+                  </div>
+
+                  <div className="md:col-span-2 space-y-2 pt-2">
+                    <Label className="font-medium">Изображение</Label>
+                    <ImageUploader
+                      bucket="news"
+                      value={formData.image_value}
+                      onChange={(v) => setFormData({ ...formData, image_value: v })}
                     />
                   </div>
                 </div>
-
-                <div className="grid gap-2">
-                  <Label>Категория</Label>
-                  <Input
-                    value={formData.category}
-                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  />
-                </div>
-
-                <div className="grid gap-2">
-                  <Label>Краткое описание (excerpt)</Label>
-                  <Textarea
-                    value={formData.excerpt}
-                    onChange={(e) => setFormData({ ...formData, excerpt: e.target.value })}
-                    rows={2}
-                  />
-                </div>
-
-                <div className="grid gap-2">
-                  <Label>Полный текст (content)</Label>
-                  <Textarea
-                    value={formData.content}
-                    onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                    rows={5}
-                  />
-                </div>
-
-                <div className="grid gap-2">
-                  <Label>Изображение</Label>
-                  <ImageUploader
-                    bucket="news"
-                    value={formData.image_value}
-                    onChange={(v) => setFormData({ ...formData, image_value: v })}
-                  />
-                </div>
               </div>
-              <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => setIsCreateOpen(false)}>Отмена</Button>
-                <Button onClick={() => upsertMutation.mutate(formData)} disabled={upsertMutation.isPending}>
-                  {upsertMutation.isPending ? "Сохранение..." : "Сохранить"}
+              <div className="flex justify-end items-center gap-3 pt-6 border-t mt-4">
+                <Button variant="ghost" onClick={() => setIsCreateOpen(false)}>
+                  Отмена
+                </Button>
+                <Button
+                  onClick={() => upsertMutation.mutate(formData)}
+                  disabled={upsertMutation.isPending}
+                  className="px-8"
+                >
+                  {upsertMutation.isPending ? "Сохранение..." : "Сохранить новость"}
                 </Button>
               </div>
             </DialogContent>
@@ -358,35 +404,47 @@ export default function AdminNews() {
         </div>
       </div>
 
-      <Card>
+      <div className="rounded-xl border border-border shadow-sm overflow-hidden bg-card">
         <Table>
-          <TableHeader>
+          <TableHeader className="bg-muted/50">
             <TableRow>
-              <TableHead>Дата</TableHead>
-              <TableHead>Заголовок / Slug</TableHead>
-              <TableHead>Категория</TableHead>
-              <TableHead className="w-[100px]"></TableHead>
+              <TableHead className="font-semibold px-6">Дата</TableHead>
+              <TableHead className="font-semibold px-6">Заголовок / Slug</TableHead>
+              <TableHead className="font-semibold px-6 text-center">Категория</TableHead>
+              <TableHead className="w-[120px] px-6"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {posts.map((post) => (
-              <TableRow key={post.id}>
-                <TableCell className="whitespace-nowrap">
-                  {format(new Date(post.published_at), "dd.MM.yyyy")}
-                </TableCell>
-                <TableCell>
-                  <div className="font-medium">{post.title}</div>
-                  <div className="text-xs text-muted-foreground">{post.slug}</div>
-                </TableCell>
-                <TableCell><span className="text-sm bg-muted px-2 py-1 rounded">{post.category}</span></TableCell>
-                <TableCell>
+              <TableRow key={post.id} className="hover:bg-muted/30 transition-colors">
+                <TableCell className="whitespace-nowrap px-6 py-4 text-muted-foreground">
                   <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="icon" onClick={() => handleEdit(post)}>
+                    <Calendar className="w-4 h-4" />
+                    {format(new Date(post.published_at), "dd.MM.yyyy")}
+                  </div>
+                </TableCell>
+                <TableCell className="px-6 py-4">
+                  <div className="font-semibold text-foreground">{post.title}</div>
+                  <div className="text-xs text-muted-foreground font-mono mt-0.5">{post.slug}</div>
+                </TableCell>
+                <TableCell className="px-6 py-4 text-center">
+                  <Badge variant="outline" className="font-normal bg-primary/5 border-primary/10">
+                    {post.category}
+                  </Badge>
+                </TableCell>
+                <TableCell className="px-6 py-4">
+                  <div className="flex items-center justify-end gap-1">
+                    <Button variant="ghost" size="icon" onClick={() => handleEdit(post)} className="h-8 w-8 text-muted-foreground hover:text-foreground">
                       <Edit2 className="w-4 h-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => {
-                      if (confirm("Вы уверены?")) deleteMutation.mutate(post.id);
-                    }}>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-muted-foreground hover:text-destructive transition-colors"
+                      onClick={() => {
+                        if (confirm("Вы уверены?")) deleteMutation.mutate(post.id);
+                      }}
+                    >
                       <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>
@@ -395,23 +453,19 @@ export default function AdminNews() {
             ))}
             {!isLoading && posts.length === 0 && (
               <TableRow>
-                <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
-                  Нет новостей. Создайте первую!
+                <TableCell colSpan={4} className="text-center py-16 text-muted-foreground">
+                  <div className="flex flex-col items-center gap-2">
+                    <Share2 className="w-8 h-8 opacity-20" />
+                    <p>Нет новостей. Создайте первую!</p>
+                  </div>
                 </TableCell>
               </TableRow>
             )}
           </TableBody>
         </Table>
-      </Card>
+      </div>
 
-      <Card className="p-5 space-y-3">
-        <div className="text-sm font-medium">Служебные утилиты</div>
-        <Button variant="secondary" onClick={runFillImages} disabled={isLoadingFill} size="sm">
-          {isLoadingFill ? "Обработка..." : "Авто-заполнение картинок из контента"}
-        </Button>
-      </Card>
 
-      <ImportVkDialog isOpen={isVkOpen} onClose={() => setIsVkOpen(false)} />
     </div>
   );
 }
