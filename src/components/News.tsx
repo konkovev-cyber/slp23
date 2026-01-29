@@ -70,7 +70,7 @@ const News = () => {
   };
 
   return (
-    <section className="py-20 bg-background" id="news">
+    <section className="py-20 bg-background" id="news" aria-label="Последние новости">
       <div className="container mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -96,6 +96,7 @@ const News = () => {
                 className="h-9 w-9 rounded-full border-border bg-transparent hover:bg-muted"
                 onClick={() => handleScroll('left')}
                 disabled={!canScrollLeft}
+                aria-label="Предыдущие новости"
               >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
@@ -105,6 +106,7 @@ const News = () => {
                 className="h-9 w-9 rounded-full border-border bg-transparent hover:bg-muted"
                 onClick={() => handleScroll('right')}
                 disabled={!canScrollRight}
+                aria-label="Следующие новости"
               >
                 <ChevronRight className="h-4 w-4" />
               </Button>
@@ -115,19 +117,24 @@ const News = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-6xl mx-auto">
           {displayItems.length > 0 ? (
             displayItems.map((item, index) => (
-              <motion.div
+              <motion.article
                 key={item.id}
                 initial={{ opacity: 0, y: 15 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
               >
-                <Link to={item.href} className="group">
+                <Link to={item.href} className="group block h-full">
                   <Card className="h-full rounded-xl overflow-hidden border-border bg-white/50 dark:bg-card/40 shadow-sm hover:shadow-md transition-all group-hover:border-primary/20">
                     <div className="relative aspect-[16/10] overflow-hidden">
                       <img
                         src={item.image}
-                        alt={item.title}
+                        alt=""
+                        role="presentation"
+                        width="400"
+                        height="250"
+                        loading="lazy"
+                        decoding="async"
                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                       />
                       <div className="absolute top-3 left-3">
@@ -138,8 +145,10 @@ const News = () => {
                     </div>
                     <CardContent className="p-4">
                       <div className="flex items-center gap-1.5 text-muted-foreground text-[10px] font-bold mb-2">
-                        <CalendarIcon className="w-3 h-3" />
-                        {item.date}
+                        <CalendarIcon className="w-3 h-3" aria-hidden="true" />
+                        <time dateTime={posts?.find(p => p.id === item.id)?.published_at.split('T')[0]}>
+                          {item.date}
+                        </time>
                       </div>
                       <h3 className="font-bold text-sm text-foreground line-clamp-2 leading-tight group-hover:text-primary transition-colors tracking-tight">
                         {item.title}
@@ -147,7 +156,7 @@ const News = () => {
                     </CardContent>
                   </Card>
                 </Link>
-              </motion.div>
+              </motion.article>
             ))
           ) : (
             <div className="col-span-full py-20 text-center text-muted-foreground font-medium italic">

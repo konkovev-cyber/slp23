@@ -30,7 +30,7 @@ const features = [
 
 const Features = () => {
   return (
-    <section id="features" className="py-20 bg-background relative overflow-hidden">
+    <section id="features" className="py-20 bg-background relative overflow-hidden" aria-label="Наши преимущества">
       <div className="container mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 15 }}
@@ -53,7 +53,7 @@ const Features = () => {
               className="glass-card p-6 rounded-2xl group hover:border-primary/20 transition-all border-border/50 shadow-sm flex flex-col items-center text-center"
             >
               <div className="w-11 h-11 bg-muted rounded-xl flex items-center justify-center mb-5 group-hover:bg-primary/10 transition-colors border border-border/50">
-                <feature.icon className="w-5 h-5 text-foreground/60 group-hover:text-primary transition-colors" />
+                <feature.icon className="w-5 h-5 text-foreground/60 group-hover:text-primary transition-colors" aria-hidden="true" />
               </div>
               <h3 className="text-base font-bold mb-2 tracking-tight">{feature.title}</h3>
               <p className="text-[13px] text-muted-foreground leading-relaxed font-medium">

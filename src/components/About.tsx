@@ -1,8 +1,9 @@
 import { useState, useRef } from "react";
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Award, Building2, BookOpen, Volume2, VolumeX, CheckCircle2 } from "lucide-react";
+import { Award, Building2, BookOpen, Volume2, VolumeX, CheckCircle2, ArrowRight } from "lucide-react";
 import facilitiesClassroomImage from "@/assets/facilities-classroom.jpg";
 import facilitiesHallImage from "@/assets/facilities-hall.jpg";
 import directorKianImage from "@/assets/director-kian.jpg";
@@ -20,7 +21,7 @@ const About = () => {
   };
 
   return (
-    <section id="about" className="py-20 bg-background relative overflow-hidden">
+    <section id="about" className="py-20 bg-background relative overflow-hidden" aria-label="О нашей школе">
       <div className="container mx-auto px-4 relative z-10">
         <div className="flex flex-col lg:flex-row gap-12 items-center max-w-5xl mx-auto">
 
@@ -41,6 +42,7 @@ const About = () => {
                 muted={isMuted}
                 playsInline
                 className="w-full h-full object-cover brightness-[0.9] group-hover:brightness-100 transition-all duration-700"
+                aria-label="Видео-презентация школы"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
 
@@ -48,6 +50,7 @@ const About = () => {
                 <button
                   onClick={toggleMute}
                   className="p-2.5 rounded-full bg-black/20 text-white backdrop-blur-xl border border-white/10 hover:bg-black/40 transition-all shadow-lg"
+                  aria-label={isMuted ? "Включить звук" : "Выключить звук"}
                 >
                   {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
                 </button>
@@ -73,7 +76,7 @@ const About = () => {
 
             <Tabs defaultValue="about" className="w-full">
               <div className="flex mb-6">
-                <TabsList className="bg-muted/50 p-1 rounded-xl flex h-auto overflow-hidden border border-border/50">
+                <TabsList className="bg-muted/50 p-1 rounded-xl flex h-auto overflow-hidden border border-border/50" aria-label="Разделы информации о школе">
                   <TabsTrigger value="about" className="rounded-lg px-6 py-2.5 data-[state=active]:bg-primary data-[state=active]:text-white font-bold transition-all text-[13px]">Миссия</TabsTrigger>
                   <TabsTrigger value="facilities" className="rounded-lg px-6 py-2.5 data-[state=active]:bg-primary data-[state=active]:text-white font-bold transition-all text-[13px]">Оснащение</TabsTrigger>
                   <TabsTrigger value="leadership" className="rounded-lg px-6 py-2.5 data-[state=active]:bg-primary data-[state=active]:text-white font-bold transition-all text-[13px]">Команда</TabsTrigger>
@@ -85,7 +88,7 @@ const About = () => {
                   <div className="glass-card p-5 rounded-xl space-y-3 border-primary/10">
                     <div className="flex items-center gap-3">
                       <div className="w-9 h-9 bg-primary/10 rounded-lg flex items-center justify-center border border-primary/20 shadow-sm">
-                        <BookOpen className="w-4 h-4 text-primary" />
+                        <BookOpen className="w-4 h-4 text-primary" aria-hidden="true" />
                       </div>
                       <h4 className="text-base font-bold text-foreground tracking-tight">Авторская методика</h4>
                     </div>
@@ -94,7 +97,7 @@ const About = () => {
                   <div className="glass-card p-5 rounded-xl space-y-3 border-accent/10">
                     <div className="flex items-center gap-3">
                       <div className="w-9 h-9 bg-accent/10 rounded-lg flex items-center justify-center border border-accent/20 shadow-sm">
-                        <Award className="w-4 h-4 text-accent" />
+                        <Award className="w-4 h-4 text-accent" aria-hidden="true" />
                       </div>
                       <h4 className="text-base font-bold text-foreground tracking-tight">Лицензия и стандарты</h4>
                     </div>
@@ -105,10 +108,10 @@ const About = () => {
                 <TabsContent value="facilities" className="space-y-4 mt-0">
                   <div className="grid grid-cols-2 gap-3">
                     <div className="relative aspect-video rounded-xl overflow-hidden border border-border shadow-sm">
-                      <img src={facilitiesClassroomImage} alt="Класс" className="w-full h-full object-cover" />
+                      <img src={facilitiesClassroomImage} alt="Современный учебный класс школы Личность ПЛЮС" className="w-full h-full object-cover" />
                     </div>
                     <div className="relative aspect-video rounded-xl overflow-hidden border border-border shadow-sm">
-                      <img src={facilitiesHallImage} alt="Зал" className="w-full h-full object-cover" />
+                      <img src={facilitiesHallImage} alt="Школьный холл и зона отдыха" className="w-full h-full object-cover" />
                     </div>
                   </div>
                   <div className="glass-card p-5 rounded-xl border-border/50">
@@ -117,9 +120,9 @@ const About = () => {
                   </div>
                 </TabsContent>
 
-                <TabsContent value="leadership" className="space-y-4 mt-0">
+                <TabsContent value="leadership" className="space-y-4 mt-0" aria-label="Руководство школы">
                   <div className="glass-card p-5 rounded-xl flex items-center gap-5 border-border/50 shadow-sm">
-                    <img src={directorKianImage} alt="Директор" className="w-16 h-16 rounded-full object-cover shadow-md border-2 border-background" />
+                    <img src={directorKianImage} alt="Директор школы Киян Юлия Юрьевна" className="w-16 h-16 rounded-full object-cover shadow-md border-2 border-background" />
                     <div>
                       <h4 className="text-base font-bold text-foreground tracking-tight">Киян Юлия Юрьевна</h4>
                       <div className="text-primary font-bold uppercase tracking-widest text-[9px] mt-1">Директор школы</div>
@@ -127,6 +130,12 @@ const About = () => {
                   </div>
                   <div className="glass-card p-6 rounded-xl border-l-[6px] border-l-primary bg-primary/5 italic text-sm font-medium leading-relaxed text-foreground/80">
                     "Мы создаем будущее, воспитывая поколение лидеров, мыслителей и творцов, готовых к вызовам современного мира."
+                  </div>
+                  <div className="text-center pt-2">
+                    <Link to="/svedeniya" className="text-sm font-semibold text-primary hover:underline underline-offset-4 inline-flex items-center gap-1.5">
+                      Подробнее о руководстве и педагогическом составе
+                      <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
+                    </Link>
                   </div>
                 </TabsContent>
               </div>

@@ -94,24 +94,22 @@ export default function NewsPost() {
             </div>
           ) : (
             <div className="space-y-10">
-              <motion.header
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="space-y-4"
-              >
+              <header className="space-y-4" aria-label="Заголовок новости">
                 <div className="flex flex-wrap items-center gap-4">
                   <Badge className="bg-primary/10 text-primary border-none rounded-md px-2.5 py-0.5 font-bold uppercase text-[10px] tracking-wider">
                     {post.category}
                   </Badge>
                   <div className="flex items-center gap-1.5 text-muted-foreground text-[11px] font-bold uppercase tracking-widest">
-                    <Calendar className="w-3.5 h-3.5" />
-                    {publishedText}
+                    <Calendar className="w-3.5 h-3.5" aria-hidden="true" />
+                    <time dateTime={post.published_at.split('T')[0]}>
+                      {publishedText}
+                    </time>
                   </div>
                 </div>
                 <h1 className="text-3xl md:text-5xl font-black text-foreground tracking-tighter leading-tight">
                   {post.title}
                 </h1>
-              </motion.header>
+              </header>
 
               <motion.div
                 initial={{ opacity: 0, scale: 0.98 }}

@@ -2,6 +2,7 @@ import { useRef, useMemo, useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
+import Breadcrumbs from "@/components/Breadcrumbs";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -56,6 +57,8 @@ export default function ContactPage() {
 
             <main className="pt-28 pb-16">
                 <div className="container mx-auto px-4">
+                    <Breadcrumbs />
+
                     <motion.header
                         initial={{ opacity: 0, y: 15 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -71,37 +74,37 @@ export default function ContactPage() {
                     <div className="grid lg:grid-cols-5 gap-8 max-w-6xl mx-auto">
 
                         {/* Contact Info & Map */}
-                        <div className="lg:col-span-2 space-y-6">
+                        <section className="lg:col-span-2 space-y-6" aria-label="Контактная информация и карта">
                             <motion.div
                                 initial={{ opacity: 0, x: -15 }}
                                 animate={{ opacity: 1, x: 0 }}
                             >
-                                <div className="glass-card p-7 rounded-xl space-y-7 shadow-sm">
+                                <article className="glass-card p-7 rounded-xl space-y-7 shadow-sm">
                                     <h2 className="text-xl font-bold mb-2 tracking-tight">Информация</h2>
                                     <div className="space-y-6">
                                         <div className="flex items-start gap-4">
-                                            <div className="bg-primary/10 p-2.5 rounded-lg border border-primary/20"><MapPin className="text-primary w-5 h-5" /></div>
+                                            <div className="bg-primary/10 p-2.5 rounded-lg border border-primary/20" aria-hidden="true"><MapPin className="text-primary w-5 h-5" /></div>
                                             <div>
                                                 <div className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-0.5">Адрес</div>
-                                                <div className="text-sm font-bold text-foreground leading-tight">г. Горячий Ключ, переулок Школьный, 27</div>
+                                                <address className="text-sm font-bold text-foreground leading-tight not-italic">г. Горячий Ключ, переулок Школьный, 27</address>
                                             </div>
                                         </div>
                                         <div className="flex items-start gap-4">
-                                            <div className="bg-accent/10 p-2.5 rounded-lg border border-accent/20"><Phone className="text-accent w-5 h-5" /></div>
+                                            <div className="bg-accent/10 p-2.5 rounded-lg border border-accent/20" aria-hidden="true"><Phone className="text-accent w-5 h-5" /></div>
                                             <div>
                                                 <div className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-0.5">Телефон</div>
                                                 <a href="tel:+79282619928" className="text-lg font-bold text-foreground hover:text-primary transition-all tracking-tight">+7 (928) 261-99-28</a>
                                             </div>
                                         </div>
                                         <div className="flex items-start gap-4">
-                                            <div className="bg-success/10 p-2.5 rounded-lg border-success/20 border"><Mail className="text-success w-5 h-5" /></div>
+                                            <div className="bg-success/10 p-2.5 rounded-lg border-success/20 border" aria-hidden="true"><Mail className="text-success w-5 h-5" /></div>
                                             <div>
                                                 <div className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-0.5">Электронная почта</div>
                                                 <a href="mailto:slichnost5@mail.ru" className="text-sm font-bold text-foreground hover:text-primary transition-all">slichnost5@mail.ru</a>
                                             </div>
                                         </div>
                                         <div className="flex items-start gap-4">
-                                            <div className="bg-primary/10 p-2.5 rounded-lg border-primary/20 border"><Clock className="text-primary w-5 h-5" /></div>
+                                            <div className="bg-primary/10 p-2.5 rounded-lg border-primary/20 border" aria-hidden="true"><Clock className="text-primary w-5 h-5" /></div>
                                             <div>
                                                 <div className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-0.5">График работы</div>
                                                 <div className="text-sm font-bold text-foreground">Пн-Пт: 08:00 - 17:00</div>
@@ -110,14 +113,14 @@ export default function ContactPage() {
                                     </div>
 
                                     <div className="flex gap-3 mt-8">
-                                        <Button onClick={sendToWhatsApp} size="sm" className="flex-1 gap-2 rounded-full h-10 font-bold bg-[#25D366] hover:bg-[#25D366]/90 text-white shadow-sm">
+                                        <Button onClick={sendToWhatsApp} size="sm" className="flex-1 gap-2 rounded-full h-10 font-bold bg-[#25D366] hover:bg-[#25D366]/90 text-white shadow-sm" aria-label="Написать в WhatsApp">
                                             <SiWhatsapp className="w-4 h-4" /> WhatsApp
                                         </Button>
-                                        <Button onClick={sendToTelegram} size="sm" variant="outline" className="flex-1 gap-2 rounded-full h-10 font-bold border-border shadow-sm">
+                                        <Button onClick={sendToTelegram} size="sm" variant="outline" className="flex-1 gap-2 rounded-full h-10 font-bold border-border shadow-sm" aria-label="Открыть Telegram">
                                             <SiTelegram className="w-4 h-4" /> Telegram
                                         </Button>
                                     </div>
-                                </div>
+                                </article>
                             </motion.div>
 
                             <motion.div
@@ -125,60 +128,61 @@ export default function ContactPage() {
                                 animate={{ opacity: 1, scale: 1 }}
                                 className="rounded-xl overflow-hidden h-[300px] border border-border shadow-sm"
                             >
-                                <iframe src={iframeSrc} width="100%" height="100%" frameBorder="0" title="Yandex Map" />
+                                <iframe src={iframeSrc} width="100%" height="100%" frameBorder="0" title="Карта проезда к школе Личность ПЛЮС" />
                             </motion.div>
-                        </div>
+                        </section>
 
                         {/* Form */}
-                        <motion.div
+                        <motion.section
                             initial={{ opacity: 0, x: 15 }}
                             animate={{ opacity: 1, x: 0 }}
                             className="lg:col-span-3"
+                            aria-label="Форма обратной связи"
                         >
-                            <div className="glass-card p-8 md:p-10 rounded-xl relative overflow-hidden bg-white/60 dark:bg-card/40 backdrop-blur-md border-border shadow-sm">
+                            <article className="glass-card p-8 md:p-10 rounded-xl relative overflow-hidden bg-white/60 dark:bg-card/40 backdrop-blur-md border-border shadow-sm">
                                 <h2 className="text-xl font-bold mb-2 tracking-tight">Обратная связь</h2>
                                 <p className="text-sm text-muted-foreground mb-8 font-medium">Оставьте свои данные, и мы перезвоним вам для консультации.</p>
 
                                 <form onSubmit={handleSubmit} className="space-y-5">
                                     <div className="grid md:grid-cols-2 gap-5">
                                         <div className="space-y-1.5">
-                                            <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground ml-1">Как к вам обращаться?</label>
-                                            <Input required value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} placeholder="Имя" className="h-11 rounded-lg bg-background/50 focus:ring-1 ring-primary/20" />
+                                            <label htmlFor="contact-name" className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground ml-1">Как к вам обращаться?</label>
+                                            <Input id="contact-name" required value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} placeholder="Имя" className="h-11 rounded-lg bg-background/50 focus:ring-1 ring-primary/20" />
                                         </div>
                                         <div className="space-y-1.5">
-                                            <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground ml-1">Контактный телефон</label>
-                                            <Input required type="tel" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} placeholder="+7 (___) ___-__-__" className="h-11 rounded-lg bg-background/50 focus:ring-1 ring-primary/20" />
+                                            <label htmlFor="contact-phone" className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground ml-1">Контактный телефон</label>
+                                            <Input id="contact-phone" required type="tel" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} placeholder="+7 (___) ___-__-__" className="h-11 rounded-lg bg-background/50 focus:ring-1 ring-primary/20" />
                                         </div>
                                     </div>
 
                                     <div className="grid md:grid-cols-2 gap-5">
                                         <div className="space-y-1.5">
-                                            <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground ml-1">Email адрес</label>
-                                            <Input type="email" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} placeholder="example@mail.ru" className="h-11 rounded-lg bg-background/50 focus:ring-1 ring-primary/20" />
+                                            <label htmlFor="contact-email" className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground ml-1">Email адрес</label>
+                                            <Input id="contact-email" type="email" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} placeholder="example@mail.ru" className="h-11 rounded-lg bg-background/50 focus:ring-1 ring-primary/20" />
                                         </div>
                                         <div className="space-y-1.5">
-                                            <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground ml-1">Возраст ребёнка</label>
-                                            <Input value={formData.age} onChange={e => setFormData({ ...formData, age: e.target.value })} placeholder="Например: 7 лет" className="h-11 rounded-lg bg-background/50 focus:ring-1 ring-primary/20" />
+                                            <label htmlFor="contact-age" className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground ml-1">Возраст ребёнка</label>
+                                            <Input id="contact-age" value={formData.age} onChange={e => setFormData({ ...formData, age: e.target.value })} placeholder="Например: 7 лет" className="h-11 rounded-lg bg-background/50 focus:ring-1 ring-primary/20" />
                                         </div>
                                     </div>
 
                                     <div className="space-y-1.5">
-                                        <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground ml-1">Ваше сообщение</label>
-                                        <Textarea value={formData.message} onChange={e => setFormData({ ...formData, message: e.target.value })} placeholder="Задайте ваш вопрос..." rows={3} className="rounded-lg bg-background/50 focus:ring-1 ring-primary/20 resize-none p-3" />
+                                        <label htmlFor="contact-message" className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground ml-1">Ваше сообщение</label>
+                                        <Textarea id="contact-message" value={formData.message} onChange={e => setFormData({ ...formData, message: e.target.value })} placeholder="Задайте ваш вопрос..." rows={3} className="rounded-lg bg-background/50 focus:ring-1 ring-primary/20 resize-none p-3" />
                                     </div>
 
                                     <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-white font-bold h-12 rounded-full shadow-md shadow-primary/20 transition-all text-base">
-                                        Отправить запрос <Send className="w-4 h-4 ml-2" />
+                                        Отправить запрос <Send className="w-4 h-4 ml-2" aria-hidden="true" />
                                     </Button>
 
                                     <p className="text-[10px] text-center text-muted-foreground uppercase tracking-widest leading-relaxed">
                                         Нажимая кнопку, вы соглашаетесь на обработку персональных данных
                                     </p>
                                 </form>
-                            </div>
-                        </motion.div>
-
+                            </article>
+                        </motion.section>
                     </div>
+
                 </div>
             </main>
 

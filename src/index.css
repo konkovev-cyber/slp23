@@ -84,6 +84,7 @@
   h5,
   h6 {
     @apply text-foreground font-bold tracking-tight;
+    font-family: 'Manrope', sans-serif;
   }
 }
 

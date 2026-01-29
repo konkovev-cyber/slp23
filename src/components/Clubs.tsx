@@ -9,16 +9,17 @@ const Clubs = () => {
   const getClubsByCategory = (category: string) => clubs.filter((club) => club.category === category);
 
   const ClubCard = ({ club, index }: { club: (typeof clubs)[0]; index: number }) => (
-    <motion.div
+    <motion.article
       initial={{ opacity: 0, y: 15 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.5, delay: index * 0.05 }}
+      className="h-full"
     >
       <div className="glass-card p-6 h-full rounded-xl group hover:border-primary/40 transition-all flex flex-col shadow-sm hover:shadow-md bg-white/50 dark:bg-card/40">
         <div className="flex items-center justify-between mb-6">
           <div className="w-11 h-11 bg-primary/5 rounded-lg flex items-center justify-center border border-primary/10 group-hover:bg-primary group-hover:text-white transition-all">
-            <club.icon className="w-5 h-5 text-primary group-hover:text-white transition-colors" />
+            <club.icon className="w-5 h-5 text-primary group-hover:text-white transition-colors" aria-hidden="true" />
           </div>
           <Badge className="bg-muted/50 text-muted-foreground border-transparent rounded-md px-2.5 py-0.5 font-bold uppercase text-[9px] tracking-wider">{club.age}</Badge>
         </div>
@@ -29,15 +30,15 @@ const Clubs = () => {
         <div className="mt-auto pt-4 border-t border-border/50 flex items-center justify-between">
           <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">{club.schedule}</span>
           <Link to={`/clubs/${club.slug}`} className="text-[11px] font-bold text-primary hover:underline underline-offset-4 flex items-center gap-1.5 group/link">
-            Узнать больше <ArrowRight className="w-3 h-3 group-hover/link:translate-x-0.5 transition-transform" />
+            Узнать больше <ArrowRight className="w-3 h-3 group-hover/link:translate-x-0.5 transition-transform" aria-hidden="true" />
           </Link>
         </div>
       </div>
-    </motion.div>
+    </motion.article>
   );
 
   return (
-    <section id="clubs" className="py-20 bg-background relative overflow-hidden">
+    <section id="clubs" className="py-20 bg-background relative overflow-hidden" aria-label="Секции и кружки">
       <div className="container mx-auto px-4 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -54,7 +55,7 @@ const Clubs = () => {
 
         <Tabs defaultValue="all" className="w-full">
           <div className="flex justify-center mb-10">
-            <TabsList className="bg-muted/50 p-1 rounded-xl flex h-auto overflow-x-auto max-w-full">
+            <TabsList className="bg-muted/50 p-1 rounded-xl flex h-auto overflow-x-auto max-w-full" aria-label="Фильтр кружков по категориям">
               {[
                 { id: "all", label: "Все" },
                 { id: "creative", label: "Творчество" },

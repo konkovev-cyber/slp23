@@ -1,16 +1,25 @@
+import { Suspense, lazy } from "react";
 import Navigation from "@/components/Navigation";
 import Hero from "@/components/Hero";
-import Features from "@/components/Features";
-import About from "@/components/About";
-import Programs from "@/components/Programs";
-import Clubs from "@/components/Clubs";
-import Testimonials from "@/components/Testimonials";
-import News from "@/components/News";
-import GalleryPreview from "@/components/GalleryPreview";
-import Contact from "@/components/Contact";
-import Footer from "@/components/Footer";
-import FloatingActions from "@/components/FloatingActions";
 import { useContent } from "@/hooks/use-content";
+
+// Lazy-loaded sections
+const Features = lazy(() => import("@/components/Features"));
+const About = lazy(() => import("@/components/About"));
+const Programs = lazy(() => import("@/components/Programs"));
+const Clubs = lazy(() => import("@/components/Clubs"));
+const Testimonials = lazy(() => import("@/components/Testimonials"));
+const News = lazy(() => import("@/components/News"));
+const GalleryPreview = lazy(() => import("@/components/GalleryPreview"));
+const Contact = lazy(() => import("@/components/Contact"));
+const Footer = lazy(() => import("@/components/Footer"));
+const FloatingActions = lazy(() => import("@/components/FloatingActions"));
+
+const SectionSkeleton = () => (
+  <div className="py-20 animate-pulse bg-muted/20">
+    <div className="container mx-auto px-4 h-64 bg-muted/30 rounded-3xl" />
+  </div>
+);
 
 const Index = () => {
   const { data: featuresRow } = useContent("features");
@@ -36,17 +45,21 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background transition-colors duration-300">
       <Navigation />
-      <Hero />
-      {showFeatures ? <Features /> : null}
-      {showAbout ? <About /> : null}
-      {showPrograms ? <Programs /> : null}
-      {showClubs ? <Clubs /> : null}
-      {showTestimonials ? <Testimonials /> : null}
-      {showNews ? <News /> : null}
-      {showGallery ? <GalleryPreview /> : null}
-      {showContact ? <Contact /> : null}
-      {showFooter ? <Footer /> : null}
-      <FloatingActions />
+      <main id="main-content">
+        <Hero />
+        <Suspense fallback={<SectionSkeleton />}>
+          {showFeatures ? <Features /> : null}
+          {showAbout ? <About /> : null}
+          {showPrograms ? <Suspense fallback={<SectionSkeleton />}><Programs /></Suspense> : null}
+          {showClubs ? <Suspense fallback={<SectionSkeleton />}><Clubs /></Suspense> : null}
+          {showTestimonials ? <Suspense fallback={<SectionSkeleton />}><Testimonials /></Suspense> : null}
+          {showNews ? <Suspense fallback={<SectionSkeleton />}><News /></Suspense> : null}
+          {showGallery ? <Suspense fallback={<SectionSkeleton />}><GalleryPreview /></Suspense> : null}
+          {showContact ? <Suspense fallback={<SectionSkeleton />}><Contact /></Suspense> : null}
+          {showFooter ? <Suspense fallback={<SectionSkeleton />}><Footer /></Suspense> : null}
+          <FloatingActions />
+        </Suspense>
+      </main>
     </div>
   );
 };

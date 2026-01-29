@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Calendar, GraduationCap, Phone, CheckCircle2 } from "lucide-react";
 import { useContent } from "@/hooks/use-content";
@@ -54,7 +55,12 @@ const Hero = () => {
             <img
               src={img}
               className="w-full h-full object-cover pointer-events-none"
-              alt={`School Slide ${idx}`}
+              alt=""
+              role="presentation"
+              width="1920"
+              height="1080"
+              decoding="async"
+              loading={idx === 0 ? "eager" : "lazy"}
             />
           </motion.div>
         ))}
@@ -94,9 +100,11 @@ const Hero = () => {
             </p>
 
             <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 pt-2">
-              <Button size="default" className="rounded-full h-11 px-8 text-base font-bold shadow-md shadow-primary/20 active:scale-95 transition-all">
-                Записаться <ArrowRight className="ml-2 w-4 h-4" />
-              </Button>
+              <Link to="/contact">
+                <Button size="default" className="rounded-full h-11 px-8 text-base font-bold shadow-md shadow-primary/20 active:scale-95 transition-all">
+                  Записаться на экскурсию <ArrowRight className="ml-2 w-4 h-4" aria-hidden="true" />
+                </Button>
+              </Link>
               <div className="flex items-center gap-3 py-2 px-1">
                 <div className="w-9 h-9 bg-white/50 dark:bg-black/20 rounded-full flex items-center justify-center border border-border">
                   <Phone className="w-4 h-4 text-primary" />

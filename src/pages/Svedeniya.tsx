@@ -3,6 +3,7 @@ import { Helmet } from "react-helmet-async";
 import { useLocation } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
+import Breadcrumbs from "@/components/Breadcrumbs";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -91,6 +92,8 @@ export default function Svedeniya() {
 
       <main className="pt-24 pb-16">
         <div className="container mx-auto px-4">
+          <Breadcrumbs />
+
           <motion.header
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
@@ -122,6 +125,8 @@ export default function Svedeniya() {
           <div className="grid gap-8 lg:grid-cols-[auto_1fr]">
             {/* Sidebar */}
             <aside
+              role="navigation"
+              aria-label="Боковое меню разделов"
               className={cn(
                 "print-hidden lg:sticky lg:top-24 lg:self-start transition-all duration-300",
                 collapsed ? "lg:w-12" : "lg:w-72"
@@ -157,8 +162,8 @@ export default function Svedeniya() {
             {/* Content */}
             <div className="space-y-6">
               {sections.map((s) => (
-                <section key={s.id} id={s.id} className="scroll-mt-24">
-                  <div className="glass-card p-6 md:p-8 rounded-xl shadow-sm border-border/50 bg-white/50 dark:bg-card/30 backdrop-blur-sm">
+                <section key={s.id} id={s.id} className="scroll-mt-24" aria-label={s.title}>
+                  <article className="glass-card p-6 md:p-8 rounded-xl shadow-sm border-border/50 bg-white/50 dark:bg-card/30 backdrop-blur-sm">
                     <h2 className="text-xl font-bold text-foreground mb-1 tracking-tight">{s.title}</h2>
                     <p className="text-[13px] text-muted-foreground font-medium mb-6">{s.lead}</p>
 
@@ -174,7 +179,7 @@ export default function Svedeniya() {
                         </div>
                       )}
                     </div>
-                  </div>
+                  </article>
                 </section>
               ))}
             </div>

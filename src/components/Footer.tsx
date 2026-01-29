@@ -36,37 +36,67 @@ const Footer = () => {
             </div>
           </div>
 
-          <div>
+          <nav role="navigation" aria-label="Навигация в подвале">
             <h4 className="text-foreground font-bold mb-6 uppercase tracking-wider text-[10px]">Навигация</h4>
             <ul className="space-y-3.5">
-              {["Главная", "Новости", "Галерея", "Программы", "Кружки"].map((item) => (
-                <li key={item}>
-                  <Link
-                    to={item === "Главная" ? "/" : `/${item.toLowerCase()}`}
-                    className="text-muted-foreground hover:text-primary transition-colors text-[13px] font-medium"
-                  >
-                    {item}
-                  </Link>
-                </li>
-              ))}
+              <li>
+                <Link to="/" className="text-muted-foreground hover:text-primary transition-colors text-[13px] font-medium">
+                  Главная страница
+                </Link>
+              </li>
+              <li>
+                <Link to="/#about" className="text-muted-foreground hover:text-primary transition-colors text-[13px] font-medium">
+                  О нашей школе
+                </Link>
+              </li>
+              <li>
+                <Link to="/#programs" className="text-muted-foreground hover:text-primary transition-colors text-[13px] font-medium">
+                  Программы обучения
+                </Link>
+              </li>
+              <li>
+                <Link to="/#clubs" className="text-muted-foreground hover:text-primary transition-colors text-[13px] font-medium">
+                  Кружки и секции
+                </Link>
+              </li>
+              <li>
+                <Link to="/news" className="text-muted-foreground hover:text-primary transition-colors text-[13px] font-medium">
+                  Новости школы
+                </Link>
+              </li>
+              <li>
+                <Link to="/#gallery" className="text-muted-foreground hover:text-primary transition-colors text-[13px] font-medium">
+                  Фотогалерея
+                </Link>
+              </li>
             </ul>
-          </div>
+          </nav>
 
-          <div>
+          <nav role="navigation" aria-label="Информационное меню подвала">
             <h4 className="text-foreground font-bold mb-6 uppercase tracking-wider text-[10px]">Информация</h4>
             <ul className="space-y-3.5">
-              {["Сведения", "Документы", "Лицензия", "Вакансии"].map((item) => (
-                <li key={item}>
-                  <Link
-                    to="/svedeniya"
-                    className="text-muted-foreground hover:text-primary transition-colors text-[13px] font-medium"
-                  >
-                    {item}
-                  </Link>
-                </li>
-              ))}
+              <li>
+                <Link to="/svedeniya" className="text-muted-foreground hover:text-primary transition-colors text-[13px] font-medium">
+                  Сведения об организации
+                </Link>
+              </li>
+              <li>
+                <Link to="/svedeniya#documents" className="text-muted-foreground hover:text-primary transition-colors text-[13px] font-medium">
+                  Документы и лицензия
+                </Link>
+              </li>
+              <li>
+                <Link to="/contact" className="text-muted-foreground hover:text-primary transition-colors text-[13px] font-medium">
+                  Контакты и адрес
+                </Link>
+              </li>
+              <li>
+                <Link to="/privacy" className="text-muted-foreground hover:text-primary transition-colors text-[13px] font-medium">
+                  Политика конфиденциальности
+                </Link>
+              </li>
             </ul>
-          </div>
+          </nav>
 
           <div>
             <h4 className="text-foreground font-bold mb-6 uppercase tracking-wider text-[10px]">Контакты</h4>

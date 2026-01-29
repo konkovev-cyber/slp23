@@ -138,7 +138,7 @@ const Gallery = () => {
   }, [selectedImage, filter]);
 
   return (
-    <section className="py-20 bg-background" id="gallery">
+    <section className="py-20 bg-background" id="gallery" aria-label="Галерея фотографий школы">
       <div className="container mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 15 }}
@@ -163,10 +163,11 @@ const Gallery = () => {
           </div>
         </motion.div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-w-6xl mx-auto">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-w-6xl mx-auto" role="list" aria-label="Фотографии">
           {pagedImages.map((image, index) => (
-            <motion.div
+            <motion.figure
               key={image.id}
+              role="listitem"
               initial={{ opacity: 0, scale: 0.98 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
@@ -177,16 +178,19 @@ const Gallery = () => {
               <img
                 src={image.src}
                 alt={image.title}
+                width="800"
+                height="600"
+                decoding="async"
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                 loading="lazy"
               />
               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center p-4">
                 <div className="text-center">
-                  <ZoomIn className="w-8 h-8 text-white mx-auto mb-2 opacity-80" />
-                  <p className="text-white font-bold text-sm tracking-tight">{image.title}</p>
+                  <ZoomIn className="w-8 h-8 text-white mx-auto mb-2 opacity-80" aria-hidden="true" />
+                  <figcaption className="text-white font-bold text-sm tracking-tight">{image.title}</figcaption>
                 </div>
               </div>
-            </motion.div>
+            </motion.figure>
           ))}
         </div>
 
@@ -261,7 +265,12 @@ const Gallery = () => {
                 className="max-w-4xl w-full"
                 onClick={(e) => e.stopPropagation()}
               >
-                <img src={currentImage.src} alt={currentImage.title} className="w-full h-auto max-h-[75vh] object-contain rounded-xl shadow-2xl" />
+                <img
+                  src={currentImage.src}
+                  alt={currentImage.title}
+                  decoding="async"
+                  className="w-full h-auto max-h-[75vh] object-contain rounded-xl shadow-2xl"
+                />
                 <div className="text-center mt-6">
                   <h3 className="text-xl md:text-2xl font-bold text-white mb-1 tracking-tight">{currentImage.title}</h3>
                   <p className="text-white/60 text-sm font-medium uppercase tracking-widest">{currentImage.category}</p>

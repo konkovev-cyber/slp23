@@ -47,22 +47,26 @@ export default function TeachingStaff() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
           {teachers.map((t, idx) => (
-            <motion.div
+            <motion.article
               key={t.id}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: idx * 0.1 }}
+              className="h-full"
             >
               <div className="glass-card overflow-hidden rounded-xl border-border/50 group h-full flex flex-col shadow-sm hover:shadow-md transition-all">
                 <div className="relative aspect-[3/4] bg-muted overflow-hidden">
                   <img
                     src={t.image_url || "/placeholder.svg"}
-                    alt={t.name}
+                    alt={`Педагог ${t.name}, ${t.title}`}
                     loading="lazy"
+                    width="400"
+                    height="533"
+                    decoding="async"
                     className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-105"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" aria-hidden="true" />
                 </div>
                 <div className="p-5 flex-grow">
                   <h3 className="text-base font-bold text-foreground mb-1 tracking-tight">{t.name}</h3>
@@ -70,7 +74,7 @@ export default function TeachingStaff() {
                   <p className="text-[12px] text-muted-foreground leading-relaxed font-medium">{t.description}</p>
                 </div>
               </div>
-            </motion.div>
+            </motion.article>
           ))}
         </div>
       </div>

@@ -13,7 +13,7 @@ const programs = [
 
 const Programs = () => {
   return (
-    <section id="programs" className="py-20 bg-background relative overflow-hidden">
+    <section id="programs" className="py-20 bg-background relative overflow-hidden" aria-label="Наши учебные программы">
       <div className="container mx-auto px-4 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -40,7 +40,7 @@ const Programs = () => {
               >
                 <div className="glass-card p-6 h-full rounded-xl group hover:border-primary/30 transition-all shadow-sm bg-white/50 dark:bg-card/40">
                   <div className={`w-11 h-11 rounded-lg flex items-center justify-center mb-5 border ${program.color}`}>
-                    <program.icon className="w-5 h-5" />
+                    <program.icon className="w-5 h-5" aria-hidden="true" role="presentation" />
                   </div>
                   <Badge className="bg-muted/50 text-muted-foreground border-transparent rounded-md mb-3 font-bold uppercase text-[9px] tracking-wider px-2 py-0.5">{program.age}</Badge>
                   <h4 className="text-lg font-bold text-foreground mb-2 group-hover:text-primary transition-colors tracking-tight">{program.title}</h4>
@@ -57,7 +57,15 @@ const Programs = () => {
             className="space-y-6"
           >
             <div className="relative rounded-xl overflow-hidden border border-border shadow-md aspect-video group">
-              <img src={programsImage} alt="Students" className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
+              <img
+                src={programsImage}
+                alt="Ученики школы Личность ПЛЮС во время занятий"
+                width="800"
+                height="450"
+                loading="lazy"
+                decoding="async"
+                className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
+              />
               <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
             </div>
 
