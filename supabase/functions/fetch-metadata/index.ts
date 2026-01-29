@@ -8,17 +8,30 @@ const corsHeaders = {
 };
 
 function safeTextFromHtml(html: string) {
-  // Strip tags + decode common entities (enough for Telegram/VK snippets)
-  const noTags = html
-    .replace(/<br\s*\/?\s*>/gi, "\n")
-    .replace(/<[^>]*>/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
+  if (!html) return "";
 
-  return decodeHtmlEntities(noTags);
+  // First, normalize encoded line breaks that might turn into literal <br> after decoding
+  let processed = html
+    .replace(/&lt;br\s*\/?\s*&gt;/gi, "\n")
+    .replace(/<br\s*\/?\s*>/gi, "\n");
+
+  // Strip all other tags
+  processed = processed.replace(/<[^>]*>/g, " ");
+
+  // Decode entities
+  processed = decodeHtmlEntities(processed);
+
+  // Collapse whitespace but keep single newlines
+  return processed
+    .split("\n")
+    .map(line => line.trim())
+    .filter(line => line.length > 0)
+    .join("\n")
+    .trim();
 }
 
 function decodeHtmlEntities(str: string) {
+  if (!str) return "";
   return str
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
@@ -26,6 +39,7 @@ function decodeHtmlEntities(str: string) {
     .replace(/&amp;/g, "&")
     .replace(/&lt;/g, "<")
     .replace(/&gt;/g, ">")
+    .replace(/&nbsp;/g, " ")
     .replace(/(&#(\d+);)/g, (_m, _c, code) => String.fromCharCode(Number(code)));
 }
 
@@ -47,7 +61,7 @@ async function readResponseText(res: Response) {
   }
 
   let text = tryDecode("utf-8");
-  if ((text.match(/\uFFFD|�/g)?.length ?? 0) > 5) {
+  if ((text.match(/\uFFFD|/g)?.length ?? 0) > 5) {
     try {
       text = tryDecode("windows-1251");
     } catch {
@@ -108,18 +122,27 @@ serve(async (req) => {
             const j = JSON.parse(raw);
 
             const title = decodeHtmlEntities(String(j?.title ?? ""));
-            const image = j?.thumbnail_url || j?.photo_url || "";
+            let image = String(j?.thumbnail_url || j?.photo_url || "");
+            let description = String(j?.description || "");
 
-            if (title || image) {
+            // If oEmbed returns a specific snippet for video, try to find a link
+            if (j?.type === "video" || normalized.includes("video")) {
+              const videoId = normalized.match(/video(-?\d+)_(\d+)/);
+              if (videoId && !description.includes("vk.com/video")) {
+                description += `\n\nВидео: https://vk.com/video${videoId[1]}_${videoId[2]}`;
+              }
+            }
+
+            if (title || image || description) {
               const wallMatch = normalized.match(/wall(-?\d+)_([0-9]+)/);
               const source_id = wallMatch ? `wall${wallMatch[1]}_${wallMatch[2]}` : null;
 
               return new Response(
                 JSON.stringify({
                   title: title || "Пост ВКонтакте",
-                  description: j?.description || "",
+                  description: description,
                   content: "",
-                  image: String(image),
+                  image,
                   source: "vk",
                   source_id,
                 }),
@@ -129,7 +152,7 @@ serve(async (req) => {
           }
         }
       } catch (e) {
-        console.warn("VK oEmbed failed, fallback to HTML parsing", e);
+        console.warn("VK oEmbed failed", e);
       }
     }
 
@@ -148,7 +171,7 @@ serve(async (req) => {
       });
 
       if (!botRes.ok) {
-        return new Response(JSON.stringify({ error: `Failed to fetch URL: ${res.status} ${res.statusText}` }), {
+        return new Response(JSON.stringify({ error: `Fetch failed: ${res.status}` }), {
           status: 400,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
@@ -162,7 +185,7 @@ serve(async (req) => {
     return processHtml(html, normalized, res.url);
 
   } catch (err) {
-    console.error("Error in fetch-metadata:", err);
+    console.error("Error:", err);
     const message = err instanceof Error ? err.message : String(err);
     return new Response(JSON.stringify({ error: message }), {
       status: 500,
@@ -183,14 +206,14 @@ serve(async (req) => {
     // More robust regex helper
     const getMeta = (prop: string) => {
       // Try property="..." then content="..."
-      let re = new RegExp(`<meta[^>]+(?:name|property)=["']${prop}["'][^>]*content=["']([^"']+)["']`, "i");
+      const re = new RegExp(`<meta[^>]+(?:name|property)=["']${prop}["'][^>]*content=["']([^"']+)["']`, "i");
       let match = html.match(re);
       if (match) return match[1];
 
       // Try content="..." then property="..."
-      re = new RegExp(`<meta[^>]+content=["']([^"']+)["'][^>]*?(?:name|property)=["']${prop}["']`, "i");
-      match = html.match(re);
-      if (match) return match[1];
+      const reRev = new RegExp(`<meta[^>]+content=["']([^"']+)["'][^>]*?(?:name|property)=["']${prop}["']`, "i");
+      const matchRev = html.match(reRev);
+      if (matchRev) return matchRev[1];
 
       return null;
     };
@@ -198,6 +221,7 @@ serve(async (req) => {
     let title = getMeta("og:title") || getMeta("twitter:title") || "";
     let description = getMeta("og:description") || getMeta("description") || getMeta("twitter:description") || "";
     let image = getMeta("og:image") || getMeta("twitter:image") || "";
+    const video = getMeta("og:video") || getMeta("og:video:url") || "";
 
     // Resolve image URL
     if (image) {
@@ -228,13 +252,16 @@ serve(async (req) => {
       }
     }
 
+    // Add video link if found
+    if (video && !description.includes(video)) {
+      description += `\n\nВидео: ${video}`;
+    }
+
     // Clean up
-    if (title) title = decodeHtmlEntities(title);
-    if (description) description = decodeHtmlEntities(description);
+    title = decodeHtmlEntities(title);
+    description = safeTextFromHtml(description); // Final cleaning
 
-    console.log({ title, description, image, content_len: content.length });
-
-    return new Response(JSON.stringify({ title, description, content, image }), {
+    return new Response(JSON.stringify({ title, description, content: "", image }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }

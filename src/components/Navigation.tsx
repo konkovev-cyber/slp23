@@ -61,6 +61,7 @@ const Navigation = () => {
             <NavigationMenu>
               <NavigationMenuList>
                 <NavigationMenuItem><Link to="/"><NavigationMenuLink className="text-foreground hover:text-primary transition-colors font-medium px-4 py-2">Главная</NavigationMenuLink></Link></NavigationMenuItem>
+                <NavigationMenuItem><Link to="/news"><NavigationMenuLink className="text-foreground hover:text-primary transition-colors font-medium px-4 py-2">Новости</NavigationMenuLink></Link></NavigationMenuItem>
                 <NavigationMenuItem>
                   <NavigationMenuTrigger className="text-foreground hover:text-primary transition-colors font-medium">Школа</NavigationMenuTrigger>
                   <NavigationMenuContent>
@@ -101,6 +102,7 @@ const Navigation = () => {
           <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="lg:hidden border-t border-border bg-background">
             <div className="container mx-auto px-4 py-4 space-y-4">
               <Link to="/" onClick={() => setIsOpen(false)} className="block py-2 text-foreground hover:text-primary transition-colors font-medium">Главная</Link>
+              <Link to="/news" onClick={() => setIsOpen(false)} className="block py-2 text-foreground hover:text-primary transition-colors font-medium">Новости</Link>
               <div className="border-b border-border pb-2">
                 <button onClick={() => setIsSchoolMenuOpen(!isSchoolMenuOpen)} className="flex items-center justify-between w-full py-2 text-foreground hover:text-primary transition-colors font-medium"><span>Школа</span><ChevronDown className={`w-4 h-4 transition-transform ${isSchoolMenuOpen ? 'rotate-180' : ''}`} /></button>
                 {isSchoolMenuOpen && (<div className="pl-4 space-y-2 mt-2">{schoolItems.map((item) => (<Link key={item.href} to={item.href} onClick={() => setIsOpen(false)} className="block py-1 text-sm text-muted-foreground hover:text-primary transition-colors">{item.label}</Link>))}</div>)}
