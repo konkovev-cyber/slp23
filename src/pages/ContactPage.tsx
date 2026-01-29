@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { MapPin, Phone, Mail, Clock, Send } from "lucide-react";
 import { SiWhatsapp, SiTelegram } from "react-icons/si";
+import { motion } from "framer-motion";
 
 export default function ContactPage() {
     const { toast } = useToast();
@@ -22,32 +23,7 @@ export default function ContactPage() {
 
     // Map logic
     const constructorHash = "4f61ac17bbf756654de58429231d443241ac89a38745ebe8760ff57bfecb15e8";
-    const scriptSrc = `https://api-maps.yandex.ru/services/constructor/1.0/js/?um=constructor%3A${constructorHash}&width=100%25&height=400&lang=ru_RU&scroll=true`;
     const iframeSrc = `https://yandex.ru/map-widget/v1/?um=constructor%3A${constructorHash}&source=constructor&scroll=true`;
-    const openMapUrl = `https://yandex.ru/maps/?um=constructor%3A${constructorHash}&source=constructorLink`;
-
-    const mapHostRef = useRef<HTMLDivElement | null>(null);
-    const [mapFailed, setMapFailed] = useState(false);
-
-    useEffect(() => {
-        const host = mapHostRef.current;
-        if (!host) return;
-
-        setMapFailed(false);
-        host.innerHTML = "";
-
-        const script = document.createElement("script");
-        script.type = "text/javascript";
-        script.async = true;
-        script.charset = "utf-8";
-        script.src = scriptSrc;
-        script.onerror = () => setMapFailed(true);
-        host.appendChild(script);
-
-        return () => {
-            host.innerHTML = "";
-        };
-    }, [scriptSrc]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -80,99 +56,127 @@ export default function ContactPage() {
 
             <main className="pt-28 pb-16">
                 <div className="container mx-auto px-4">
-                    <header className="mb-10 text-center">
-                        <h1 className="text-4xl font-bold text-foreground mb-4">Наши контакты</h1>
-                        <p className="text-muted-foreground max-w-2xl mx-auto">
-                            Мы находимся в городе Горячий Ключ. Всегда рады видеть вас и ответить на вопросы!
+                    <motion.header
+                        initial={{ opacity: 0, y: 15 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="mb-12 text-center"
+                    >
+                        <span className="text-primary font-bold tracking-widest uppercase text-[10px] mb-2 block">Связь с нами</span>
+                        <h1 className="text-3xl md:text-5xl font-bold text-foreground mb-4 tracking-tight">Наши контакты</h1>
+                        <p className="text-base text-muted-foreground max-w-xl mx-auto font-medium">
+                            Мы находимся в Горячем Ключе. Всегда рады видеть вас и ответить на любые вопросы!
                         </p>
-                    </header>
+                    </motion.header>
 
-                    <div className="grid lg:grid-cols-2 gap-12">
+                    <div className="grid lg:grid-cols-5 gap-8 max-w-6xl mx-auto">
 
                         {/* Contact Info & Map */}
-                        <div className="space-y-8">
-                            <Card className="p-6">
-                                <h2 className="text-2xl font-bold mb-6">Информация</h2>
-                                <div className="space-y-6">
-                                    <div className="flex items-start gap-4">
-                                        <div className="bg-primary/10 p-3 rounded-lg"><MapPin className="text-primary w-6 h-6" /></div>
-                                        <div>
-                                            <div className="font-semibold mb-1">Адрес</div>
-                                            <div className="text-muted-foreground">Краснодарский край, г. Горячий Ключ,<br />переулок Школьный, д. 27</div>
+                        <div className="lg:col-span-2 space-y-6">
+                            <motion.div
+                                initial={{ opacity: 0, x: -15 }}
+                                animate={{ opacity: 1, x: 0 }}
+                            >
+                                <div className="glass-card p-7 rounded-xl space-y-7 shadow-sm">
+                                    <h2 className="text-xl font-bold mb-2 tracking-tight">Информация</h2>
+                                    <div className="space-y-6">
+                                        <div className="flex items-start gap-4">
+                                            <div className="bg-primary/10 p-2.5 rounded-lg border border-primary/20"><MapPin className="text-primary w-5 h-5" /></div>
+                                            <div>
+                                                <div className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-0.5">Адрес</div>
+                                                <div className="text-sm font-bold text-foreground leading-tight">г. Горячий Ключ, переулок Школьный, 27</div>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-start gap-4">
+                                            <div className="bg-accent/10 p-2.5 rounded-lg border border-accent/20"><Phone className="text-accent w-5 h-5" /></div>
+                                            <div>
+                                                <div className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-0.5">Телефон</div>
+                                                <a href="tel:+79282619928" className="text-lg font-bold text-foreground hover:text-primary transition-all tracking-tight">+7 (928) 261-99-28</a>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-start gap-4">
+                                            <div className="bg-success/10 p-2.5 rounded-lg border-success/20 border"><Mail className="text-success w-5 h-5" /></div>
+                                            <div>
+                                                <div className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-0.5">Электронная почта</div>
+                                                <a href="mailto:slichnost5@mail.ru" className="text-sm font-bold text-foreground hover:text-primary transition-all">slichnost5@mail.ru</a>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-start gap-4">
+                                            <div className="bg-primary/10 p-2.5 rounded-lg border-primary/20 border"><Clock className="text-primary w-5 h-5" /></div>
+                                            <div>
+                                                <div className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-0.5">График работы</div>
+                                                <div className="text-sm font-bold text-foreground">Пн-Пт: 08:00 - 17:00</div>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div className="flex items-start gap-4">
-                                        <div className="bg-accent/10 p-3 rounded-lg"><Phone className="text-accent w-6 h-6" /></div>
-                                        <div>
-                                            <div className="font-semibold mb-1">Телефон</div>
-                                            <a href="tel:+79282619928" className="text-muted-foreground hover:text-primary transition-colors">+7 (928) 261-99-28</a>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-start gap-4">
-                                        <div className="bg-success/10 p-3 rounded-lg"><Mail className="text-success w-6 h-6" /></div>
-                                        <div>
-                                            <div className="font-semibold mb-1">Email</div>
-                                            <a href="mailto:slichnost5@mail.ru" className="text-muted-foreground hover:text-primary transition-colors">slichnost5@mail.ru</a>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-start gap-4">
-                                        <div className="bg-primary/10 p-3 rounded-lg"><Clock className="text-primary w-6 h-6" /></div>
-                                        <div>
-                                            <div className="font-semibold mb-1">График работы</div>
-                                            <div className="text-muted-foreground">Пн-Пт: 08:00 - 17:00<br />Сб-Вс: Выходной</div>
-                                        </div>
+
+                                    <div className="flex gap-3 mt-8">
+                                        <Button onClick={sendToWhatsApp} size="sm" className="flex-1 gap-2 rounded-full h-10 font-bold bg-[#25D366] hover:bg-[#25D366]/90 text-white shadow-sm">
+                                            <SiWhatsapp className="w-4 h-4" /> WhatsApp
+                                        </Button>
+                                        <Button onClick={sendToTelegram} size="sm" variant="outline" className="flex-1 gap-2 rounded-full h-10 font-bold border-border shadow-sm">
+                                            <SiTelegram className="w-4 h-4" /> Telegram
+                                        </Button>
                                     </div>
                                 </div>
+                            </motion.div>
 
-                                <div className="flex gap-4 mt-8">
-                                    <Button onClick={sendToWhatsApp} variant="secondary" className="flex-1 gap-2">
-                                        <SiWhatsapp className="w-5 h-5" /> WhatsApp
-                                    </Button>
-                                    <Button onClick={sendToTelegram} variant="outline" className="flex-1 gap-2">
-                                        <SiTelegram className="w-5 h-5" /> Telegram
-                                    </Button>
-                                </div>
-                            </Card>
-
-                            <Card className="overflow-hidden h-[400px] border-none shadow-lg">
-                                {mapFailed ? (
-                                    <iframe src={iframeSrc} width="100%" height="100%" frameBorder="0" />
-                                ) : (
-                                    <div ref={mapHostRef} className="w-full h-full" />
-                                )}
-                            </Card>
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.98 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                className="rounded-xl overflow-hidden h-[300px] border border-border shadow-sm"
+                            >
+                                <iframe src={iframeSrc} width="100%" height="100%" frameBorder="0" title="Yandex Map" />
+                            </motion.div>
                         </div>
 
                         {/* Form */}
-                        <div>
-                            <Card className="p-8 sticky top-28">
-                                <h2 className="text-2xl font-bold mb-2">Напишите нам</h2>
-                                <p className="text-muted-foreground mb-6">Оставьте заявку на экскурсию или задайте вопрос.</p>
+                        <motion.div
+                            initial={{ opacity: 0, x: 15 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            className="lg:col-span-3"
+                        >
+                            <div className="glass-card p-8 md:p-10 rounded-xl relative overflow-hidden bg-white/60 dark:bg-card/40 backdrop-blur-md border-border shadow-sm">
+                                <h2 className="text-xl font-bold mb-2 tracking-tight">Обратная связь</h2>
+                                <p className="text-sm text-muted-foreground mb-8 font-medium">Оставьте свои данные, и мы перезвоним вам для консультации.</p>
 
-                                <form onSubmit={handleSubmit} className="space-y-4">
-                                    <div className="grid gap-2">
-                                        <label className="text-sm font-medium">Ваше имя</label>
-                                        <Input required value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} placeholder="Иван" />
+                                <form onSubmit={handleSubmit} className="space-y-5">
+                                    <div className="grid md:grid-cols-2 gap-5">
+                                        <div className="space-y-1.5">
+                                            <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground ml-1">Как к вам обращаться?</label>
+                                            <Input required value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} placeholder="Имя" className="h-11 rounded-lg bg-background/50 focus:ring-1 ring-primary/20" />
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground ml-1">Контактный телефон</label>
+                                            <Input required type="tel" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} placeholder="+7 (___) ___-__-__" className="h-11 rounded-lg bg-background/50 focus:ring-1 ring-primary/20" />
+                                        </div>
                                     </div>
-                                    <div className="grid gap-2">
-                                        <label className="text-sm font-medium">Телефон</label>
-                                        <Input required type="tel" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} placeholder="+7 (999) 000-00-00" />
+
+                                    <div className="grid md:grid-cols-2 gap-5">
+                                        <div className="space-y-1.5">
+                                            <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground ml-1">Email адрес</label>
+                                            <Input type="email" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} placeholder="example@mail.ru" className="h-11 rounded-lg bg-background/50 focus:ring-1 ring-primary/20" />
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground ml-1">Возраст ребёнка</label>
+                                            <Input value={formData.age} onChange={e => setFormData({ ...formData, age: e.target.value })} placeholder="Например: 7 лет" className="h-11 rounded-lg bg-background/50 focus:ring-1 ring-primary/20" />
+                                        </div>
                                     </div>
-                                    <div className="grid gap-2">
-                                        <label className="text-sm font-medium">Возраст ребёнка (необязательно)</label>
-                                        <Input value={formData.age} onChange={e => setFormData({ ...formData, age: e.target.value })} placeholder="7 лет" />
+
+                                    <div className="space-y-1.5">
+                                        <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground ml-1">Ваше сообщение</label>
+                                        <Textarea value={formData.message} onChange={e => setFormData({ ...formData, message: e.target.value })} placeholder="Задайте ваш вопрос..." rows={3} className="rounded-lg bg-background/50 focus:ring-1 ring-primary/20 resize-none p-3" />
                                     </div>
-                                    <div className="grid gap-2">
-                                        <label className="text-sm font-medium">Сообщение</label>
-                                        <Textarea value={formData.message} onChange={e => setFormData({ ...formData, message: e.target.value })} placeholder="Здравствуйте, хочу узнать про..." rows={4} />
-                                    </div>
-                                    <Button type="submit" className="w-full bg-accent hover:bg-accent/90 text-accent-foreground" size="lg">
-                                        <Send className="w-4 h-4 mr-2" /> Отправить
+
+                                    <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-white font-bold h-12 rounded-full shadow-md shadow-primary/20 transition-all text-base">
+                                        Отправить запрос <Send className="w-4 h-4 ml-2" />
                                     </Button>
-                                    <p className="text-xs text-center text-muted-foreground">Нажимая кнопку, вы соглашаетесь на обработку персональных данных</p>
+
+                                    <p className="text-[10px] text-center text-muted-foreground uppercase tracking-widest leading-relaxed">
+                                        Нажимая кнопку, вы соглашаетесь на обработку персональных данных
+                                    </p>
                                 </form>
-                            </Card>
-                        </div>
+                            </div>
+                        </motion.div>
 
                     </div>
                 </div>

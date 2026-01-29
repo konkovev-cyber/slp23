@@ -18,7 +18,7 @@ const Index = () => {
   const { data: programsRow } = useContent("programs");
   const { data: clubsRow } = useContent("clubs");
   const { data: testimonialsRow } = useContent("testimonials");
-  const { data: newsRow } = useContent("news_home");
+  const { data: newsRow } = useContent("news");
   const { data: galleryRow } = useContent("gallery");
   const { data: contactRow } = useContent("contact");
   const { data: footerRow } = useContent("footer");

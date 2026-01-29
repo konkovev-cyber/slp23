@@ -34,6 +34,7 @@ const Navigation = () => {
     { label: "О школе", href: "/about" },
     { label: "Программы", href: "/programs" },
     { label: "Кружки", href: "/clubs" },
+    { label: "Галерея", href: "/gallery" },
     { label: "Новости", href: "/news" },
   ];
 
@@ -87,6 +88,9 @@ const Navigation = () => {
                   </NavigationMenuContent>
                 </NavigationMenuItem>
                 <NavigationMenuItem>
+                  <Link to="/gallery" className={navLinkClass}>Галерея</Link>
+                </NavigationMenuItem>
+                <NavigationMenuItem>
                   <Link to="/news" className={navLinkClass}>Новости</Link>
                 </NavigationMenuItem>
                 <NavigationMenuItem>
@@ -110,9 +114,6 @@ const Navigation = () => {
 
           <div className="flex items-center gap-2">
             <ThemeToggle />
-            <a href="tel:+79282619928" className="hidden xl:flex w-9 h-9 bg-muted rounded-full items-center justify-center border border-border text-foreground/60 hover:text-primary transition-all">
-              <Phone className="w-3.5 h-3.5" />
-            </a>
             <Button asChild className="rounded-full font-bold h-9 px-5 text-sm shadow-sm transition-all hidden sm:flex">
               <a href={isHome ? "#contacts" : "/#contacts"}>Записаться</a>
             </Button>
@@ -133,6 +134,7 @@ const Navigation = () => {
           >
             <div className="flex flex-col space-y-5 max-w-sm mx-auto">
               <Link to="/" onClick={() => setIsOpen(false)} className="text-2xl font-bold">Главная</Link>
+              <Link to="/gallery" onClick={() => setIsOpen(false)} className="text-2xl font-bold">Галерея</Link>
               <Link to="/news" onClick={() => setIsOpen(false)} className="text-2xl font-bold">Новости</Link>
 
               <div className="space-y-2">

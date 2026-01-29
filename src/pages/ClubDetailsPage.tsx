@@ -6,6 +6,8 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { getClubBySlug } from "@/lib/clubs";
+import { motion } from "framer-motion";
+import { ArrowLeft, Calendar, User, Clock, CheckCircle2 } from "lucide-react";
 
 export default function ClubDetailsPage() {
   const { slug = "" } = useParams();
@@ -13,19 +15,15 @@ export default function ClubDetailsPage() {
 
   if (!club) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
         <Navigation />
-        <main className="pt-20">
-          <div className="container mx-auto px-4 py-16">
-            <Card className="p-8">
-              <h1 className="text-2xl font-bold text-foreground">Кружок не найден</h1>
-              <p className="mt-2 text-muted-foreground">Проверьте ссылку или вернитесь к списку кружков.</p>
-              <Button asChild className="mt-6">
-                <Link to="/clubs">К кружкам и секциям</Link>
-              </Button>
-            </Card>
-          </div>
-        </main>
+        <Card className="p-8 text-center max-w-md glass-card rounded-xl">
+          <h1 className="text-2xl font-bold text-foreground mb-2">Кружок не найден</h1>
+          <p className="text-muted-foreground mb-6 font-medium">Проверьте ссылку или вернитесь к списку кружков.</p>
+          <Button asChild className="rounded-full px-8 font-bold">
+            <Link to="/clubs">К списку секций</Link>
+          </Button>
+        </Card>
         <Footer />
       </div>
     );
@@ -38,60 +36,100 @@ export default function ClubDetailsPage() {
       <Helmet>
         <title>{club.title} — Личность ПЛЮС</title>
         <meta name="description" content={club.shortDescription} />
-        <link rel="canonical" href={`/clubs/${club.slug}`} />
       </Helmet>
 
       <Navigation />
-      <main className="pt-20">
-        <section className="py-16">
-          <div className="container mx-auto px-4">
-            <div className="flex items-start justify-between gap-6 flex-col md:flex-row">
-              <div className="max-w-3xl">
-                <div className="flex items-center gap-3 mb-4">
-                  <span className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                    <Icon className="w-6 h-6 text-primary" aria-hidden="true" />
-                  </span>
-                  <div className="flex gap-2">
-                    <Badge variant="secondary">{club.age}</Badge>
-                    <Badge variant="outline">{club.schedule}</Badge>
-                  </div>
-                </div>
 
-                <h1 className="text-3xl md:text-4xl font-bold text-foreground">{club.title}</h1>
-                <p className="mt-3 text-muted-foreground text-lg">{club.shortDescription}</p>
-                <p className="mt-6 text-muted-foreground leading-relaxed">{club.summary}</p>
+      <main className="pt-28 pb-20">
+        <div className="container mx-auto px-4">
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-8"
+          >
+            <Button asChild variant="link" className="p-0 text-muted-foreground hover:text-primary font-bold gap-2 text-xs uppercase tracking-widest">
+              <Link to="/clubs"> <ArrowLeft className="w-3.5 h-3.5" /> Назад к списку</Link>
+            </Button>
+          </motion.div>
 
-                <div className="mt-8 flex gap-3 flex-wrap">
-                  <Button asChild>
-                    <Link to="/contact">Записаться</Link>
-                  </Button>
-                  <Button asChild variant="outline">
-                    <Link to="/clubs">Назад к списку</Link>
-                  </Button>
+          <div className="grid lg:grid-cols-5 gap-10 items-start max-w-6xl mx-auto">
+            <motion.div
+              initial={{ opacity: 0, x: -15 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="lg:col-span-3 space-y-8"
+            >
+              <div className="space-y-4">
+                <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20 shadow-sm mb-6">
+                  <Icon className="w-7 h-7 text-primary" />
                 </div>
+                <h1 className="text-3xl md:text-5xl font-extrabold text-foreground tracking-tight leading-tight">{club.title}</h1>
+                <p className="text-lg md:text-xl text-muted-foreground font-medium leading-relaxed max-w-2xl">{club.shortDescription}</p>
               </div>
 
-              <Card className="w-full md:w-[360px] p-6">
-                <div className="text-sm font-medium text-foreground">Кратко</div>
-                <dl className="mt-4 space-y-3">
-                  <div>
-                    <dt className="text-xs uppercase text-muted-foreground">Возраст</dt>
-                    <dd className="text-foreground">{club.age}</dd>
+              <div className="glass-card p-8 rounded-xl border-border/50 bg-white/50 dark:bg-card/40">
+                <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+                  <CheckCircle2 className="w-5 h-5 text-primary" /> О программе
+                </h3>
+                <p className="text-foreground/80 leading-relaxed font-medium">{club.summary}</p>
+              </div>
+
+              <div className="flex gap-4">
+                <Button asChild className="rounded-full h-12 px-10 font-bold bg-primary hover:bg-primary/90 text-white shadow-md shadow-primary/20">
+                  <Link to="/contact">Записаться на занятие</Link>
+                </Button>
+              </div>
+            </motion.div>
+
+            <motion.aside
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.1 }}
+              className="lg:col-span-2"
+            >
+              <div className="glass-card p-8 rounded-xl border-border/50 bg-white/60 dark:bg-card/30 backdrop-blur-md shadow-sm sticky top-28">
+                <h3 className="text-lg font-bold mb-6 tracking-tight">Информация</h3>
+                <div className="space-y-6">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center border border-border">
+                      <User className="w-4 h-4 text-muted-foreground" />
+                    </div>
+                    <div>
+                      <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Возраст</div>
+                      <div className="text-sm font-bold text-foreground">{club.age}</div>
+                    </div>
                   </div>
-                  <div>
-                    <dt className="text-xs uppercase text-muted-foreground">Расписание</dt>
-                    <dd className="text-foreground">{club.schedule}</dd>
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center border border-border">
+                      <Clock className="w-4 h-4 text-muted-foreground" />
+                    </div>
+                    <div>
+                      <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Расписание</div>
+                      <div className="text-sm font-bold text-foreground">{club.schedule}</div>
+                    </div>
                   </div>
-                  <div>
-                    <dt className="text-xs uppercase text-muted-foreground">Описание</dt>
-                    <dd className="text-muted-foreground">{club.shortDescription}</dd>
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center border border-border">
+                      <Calendar className="w-4 h-4 text-muted-foreground" />
+                    </div>
+                    <div>
+                      <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Длительность</div>
+                      <div className="text-sm font-bold text-foreground">60 минут</div>
+                    </div>
                   </div>
-                </dl>
-              </Card>
-            </div>
+                </div>
+
+                <div className="mt-8 pt-6 border-t border-border/50">
+                  <div className="flex flex-wrap gap-2">
+                    <Badge variant="secondary" className="rounded-md font-bold text-[10px] uppercase tracking-wider px-2.5 py-0.5">{club.category}</Badge>
+                    <Badge variant="outline" className="rounded-md font-bold text-[10px] uppercase tracking-wider px-2.5 py-0.5">Личность ПЛЮС</Badge>
+                  </div>
+                </div>
+              </div>
+            </motion.aside>
           </div>
-        </section>
+        </div>
       </main>
+
       <Footer />
     </div>
   );

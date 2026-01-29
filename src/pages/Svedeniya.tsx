@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { ChevronLeft, ChevronRight, Printer } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { motion } from "framer-motion";
 
 type Section = {
   id: string;
@@ -43,66 +44,18 @@ export default function Svedeniya() {
 
   const sections: Section[] = useMemo(
     () => [
-      {
-        id: "basic",
-        title: "Основные сведения",
-        lead: "Ключевая информация об организации: наименование, адрес, контакты и режим работы.",
-      },
-      {
-        id: "structure",
-        title: "Структура и органы управления",
-        lead: "Описание структуры управления, подразделений и органов управления.",
-      },
-      {
-        id: "documents",
-        title: "Документы",
-        lead: "Учредительные документы, локальные акты, правила приёма, устав и прочее.",
-      },
-      {
-        id: "education",
-        title: "Образование",
-        lead: "Сведения о реализуемых программах, формах обучения и возрастных группах.",
-      },
-      {
-        id: "standards",
-        title: "Образовательные стандарты",
-        lead: "Информация о стандартах/требованиях и используемых подходах к обучению.",
-      },
-      {
-        id: "management",
-        title: "Руководство",
-        lead: "Сведения о руководителе(ях), контакты, график приёма.",
-      },
-      {
-        id: "teachers",
-        title: "Педагогический состав",
-        lead: "Информация о преподавателях, квалификации и направлениях работы.",
-      },
-      {
-        id: "facilities",
-        title: "Материально‑техническое обеспечение",
-        lead: "Помещения, оборудование, учебные материалы и условия реализации программ.",
-      },
-      {
-        id: "paid-services",
-        title: "Платные образовательные услуги",
-        lead: "Порядок оказания платных услуг, стоимость, договоры и условия оплаты.",
-      },
-      {
-        id: "finance",
-        title: "Финансово‑хозяйственная деятельность",
-        lead: "Сведения о финансировании, отчётности и хозяйственной деятельности.",
-      },
-      {
-        id: "vacancies",
-        title: "Вакантные места для приёма",
-        lead: "Информация о наличии свободных мест по программам/группам.",
-      },
-      {
-        id: "accessibility",
-        title: "Доступная среда",
-        lead: "Условия доступности для обучающихся с ОВЗ и иных категорий.",
-      },
+      { id: "basic", title: "Основные сведения", lead: "Ключевая информация об организации: наименование, адрес, контакты и режим работы." },
+      { id: "structure", title: "Структура и органы", lead: "Описание структуры управления, подразделений и органов управления." },
+      { id: "documents", title: "Документы", lead: "Учредительные документы, локальные акты, правила приёма, устав и прочее." },
+      { id: "education", title: "Образование", lead: "Сведения о реализуемых программах, формах обучения и возрастных группах." },
+      { id: "standards", title: "Стандарты", lead: "Информация о стандартах/требованиях и используемых подходах к обучению." },
+      { id: "management", title: "Руководство", lead: "Сведения о руководителе(ях), контакты, график приёма." },
+      { id: "teachers", title: "Педагоги", lead: "Информация о преподавателях, квалификации и направлениях работы." },
+      { id: "facilities", title: "Оснащение", lead: "Помещения, оборудование, учебные материалы и условия реализации." },
+      { id: "paid-services", title: "Платные услуги", lead: "Порядок оказания платных услуг, стоимость, договоры и условия." },
+      { id: "finance", title: "Финансы", lead: "Сведения о финансировании, отчётности и хозяйственной деятельности." },
+      { id: "vacancies", title: "Вакансии", lead: "Информация о наличии свободных мест по программам/группам." },
+      { id: "accessibility", title: "Доступность", lead: "Условия доступности для обучающихся с ОВЗ и иных категорий." },
     ],
     []
   );
@@ -120,9 +73,8 @@ export default function Svedeniya() {
     el.scrollIntoView({ behavior: "smooth", block: "start" });
   }, [location.hash]);
 
-  const title = "Основные сведения — Личность ПЛЮС";
-  const description =
-    "Раздел «Основные сведения» образовательной организации: структура, документы, образование, педсостав и другие обязательные сведения.";
+  const title = "Сведения — Личность ПЛЮС";
+  const description = "Раздел обязательных сведений образовательной организации.";
   const canonical = buildCanonical("/svedeniya");
 
   return (
@@ -131,13 +83,6 @@ export default function Svedeniya() {
         <title>{title}</title>
         <meta name="description" content={description} />
         <link rel="canonical" href={canonical} />
-
-        <meta property="og:type" content="website" />
-        <meta property="og:title" content={title} />
-        <meta property="og:description" content={description} />
-        <meta property="og:url" content={canonical} />
-
-        <meta name="twitter:card" content="summary" />
       </Helmet>
 
       <div className="print-hidden">
@@ -146,109 +91,90 @@ export default function Svedeniya() {
 
       <main className="pt-24 pb-16">
         <div className="container mx-auto px-4">
-          <header className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <motion.header
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between border-b pb-8"
+          >
             <div>
-              <h1 className="text-4xl font-bold text-foreground">Основные сведения</h1>
-              <p className="mt-3 text-muted-foreground max-w-3xl">{description}</p>
+              <span className="text-primary font-bold tracking-widest uppercase text-[10px] mb-2 block">Сведения ОО</span>
+              <h1 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight">Основные сведения</h1>
+              <p className="mt-2 text-sm text-muted-foreground max-w-2xl font-medium">{description}</p>
             </div>
 
             <div className="flex items-center gap-2 print-hidden">
-              <Button variant="outline" onClick={() => window.print()} className="gap-2">
-                <Printer className="h-4 w-4" />
+              <Button variant="outline" size="sm" onClick={() => window.print()} className="gap-2 rounded-full font-bold h-9">
+                <Printer className="h-3.5 w-3.5" />
                 Печать
               </Button>
               <Button
                 variant="secondary"
+                size="sm"
                 onClick={() => setCollapsed((v) => !v)}
-                className="gap-2 hidden lg:inline-flex"
+                className="gap-2 hidden lg:inline-flex rounded-full font-bold h-9"
               >
-                {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-                {collapsed ? "Показать меню" : "Скрыть меню"}
+                {collapsed ? <ChevronRight className="h-3.5 w-3.5" /> : <ChevronLeft className="h-3.5 w-3.5" />}
+                {collapsed ? "Меню" : "Скрыть меню"}
               </Button>
             </div>
-          </header>
-
-          {/* Mobile anchor tabs */}
-          <div className="print-hidden lg:hidden -mx-4 px-4 pb-2 overflow-x-auto">
-            <div className="flex gap-2 min-w-max">
-              {sections.map((s) => (
-                <a
-                  key={s.id}
-                  href={`#${s.id}`}
-                  className={cn(
-                    "px-3 py-2 rounded-full border border-border text-sm whitespace-nowrap transition-colors",
-                    s.id === activeId
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-background text-foreground hover:bg-muted"
-                  )}
-                >
-                  {s.title}
-                </a>
-              ))}
-            </div>
-          </div>
+          </motion.header>
 
           <div className="grid gap-8 lg:grid-cols-[auto_1fr]">
             {/* Sidebar */}
             <aside
               className={cn(
-                "print-hidden lg:sticky lg:top-28 lg:self-start",
-                collapsed ? "lg:w-14" : "lg:w-80"
+                "print-hidden lg:sticky lg:top-24 lg:self-start transition-all duration-300",
+                collapsed ? "lg:w-12" : "lg:w-72"
               )}
             >
-              <Card className="p-2">
-                <nav aria-label="Меню раздела" className="space-y-1">
+              <div className="glass-card p-2 rounded-xl border-border/50">
+                <nav aria-label="Меню раздела" className="space-y-0.5">
                   {sections.map((s, idx) => (
                     <a
                       key={s.id}
                       href={`#${s.id}`}
                       className={cn(
-                        "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors",
+                        "flex items-center gap-3 rounded-lg px-2.5 py-2 text-xs font-bold transition-all",
                         s.id === activeId
-                          ? "bg-muted text-foreground"
+                          ? "bg-primary text-white shadow-sm"
                           : "text-muted-foreground hover:bg-muted hover:text-foreground"
                       )}
                       title={collapsed ? s.title : undefined}
                     >
-                      <span
-                        className={cn(
-                          "inline-flex h-7 w-7 items-center justify-center rounded-md border border-border text-xs",
-                          s.id === activeId ? "bg-background" : "bg-card"
-                        )}
-                        aria-hidden="true"
-                      >
+                      <span className={cn(
+                        "inline-flex h-6 w-6 items-center justify-center rounded-md border text-[10px]",
+                        s.id === activeId ? "border-white/20 bg-white/10" : "border-border bg-background"
+                      )}>
                         {idx + 1}
                       </span>
-                      {!collapsed ? <span className="leading-snug">{s.title}</span> : null}
+                      {!collapsed ? <span className="truncate">{s.title}</span> : null}
                     </a>
                   ))}
                 </nav>
-              </Card>
+              </div>
             </aside>
 
             {/* Content */}
             <div className="space-y-6">
               {sections.map((s) => (
-                <section key={s.id} id={s.id} className="scroll-mt-28">
-                  <Card className="p-6">
-                    <h2 className="text-2xl font-bold text-foreground">{s.title}</h2>
-                    <p className="mt-2 text-muted-foreground">{s.lead}</p>
+                <section key={s.id} id={s.id} className="scroll-mt-24">
+                  <div className="glass-card p-6 md:p-8 rounded-xl shadow-sm border-border/50 bg-white/50 dark:bg-card/30 backdrop-blur-sm">
+                    <h2 className="text-xl font-bold text-foreground mb-1 tracking-tight">{s.title}</h2>
+                    <p className="text-[13px] text-muted-foreground font-medium mb-6">{s.lead}</p>
 
-                    <div className="mt-5 space-y-3 text-foreground leading-relaxed">
+                    <div className="text-sm text-foreground leading-relaxed">
                       {contentMap[s.id] ? (
                         <div
                           dangerouslySetInnerHTML={{ __html: contentMap[s.id] }}
-                          className="prose max-w-none dark:prose-invert"
+                          className="prose prose-sm max-w-none dark:prose-invert prose-headings:text-foreground prose-p:text-foreground/80"
                         />
                       ) : (
-                        <div className="p-4 border border-dashed rounded bg-muted/30 text-muted-foreground text-sm">
-                          <p>
-                            Заполните этот блок официальной информацией (текст, таблицы, ссылки и документы).
-                          </p>
+                        <div className="p-6 border border-dashed rounded-lg bg-muted/20 text-muted-foreground text-xs text-center font-medium italic">
+                          Информация уточняется...
                         </div>
                       )}
                     </div>
-                  </Card>
+                  </div>
                 </section>
               ))}
             </div>

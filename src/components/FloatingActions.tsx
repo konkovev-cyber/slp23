@@ -77,19 +77,19 @@ const FloatingActions = () => {
                         exit={{ opacity: 0, scale: 0.9, y: 10 }}
                         className="mb-2"
                     >
-                        <div className="w-[300px] bg-white dark:bg-card border border-border rounded-3xl p-6 shadow-2xl overflow-hidden relative">
+                        <div className="w-[300px] bg-white dark:bg-card border border-border rounded-2xl p-6 shadow-2xl overflow-hidden relative">
                             <div className="absolute top-0 right-0 w-24 h-24 bg-primary/10 blur-3xl rounded-full" />
                             <div className="relative space-y-4">
                                 <div className="flex items-center justify-between">
-                                    <h4 className="font-bold text-lg">Быстрая связь</h4>
-                                    <button onClick={() => setShowForm(false)} className="text-muted-foreground hover:text-foreground">
+                                    <h4 className="font-bold text-base tracking-tight text-foreground">Обратная связь</h4>
+                                    <button onClick={() => setShowForm(false)} className="p-1 hover:bg-muted rounded-full transition-colors text-muted-foreground hover:text-foreground">
                                         <X className="w-4 h-4" />
                                     </button>
                                 </div>
                                 <form onSubmit={handleSubmit} className="space-y-3">
-                                    <Input placeholder="Ваше имя" className="h-11 rounded-xl bg-muted/50 border-transparent focus:border-primary transition-all" required />
-                                    <Input placeholder="Телефон" type="tel" className="h-11 rounded-xl bg-muted/50 border-transparent focus:border-primary transition-all" required />
-                                    <Button className="w-full h-11 rounded-xl font-bold shadow-lg shadow-primary/20">
+                                    <Input placeholder="Ваше имя" className="h-10 rounded-lg bg-muted/50 border-transparent focus:border-primary transition-all text-sm font-medium" required />
+                                    <Input placeholder="Телефон" type="tel" className="h-10 rounded-lg bg-muted/50 border-transparent focus:border-primary transition-all text-sm font-medium" required />
+                                    <Button className="w-full h-10 rounded-full font-bold shadow-md shadow-primary/10 text-sm">
                                         Отправить
                                     </Button>
                                 </form>
@@ -116,7 +116,7 @@ const FloatingActions = () => {
                                     onClick={action.onClick}
                                     target={action.href ? "_blank" : undefined}
                                     rel="noopener noreferrer"
-                                    className={`flex items-center justify-center w-12 h-12 rounded-full shadow-lg hover:scale-110 active:scale-95 transition-all outline-none ${action.color}`}
+                                    className={`flex items-center justify-center w-11 h-11 rounded-full shadow-lg hover:scale-110 active:scale-95 transition-all outline-none ${action.color}`}
                                     title={action.label}
                                 >
                                     {action.icon}
@@ -128,32 +128,33 @@ const FloatingActions = () => {
             </AnimatePresence>
 
             <div className="flex flex-col gap-2 items-end">
-                {/* Scroll Top - Elegant & Small */}
-                <AnimatePresence>
-                    {showScrollTop && (
-                        <motion.button
-                            initial={{ opacity: 0, scale: 0.5 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.5 }}
-                            onClick={scrollToTop}
-                            className="w-10 h-10 bg-white dark:bg-card border border-border rounded-full flex items-center justify-center shadow-md hover:bg-muted transition-all"
-                        >
-                            <ArrowUp className="w-4 h-4" />
-                        </motion.button>
-                    )}
-                </AnimatePresence>
-
-                {/* Main Elegant FAB */}
+                {/* Main FAB - Now ABOVE the scroll button */}
                 <button
                     onClick={() => {
                         if (showForm) setShowForm(false);
                         else setIsOpen(!isOpen);
                     }}
-                    className={`w-14 h-14 rounded-full flex items-center justify-center shadow-2xl transition-all active:scale-90 hover:scale-105 ${isOpen || showForm ? "bg-muted text-foreground" : "bg-primary text-white"
+                    className={`w-13 h-13 md:w-14 md:h-14 rounded-full flex items-center justify-center shadow-xl transition-all active:scale-90 hover:scale-105 border-4 border-background ${isOpen || showForm ? "bg-muted text-foreground" : "bg-primary text-white"
                         }`}
                 >
-                    {isOpen || showForm ? <X className="w-6 h-6" /> : <MessageSquare className="w-6 h-6" />}
+                    {isOpen || showForm ? <X className="w-5 h-5 md:w-6 md:h-6" /> : <MessageSquare className="w-5 h-5 md:w-6 md:h-6" />}
                 </button>
+
+                {/* Scroll Top Button - Now BELOW the main FAB */}
+                <AnimatePresence>
+                    {showScrollTop && (
+                        <motion.button
+                            initial={{ opacity: 0, y: 10, scale: 0.8 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, y: 10, scale: 0.8 }}
+                            onClick={scrollToTop}
+                            className="w-10 h-10 bg-white dark:bg-card border border-border rounded-full flex items-center justify-center shadow-md hover:bg-muted text-foreground transition-all"
+                            title="Вверх"
+                        >
+                            <ArrowUp className="w-4 h-4" />
+                        </motion.button>
+                    )}
+                </AnimatePresence>
             </div>
         </div>
     );

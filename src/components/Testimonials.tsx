@@ -1,63 +1,59 @@
 import { motion } from "framer-motion";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Quote } from "lucide-react";
 
 const testimonials = [
-  { id: 1, name: "Елена П.", role: "Мама ученика 3 класса", text: "Моя дочь занимается в школе уже второй год. Заметны огромные изменения — она стала более уверенной и любознательной. Педагоги просто замечательные!" },
-  { id: 2, name: "Дмитрий И.", role: "Отец ученика 5 класса", text: "Отличная школа с индивидуальным подходом. Сын с удовольствием посещает занятия, особенно робототехнику. Уровень знаний растет!" },
-  { id: 3, name: "Мария В.", role: "Мама ученицы 6 класса", text: "Дочь получает качественное образование и развивается всесторонне. Отдельное спасибо за психологическую поддержку и внимание к каждому." },
-  { id: 4, name: "Анна С.", role: "Ученица 7 класса", text: "Здесь я нашла настоящих друзей. Учителя всегда помогут и поддержат. Обожаю атмосферу нашей школы и перемены в холле!" },
+  { id: 1, name: "Елена П.", role: "Мама ученика 3 кл.", text: "Заметны огромные изменения — дочь стала более уверенной и любознательной. Педагоги просто замечательные!" },
+  { id: 2, name: "Дмитрий И.", role: "Отец ученика 5 кл.", text: "Отличная школа с индивидуальным подходом. Сын с удовольствием посещает занятия, уровень знаний растет." },
+  { id: 3, name: "Мария В.", role: "Мама ученицы 6 кл.", text: "Дочь получает качественное образование. Отдельное спасибо за психологическую поддержку и внимание." },
+  { id: 4, name: "Анна С.", role: "Ученица 7 кл.", text: "Здесь я нашла настоящих друзей. Учителя всегда помогут и поддержат. Обожаю атмосферу школы!" },
 ];
 
 const Testimonials = () => {
   return (
-    <section className="py-32 bg-background relative overflow-hidden" id="testimonials">
+    <section className="py-20 bg-background relative overflow-hidden" id="testimonials">
       <div className="container mx-auto px-4 relative z-10">
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
+          initial={{ opacity: 0, scale: 0.95 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
-          className="text-center mb-24"
+          className="text-center mb-16"
         >
-          <span className="text-primary font-black tracking-[0.3em] uppercase text-xs mb-4 block">Голоса сообщества</span>
-          <h2 className="text-4xl md:text-6xl font-black text-foreground mb-6 tracking-tighter">Что говорят о нас</h2>
+          <span className="text-primary font-bold tracking-widest uppercase text-[11px] mb-3 block">Отзывы</span>
+          <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-4 tracking-tight">Что говорят о нас</h2>
         </motion.div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 max-w-6xl mx-auto">
           {testimonials.map((t, idx) => (
             <motion.div
               key={t.id}
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 15 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: idx * 0.1 }}
+              transition={{ duration: 0.5, delay: idx * 0.1 }}
             >
-              <div className="glass-card p-10 rounded-[3rem] h-full relative group hover:border-primary/30 transition-all flex flex-col shadow-xl">
-                <Quote className="text-primary/10 w-16 h-16 absolute top-8 right-8 group-hover:text-primary/20 transition-colors" />
+              <div className="glass-card p-6 rounded-xl h-full relative group hover:border-primary/20 transition-all flex flex-col shadow-sm bg-white/50 dark:bg-card/30">
+                <Quote className="text-primary/5 w-10 h-10 absolute top-6 right-6 group-hover:text-primary/10 transition-colors" />
 
-                <div className="relative mb-10">
-                  <Avatar className="w-20 h-20 border-4 border-background shadow-xl scale-110 group-hover:scale-125 transition-transform duration-500">
-                    <AvatarFallback className="bg-primary text-white text-2xl font-black">
+                <div className="relative mb-6">
+                  <Avatar className="w-12 h-12 border-2 border-background shadow-sm">
+                    <AvatarFallback className="bg-primary/10 text-primary text-sm font-bold">
                       {t.name.charAt(0)}
                     </AvatarFallback>
                   </Avatar>
                 </div>
 
-                <p className="text-foreground/80 italic leading-relaxed mb-10 flex-grow font-medium text-lg">"{t.text}"</p>
+                <p className="text-[13px] text-foreground/80 italic leading-relaxed mb-6 flex-grow font-medium">"{t.text}"</p>
 
-                <div className="pt-8 border-t border-border">
-                  <div className="font-black text-foreground text-xl tracking-tight">{t.name}</div>
-                  <div className="text-primary font-black text-[10px] uppercase tracking-widest mt-1">{t.role}</div>
+                <div className="pt-4 border-t border-border/50">
+                  <div className="font-bold text-foreground text-sm tracking-tight">{t.name}</div>
+                  <div className="text-primary/70 font-bold text-[9px] uppercase tracking-wider mt-0.5">{t.role}</div>
                 </div>
               </div>
             </motion.div>
           ))}
         </div>
       </div>
-
-      {/* Background Glow */}
-      <div className="absolute bottom-0 right-0 translate-x-1/2 translate-y-1/2 w-[800px] h-[800px] bg-accent/5 blur-[150px] rounded-full" />
     </section>
   );
 };

@@ -4,10 +4,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
+import { motion } from "framer-motion";
+import { Calendar, ArrowRight } from "lucide-react";
 
 type PostListItem = {
   id: string;
@@ -39,7 +41,7 @@ export default function NewsIndex() {
   });
 
   const title = "Новости — Личность ПЛЮС";
-  const description = "Новости, анонсы мероприятий и достижения учеников школы «Личность ПЛЮС».";
+  const description = "Новости и события школы «Личность ПЛЮС».";
   const canonical = buildCanonical("/news");
 
   return (
@@ -47,68 +49,81 @@ export default function NewsIndex() {
       <Helmet>
         <title>{title}</title>
         <meta name="description" content={description} />
-        <link rel="canonical" href={canonical} />
-
-        <meta property="og:type" content="website" />
-        <meta property="og:title" content={title} />
-        <meta property="og:description" content={description} />
-        <meta property="og:url" content={canonical} />
-
-        <meta name="twitter:card" content="summary_large_image" />
       </Helmet>
 
       <Navigation />
 
-      <main className="pt-28">
-        <section className="py-16">
-          <div className="container mx-auto px-4">
-            <header className="mb-10">
-              <h1 className="text-4xl font-bold text-foreground">Новости</h1>
-              <p className="mt-3 text-muted-foreground max-w-2xl">{description}</p>
-            </header>
+      <main className="pt-24 pb-20">
+        <div className="container mx-auto px-4">
+          <motion.header
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-12 border-b pb-8"
+          >
+            <span className="text-primary font-bold tracking-widest uppercase text-[10px] mb-2 block">Медиа-центр</span>
+            <h1 className="text-3xl md:text-5xl font-bold text-foreground tracking-tight">Новости школы</h1>
+            <p className="mt-3 text-sm text-muted-foreground max-w-2xl font-medium">{description}</p>
+          </motion.header>
 
-            {isLoading ? (
-              <div className="text-muted-foreground">Загрузка новостей…</div>
-            ) : posts.length === 0 ? (
-              <div className="text-muted-foreground">Пока нет опубликованных новостей.</div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {posts.map((post) => {
-                  const dateText = post.published_at
-                    ? format(new Date(post.published_at), "d MMMM yyyy", { locale: ru })
-                    : "";
+          {isLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {[1, 2, 3, 4].map(i => (
+                <div key={i} className="h-[300px] rounded-xl bg-muted animate-pulse" />
+              ))}
+            </div>
+          ) : posts.length === 0 ? (
+            <div className="text-center py-20 bg-muted/20 rounded-2xl border border-dashed border-border/50">
+              <p className="text-muted-foreground font-medium italic">Новости пока отсутствуют.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-7xl mx-auto">
+              {posts.map((post, idx) => {
+                const dateText = post.published_at
+                  ? format(new Date(post.published_at), "d MMMM yyyy", { locale: ru })
+                  : "";
 
-                  return (
-                    <Link key={post.id} to={`/news/${post.slug}`} className="block">
-                      <Card className="h-full hover:shadow-lg transition-shadow overflow-hidden">
-                        <div className="relative h-44 bg-muted overflow-hidden">
+                return (
+                  <motion.div
+                    key={post.id}
+                    initial={{ opacity: 0, scale: 0.98 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: idx * 0.05 }}
+                  >
+                    <Link to={`/news/${post.slug}`} className="group block h-full">
+                      <Card className="h-full rounded-xl overflow-hidden border-border bg-white/50 dark:bg-card/40 shadow-sm hover:shadow-md transition-all group-hover:border-primary/20">
+                        <div className="relative aspect-[16/10] overflow-hidden bg-muted">
                           <img
                             src={post.image_url ?? "/placeholder.svg"}
                             alt={post.title}
-                            loading="lazy"
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                           />
                           <div className="absolute top-3 left-3">
-                            <Badge variant="secondary">{post.category}</Badge>
+                            <Badge className="bg-white/90 backdrop-blur-sm text-primary border-none text-[9px] font-bold px-2 py-0.5 rounded-md shadow-sm">
+                              {post.category}
+                            </Badge>
                           </div>
                         </div>
-                        <CardHeader>
-                          <div className="text-sm text-muted-foreground">{dateText}</div>
-                          <CardTitle className="mt-1">{post.title}</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <CardDescription className="line-clamp-3">
-                            {post.excerpt ?? "Открыть новость"}
-                          </CardDescription>
+                        <CardContent className="p-4">
+                          <div className="flex items-center gap-1.5 text-muted-foreground text-[10px] font-bold mb-2 uppercase tracking-wider">
+                            <Calendar className="w-3 h-3" />
+                            {dateText}
+                          </div>
+                          <h3 className="font-bold text-sm text-foreground line-clamp-2 leading-tight group-hover:text-primary transition-colors tracking-tight mb-3">
+                            {post.title}
+                          </h3>
+                          <div className="text-[11px] font-bold text-primary flex items-center gap-1 transition-all group-hover:gap-2">
+                            Читать <ArrowRight className="w-3 h-3" />
+                          </div>
                         </CardContent>
                       </Card>
                     </Link>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        </section>
+                  </motion.div>
+                );
+              })}
+            </div>
+          )}
+        </div>
       </main>
 
       <Footer />

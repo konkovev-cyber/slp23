@@ -7,6 +7,8 @@ import { Link, useParams } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
+import { motion } from "framer-motion";
+import { ArrowLeft, Clock, Calendar } from "lucide-react";
 
 type Post = {
   id: string;
@@ -53,30 +55,6 @@ export default function NewsPost() {
     : "Новость школы «Личность ПЛЮС».";
   const image = post?.image_url ?? "/placeholder.svg";
 
-  const jsonLd = post
-    ? {
-        "@context": "https://schema.org",
-        "@type": "Article",
-        headline: post.title,
-        description,
-        datePublished: new Date(post.published_at).toISOString(),
-        dateModified: new Date(post.updated_at).toISOString(),
-        mainEntityOfPage: {
-          "@type": "WebPage",
-          "@id": canonical,
-        },
-        image: [new URL(image, window.location.origin).toString()],
-        publisher: {
-          "@type": "Organization",
-          name: "Личность ПЛЮС",
-        },
-        author: {
-          "@type": "Organization",
-          name: "Личность ПЛЮС",
-        },
-      }
-    : null;
-
   const publishedText = post?.published_at
     ? format(new Date(post.published_at), "d MMMM yyyy", { locale: ru })
     : "";
@@ -87,63 +65,77 @@ export default function NewsPost() {
         <title>{title}</title>
         <meta name="description" content={description} />
         <link rel="canonical" href={canonical} />
-
-        <meta property="og:type" content="article" />
-        <meta property="og:title" content={title} />
-        <meta property="og:description" content={description} />
-        <meta property="og:url" content={canonical} />
-        <meta property="og:image" content={new URL(image, window.location.origin).toString()} />
-
-        <meta name="twitter:card" content="summary_large_image" />
-
-        {jsonLd ? (
-          <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
-        ) : null}
       </Helmet>
 
       <Navigation />
 
-      <main>
-        <article className="py-16">
-          <div className="container mx-auto px-4 max-w-3xl">
-            <div className="mb-6 text-sm text-muted-foreground">
-              <Link to="/news" className="hover:underline">
-                ← Все новости
-              </Link>
+      <main className="pt-28 pb-20">
+        <article className="container mx-auto px-4 max-w-4xl">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-8"
+          >
+            <Link to="/news" className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:text-primary transition-colors">
+              <ArrowLeft className="w-3.5 h-3.5" /> Назад к новостям
+            </Link>
+          </motion.div>
+
+          {isLoading ? (
+            <div className="space-y-4 animate-pulse">
+              <div className="h-8 bg-muted rounded w-2/3" />
+              <div className="h-4 bg-muted rounded w-1/4" />
+              <div className="h-[400px] bg-muted rounded w-full" />
             </div>
-
-            {isLoading ? (
-              <div className="text-muted-foreground">Загрузка новости…</div>
-            ) : !post ? (
-              <div>
-                <h1 className="text-3xl font-bold text-foreground">Новость не найдена</h1>
-                <p className="mt-3 text-muted-foreground">Проверьте ссылку или вернитесь к списку новостей.</p>
-              </div>
-            ) : (
-              <>
-                <header>
-                  <div className="flex flex-wrap items-center gap-3">
-                    <Badge variant="secondary">{post.category}</Badge>
-                    <span className="text-sm text-muted-foreground">{publishedText}</span>
+          ) : !post ? (
+            <div className="text-center py-20">
+              <h1 className="text-2xl font-bold text-foreground">Новость не найдена</h1>
+              <Link to="/news" className="text-primary hover:underline mt-4 block font-bold">Вернуться к списку</Link>
+            </div>
+          ) : (
+            <div className="space-y-10">
+              <motion.header
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="space-y-4"
+              >
+                <div className="flex flex-wrap items-center gap-4">
+                  <Badge className="bg-primary/10 text-primary border-none rounded-md px-2.5 py-0.5 font-bold uppercase text-[10px] tracking-wider">
+                    {post.category}
+                  </Badge>
+                  <div className="flex items-center gap-1.5 text-muted-foreground text-[11px] font-bold uppercase tracking-widest">
+                    <Calendar className="w-3.5 h-3.5" />
+                    {publishedText}
                   </div>
-                  <h1 className="mt-4 text-4xl font-bold text-foreground">{post.title}</h1>
-                </header>
-
-                <div className="mt-8 overflow-hidden rounded-xl bg-muted">
-                  <img
-                    src={image}
-                    alt={post.title}
-                    loading="lazy"
-                    className="w-full h-auto object-cover"
-                  />
                 </div>
+                <h1 className="text-3xl md:text-5xl font-black text-foreground tracking-tighter leading-tight">
+                  {post.title}
+                </h1>
+              </motion.header>
 
-                <section className="mt-8 prose prose-neutral max-w-none">
-                  <p className="text-foreground leading-relaxed">{post.content}</p>
-                </section>
-              </>
-            )}
-          </div>
+              <motion.div
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="relative aspect-video rounded-2xl overflow-hidden shadow-lg border border-border/50"
+              >
+                <img
+                  src={image}
+                  alt={post.title}
+                  className="w-full h-full object-cover"
+                />
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="prose prose-neutral dark:prose-invert max-w-none"
+              >
+                <div className="text-foreground/90 text-base md:text-lg leading-relaxed font-medium whitespace-pre-wrap">
+                  {post.content}
+                </div>
+              </motion.div>
+            </div>
+          )}
         </article>
       </main>
 
