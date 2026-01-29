@@ -103,7 +103,7 @@ export default function AdminNews() {
           ...prev,
           title: data.title || prev.title,
           excerpt: data.description || prev.excerpt,
-          content: data.description || prev.content, // Use description as content too
+          content: data.content || data.description || prev.content,
           image_value: data.image ? {
             bucket: "news",
             path: "external_link_no_delete",
