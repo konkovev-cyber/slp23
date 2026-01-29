@@ -1,16 +1,14 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, Phone, ChevronDown } from "lucide-react";
+import { Menu, X, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-} from "@/components/ui/navigation-menu";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import ThemeToggle from "./ThemeToggle";
 
@@ -47,7 +45,7 @@ const Navigation = () => {
     { label: "Пед. состав", href: "/svedeniya#pedagogicheskij-sostav" },
   ];
 
-  const navLinkClass = "text-[11px] font-bold uppercase tracking-widest text-foreground/80 hover:text-primary px-4 h-10 flex items-center transition-all hover:bg-transparent focus:bg-transparent data-[state=open]:bg-transparent data-[active]:bg-transparent";
+  const navLinkClass = "text-[11px] font-bold uppercase tracking-widest text-foreground/80 hover:text-primary px-4 h-10 flex items-center transition-all hover:bg-transparent focus:bg-transparent data-[state=open]:text-primary cursor-pointer outline-none";
 
   return (
     <nav
@@ -71,62 +69,65 @@ const Navigation = () => {
             </div>
           </Link>
 
-          <div className="hidden lg:flex items-center px-1 py-0.5 bg-white/50 dark:bg-white/5 backdrop-blur-md border border-border/50 rounded-full">
-            <NavigationMenu>
-              <NavigationMenuList className="gap-0.5">
-                <NavigationMenuItem>
-                  <Link to="/">
-                    <NavigationMenuLink className={navLinkClass}>Главная</NavigationMenuLink>
-                  </Link>
-                </NavigationMenuItem>
-                <NavigationMenuItem>
-                  <NavigationMenuTrigger className={cn("bg-transparent", navLinkClass)}>Школа</NavigationMenuTrigger>
-                  <NavigationMenuContent>
-                    <div className="grid w-[200px] gap-0.5 p-2 bg-card border border-border rounded-xl shadow-lg">
-                      {schoolItems.map((item) => (
-                        <Link key={item.href} to={item.href}>
-                          <NavigationMenuLink className="block select-none rounded-lg p-2.5 leading-none no-underline outline-none transition-all hover:bg-muted hover:text-primary">
-                            <div className="text-sm font-medium">{item.label}</div>
-                          </NavigationMenuLink>
-                        </Link>
-                      ))}
-                    </div>
-                  </NavigationMenuContent>
-                </NavigationMenuItem>
-                <NavigationMenuItem>
-                  <Link to="/gallery">
-                    <NavigationMenuLink className={navLinkClass}>Галерея</NavigationMenuLink>
-                  </Link>
-                </NavigationMenuItem>
-                <NavigationMenuItem>
-                  <Link to="/news">
-                    <NavigationMenuLink className={navLinkClass}>Новости</NavigationMenuLink>
-                  </Link>
-                </NavigationMenuItem>
-                <NavigationMenuItem>
-                  <NavigationMenuTrigger className={cn("bg-transparent", navLinkClass)}>Сведения</NavigationMenuTrigger>
-                  <NavigationMenuContent>
-                    <div className="grid w-[220px] gap-0.5 p-2 bg-card border border-border rounded-xl shadow-lg">
-                      {svedeniyaItems.map((item) => (
-                        <NavigationMenuLink key={item.href} href={item.href} className="block select-none rounded-lg p-2.5 leading-none no-underline outline-none transition-all hover:bg-muted hover:text-primary">
-                          <div className="text-sm font-medium">{item.label}</div>
-                        </NavigationMenuLink>
-                      ))}
-                    </div>
-                  </NavigationMenuContent>
-                </NavigationMenuItem>
-                <NavigationMenuItem>
-                  <Link to="/contact">
-                    <NavigationMenuLink className={navLinkClass}>Контакты</NavigationMenuLink>
-                  </Link>
-                </NavigationMenuItem>
-              </NavigationMenuList>
-            </NavigationMenu>
+          <div className="hidden lg:flex items-center px-1 py-0.5 bg-white/50 dark:bg-white/5 backdrop-blur-md border border-border/50 rounded-full shadow-sm">
+            <div className="flex items-center gap-0.5">
+              <Link to="/" className={navLinkClass}>
+                Главная
+              </Link>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger className={cn(navLinkClass, "gap-1")}>
+                  Школа <ChevronDown className="w-3 h-3 mt-0.5" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-[200px] p-1.5 bg-card/95 backdrop-blur-md border border-border rounded-xl shadow-xl mt-2 animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 duration-200">
+                  {schoolItems.map((item) => (
+                    <DropdownMenuItem key={item.href} asChild>
+                      <Link
+                        to={item.href}
+                        className="w-full cursor-pointer flex items-center rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-primary/10 hover:text-primary transition-colors focus:bg-primary/10 focus:text-primary outline-none"
+                      >
+                        {item.label}
+                      </Link>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              <Link to="/gallery" className={navLinkClass}>
+                Галерея
+              </Link>
+
+              <Link to="/news" className={navLinkClass}>
+                Новости
+              </Link>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger className={cn(navLinkClass, "gap-1")}>
+                  Сведения <ChevronDown className="w-3 h-3 mt-0.5" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-[240px] p-1.5 bg-card/95 backdrop-blur-md border border-border rounded-xl shadow-xl mt-2 animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 duration-200">
+                  {svedeniyaItems.map((item) => (
+                    <DropdownMenuItem key={item.href} asChild>
+                      <Link
+                        to={item.href}
+                        className="w-full cursor-pointer flex items-center rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-primary/10 hover:text-primary transition-colors focus:bg-primary/10 focus:text-primary outline-none"
+                      >
+                        {item.label}
+                      </Link>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              <Link to="/contact" className={navLinkClass}>
+                Контакты
+              </Link>
+            </div>
           </div>
 
           <div className="flex items-center gap-2">
             <ThemeToggle />
-            <Button asChild className="rounded-full font-bold h-9 px-5 text-sm shadow-sm transition-all hidden sm:flex">
+            <Button asChild className="rounded-full font-bold h-9 px-5 text-sm shadow-sm transition-all hidden sm:flex bg-primary hover:bg-primary/90 text-white">
               <a href={isHome ? "#contacts" : "/#contacts"}>Записаться</a>
             </Button>
             <button
@@ -239,7 +240,7 @@ const Navigation = () => {
               </div>
 
               <div className="pt-6 border-t border-border">
-                <Button asChild size="lg" className="w-full rounded-full h-14 text-base font-bold shadow-lg active:scale-95 transition-transform">
+                <Button asChild size="lg" className="w-full rounded-full h-14 text-base font-bold shadow-lg active:scale-95 transition-transform bg-primary hover:bg-primary/90 text-white">
                   <a href={isHome ? "#contacts" : "/#contacts"} onClick={() => setIsOpen(false)}>Подать заявку</a>
                 </Button>
               </div>
