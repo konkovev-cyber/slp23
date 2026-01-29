@@ -50,11 +50,11 @@ export default function AdminTeachers() {
         queryKey: ["teachers"],
         queryFn: async () => {
             const { data, error } = await supabase
-                .from("teachers")
+                .from("teachers" as any)
                 .select("*")
                 .order("sort_order", { ascending: true });
             if (error) throw error;
-            return (data ?? []) as Teacher[];
+            return (data ?? []) as unknown as Teacher[];
         },
     });
 
@@ -62,13 +62,20 @@ export default function AdminTeachers() {
         mutationFn: async (values: Partial<Teacher>) => {
             const { id, ...payload } = values;
             if (id) {
-                const { error } = await supabase.from("teachers").update(payload).eq("id", id);
+                const { error } = await supabase.from("teachers" as any).update(payload).eq("id", id);
                 if (error) throw error;
             } else {
                 // Get max order
-                const { data: max } = await supabase.from("teachers").select("sort_order").order("sort_order", { ascending: false }).limit(1).single();
-                const nextOrder = (max?.sort_order ?? 0) + 1;
-                const { error } = await supabase.from("teachers").insert([{ ...payload, sort_order: nextOrder }]);
+                const { data: max } = await supabase
+                  .from("teachers" as any)
+                  .select("sort_order")
+                  .order("sort_order", { ascending: false })
+                  .limit(1)
+                  .maybeSingle();
+                const nextOrder = ((max as any)?.sort_order ?? 0) + 1;
+                const { error } = await supabase
+                  .from("teachers" as any)
+                  .insert([{ ...payload, sort_order: nextOrder }]);
                 if (error) throw error;
             }
         },
@@ -83,7 +90,7 @@ export default function AdminTeachers() {
 
     const deleteMutation = useMutation({
         mutationFn: async (id: string) => {
-            const { error } = await supabase.from("teachers").delete().eq("id", id);
+            const { error } = await supabase.from("teachers" as any).delete().eq("id", id);
             if (error) throw error;
         },
         onSuccess: () => {

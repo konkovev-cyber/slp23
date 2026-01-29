@@ -22,6 +22,7 @@ import AdminNews from "./pages/AdminNews";
 import AboutPage from "./pages/AboutPage";
 import ProgramsPage from "./pages/ProgramsPage";
 import ClubsPage from "./pages/ClubsPage";
+import ClubDetailsPage from "./pages/ClubDetailsPage";
 import ContactPage from "./pages/ContactPage";
 import AdminTeachers from "./pages/AdminTeachers";
 import AdminSvedeniya from "./pages/AdminSvedeniya";
@@ -39,6 +40,7 @@ const App = () => (
           <Route path="/about" element={<AboutPage />} />
           <Route path="/programs" element={<ProgramsPage />} />
           <Route path="/clubs" element={<ClubsPage />} />
+          <Route path="/clubs/:slug" element={<ClubDetailsPage />} />
           <Route path="/gallery" element={<GalleryPage />} />
           <Route path="/news" element={<NewsIndex />} />
           <Route path="/news/:slug" element={<NewsPost />} />
