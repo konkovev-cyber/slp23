@@ -33,6 +33,7 @@ type Post = {
   slug: string;
   category: string;
   excerpt: string | null;
+  content?: string;
   image_url: string | null;
   published_at: string;
 };

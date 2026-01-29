@@ -14,15 +14,17 @@ export default function TeachingStaff() {
   const { data: teachers = [] } = useQuery({
     queryKey: ["teachers_public"],
     queryFn: async () => {
+      // Table can exist in the backend even if generated TS types are out of date.
+      // Cast the table name to avoid build breaks from strict typing.
       const { data, error } = await supabase
-        .from("teachers")
+        .from("teachers" as any)
         .select("*")
         .order("sort_order", { ascending: true });
       if (error) {
         console.error("Error fetching teachers:", error);
         return [];
       }
-      return data as Teacher[];
+      return (data ?? []) as unknown as Teacher[];
     },
   });
 

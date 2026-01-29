@@ -1,83 +1,15 @@
- import { motion } from "framer-motion";
- import { Card } from "@/components/ui/card";
- import { Badge } from "@/components/ui/badge";
- import { Button } from "@/components/ui/button";
- import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
- import { Palette, Music, Laptop, Globe, Camera, Dumbbell, Sparkles, Users } from "lucide-react";
- 
- const clubs = [
-   {
-     icon: Palette,
-     title: "Художественная студия",
-     age: "6-16 лет",
-     schedule: "Вт, Чт 16:00-18:00",
-     category: "creative",
-     description: "Рисование, живопись, скульптура",
-   },
-   {
-     icon: Music,
-     title: "Музыкальный кружок",
-     age: "7-14 лет",
-     schedule: "Пн, Ср 15:00-17:00",
-     category: "creative",
-     description: "Вокал, игра на инструментах",
-   },
-   {
-     icon: Laptop,
-     title: "Программирование",
-     age: "10-16 лет",
-     schedule: "Сб 10:00-13:00",
-     category: "tech",
-     description: "Scratch, Python, веб-разработка",
-   },
-   {
-     icon: Camera,
-     title: "Фото и видео",
-     age: "12-16 лет",
-     schedule: "Вс 14:00-17:00",
-     category: "tech",
-     description: "Основы фотографии и монтажа",
-   },
-   {
-     icon: Globe,
-     title: "Клуб путешественников",
-     age: "8-14 лет",
-     schedule: "Пт 16:00-18:00",
-     category: "educational",
-     description: "География, культура, языки",
-   },
-   {
-     icon: Sparkles,
-     title: "Научные эксперименты",
-     age: "7-12 лет",
-     schedule: "Чт 15:00-17:00",
-     category: "educational",
-     description: "Физика, химия, биология",
-   },
-   {
-     icon: Dumbbell,
-     title: "Спортивная секция",
-     age: "6-16 лет",
-     schedule: "Пн, Ср, Пт 17:00-19:00",
-     category: "sports",
-     description: "Общая физподготовка, игры",
-   },
-   {
-     icon: Users,
-     title: "Театральная студия",
-     age: "8-16 лет",
-     schedule: "Вт, Сб 15:00-18:00",
-     category: "creative",
-     description: "Актёрское мастерство, постановки",
-   },
- ];
+import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { clubs } from "@/lib/clubs";
  
  const Clubs = () => {
-   const getClubsByCategory = (category: string) => {
-     return clubs.filter(club => club.category === category);
-   };
+    const getClubsByCategory = (category: string) => clubs.filter((club) => club.category === category);
  
-   const ClubCard = ({ club, index }: { club: typeof clubs[0], index: number }) => (
+    const ClubCard = ({ club, index }: { club: (typeof clubs)[0]; index: number }) => (
      <motion.div
        initial={{ opacity: 0, y: 20 }}
        whileInView={{ opacity: 1, y: 0 }}
@@ -96,13 +28,13 @@
            {club.title}
          </h3>
          
-         <p className="text-muted-foreground mb-4">{club.description}</p>
+          <p className="text-muted-foreground mb-4">{club.shortDescription}</p>
          
          <div className="flex items-center justify-between mt-auto pt-4 border-t border-border">
            <span className="text-sm text-muted-foreground">{club.schedule}</span>
-           <Button variant="ghost" size="sm" className="text-primary hover:text-primary hover:bg-primary/10">
-             Подробнее
-           </Button>
+            <Button asChild variant="ghost" size="sm" className="text-primary hover:text-primary hover:bg-primary/10">
+              <Link to={`/clubs/${club.slug}`}>Подробнее</Link>
+            </Button>
          </div>
        </Card>
      </motion.div>
