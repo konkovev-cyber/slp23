@@ -46,7 +46,7 @@ const FloatingActions = () => {
             id: 'tg',
             icon: <SiTelegram className="w-5 h-5" />,
             label: "Telegram",
-            href: "https://t.me/lichnost_PLUS",
+            href: "https://t.me/julia_slp",
             color: "bg-[#0088cc] text-white"
         },
         {
