@@ -23,6 +23,7 @@ import {
   DialogTrigger
 } from "@/components/ui/dialog";
 import {
+  Table,
   TableBody,
   TableCell,
   TableHead,
@@ -32,8 +33,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import ImageUploader, { ImageValue } from "@/components/admin/ImageUploader";
 import { format } from "date-fns";
-import { ru } from "date-fns/locale";
-import { Plus, Trash2, Edit2, Download, AlertCircle, Share2, Globe, Send } from "lucide-react";
+import { Plus, Trash2, Edit2, Download, Share2, Globe, Calendar } from "lucide-react";
 
 type Post = {
   id: string;
@@ -46,31 +46,10 @@ type Post = {
   published_at: string;
 };
 
-// Placeholder for VK Import
-const ImportVkDialog = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
-  <Dialog open={isOpen} onOpenChange={onClose}>
-    <DialogContent>
-      <DialogHeader>
-        <DialogTitle>Импорт из ВКонтакте</DialogTitle>
-      </DialogHeader>
-      <div className="space-y-4 py-4">
-        <div className="flex items-center gap-2 p-4 bg-muted text-muted-foreground rounded-lg">
-          <AlertCircle className="w-5 h-5" />
-          <span>Функция находится в разработке.</span>
-        </div>
-        <p className="text-sm text-gray-500">
-          В будущем здесь появится возможность авторизоваться через VK ID, выбрать группу и импортировать посты за указанный период.
-        </p>
-      </div>
-    </DialogContent>
-  </Dialog>
-);
-
 export default function AdminNews() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [isLoadingFill, setIsLoadingFill] = useState(false);
 
   // Import State
   const [importUrl, setImportUrl] = useState("");
@@ -166,11 +145,9 @@ export default function AdminNews() {
       };
 
       if (values.id) {
-        // Update
         const { error } = await supabase.from("posts").update(payload).eq("id", values.id);
         if (error) throw error;
       } else {
-        // Insert
         const { error } = await supabase.from("posts").insert([payload]);
         if (error) throw error;
       }
@@ -196,6 +173,7 @@ export default function AdminNews() {
       published_at: new Date().toISOString().slice(0, 16),
       image_value: null,
     });
+    setImportUrl("");
   };
 
   const handleEdit = (post: Post) => {
@@ -215,28 +193,6 @@ export default function AdminNews() {
     });
     setIsCreateOpen(true);
   }
-
-  const runFillImages = async () => {
-    setIsLoadingFill(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("news-fill-images", {
-        body: { limit: 200 },
-      });
-      if (error) throw error;
-      toast({
-        title: "Готово",
-        description: `Проверено: ${data?.scanned ?? 0}, обновлено: ${data?.updated ?? 0}.`,
-      });
-    } catch (err: any) {
-      toast({
-        title: "Ошибка",
-        description: err?.message,
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoadingFill(false);
-    }
-  };
 
   return (
     <div className="space-y-6">
@@ -269,7 +225,6 @@ export default function AdminNews() {
               </DialogHeader>
 
               <div className="space-y-6 py-4">
-                {/* Unified Import Section */}
                 {!formData.id && (
                   <div className="bg-primary/5 p-4 rounded-xl border border-primary/10 shadow-sm">
                     <div className="flex flex-col gap-2">
@@ -278,7 +233,7 @@ export default function AdminNews() {
                       </Label>
                       <div className="flex items-center gap-2">
                         <div className="relative flex-1">
-                          <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground mr-2" />
+                          <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                           <Input
                             value={importUrl}
                             onChange={(e) => setImportUrl(e.target.value)}
@@ -464,8 +419,6 @@ export default function AdminNews() {
           </TableBody>
         </Table>
       </div>
-
-
     </div>
   );
 }
