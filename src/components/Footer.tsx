@@ -1,79 +1,104 @@
 import { SiInstagram, SiTelegram, SiVk } from "react-icons/si";
- 
- const Footer = () => {
-   return (
-     <footer className="bg-primary text-primary-foreground">
-       <div className="container mx-auto px-4 py-12">
-         <div className="grid md:grid-cols-4 gap-8 mb-8">
-           <div>
-             <div className="flex items-center space-x-2 mb-4">
-               <div className="w-10 h-10 bg-primary-foreground text-primary rounded-lg flex items-center justify-center">
-                 <span className="font-bold text-lg">Л+</span>
-               </div>
-               <span className="font-bold text-lg">Личность ПЛЮС</span>
-             </div>
-             <p className="text-primary-foreground/80 text-sm">
-               Частная школа дополнительного образования для детей 6–16 лет
-             </p>
-           </div>
- 
-           <div>
-             <h4 className="font-bold mb-4">Навигация</h4>
-             <ul className="space-y-2 text-sm">
-               <li><a href="#home" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors">Главная</a></li>
-               <li><a href="#programs" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors">Программы</a></li>
-               <li><a href="#clubs" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors">Кружки</a></li>
-               <li><a href="#news" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors">Новости</a></li>
-               <li><a href="#contacts" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors">Контакты</a></li>
-             </ul>
-           </div>
- 
-           <div>
-             <h4 className="font-bold mb-4">Документы</h4>
-             <ul className="space-y-2 text-sm">
-               <li><a href="#" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors">Лицензия</a></li>
-               <li><a href="#" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors">Документы</a></li>
-               <li><a href="#" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors">Политика конфиденциальности</a></li>
-               <li><a href="#" className="text-primary-foreground/80 hover:text-primary-foreground transition-colors">Вакансии</a></li>
-             </ul>
-           </div>
- 
-           <div>
-             <h4 className="font-bold mb-4">Социальные сети</h4>
-             <div className="flex space-x-3">
-               <a href="https://vk.com/lichnostplus" target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-primary-foreground/10 hover:bg-primary-foreground/20 rounded-lg flex items-center justify-center transition-colors">
-                 <SiVk className="w-5 h-5" />
-               </a>
-               <a href="https://t.me/lichnost_PLUS" target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-primary-foreground/10 hover:bg-primary-foreground/20 rounded-lg flex items-center justify-center transition-colors">
-                 <SiTelegram className="w-5 h-5" />
-               </a>
+import { Link } from "react-router-dom";
+
+const Footer = () => {
+  return (
+    <footer className="bg-background border-t border-border pt-16 pb-12">
+      <div className="container mx-auto px-4">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
+          <div className="space-y-6">
+            <div className="flex items-center space-x-2.5 group">
+              <div className="w-9 h-9 bg-primary rounded-xl flex items-center justify-center shadow-sm transition-transform group-hover:scale-105">
+                <span className="text-white font-bold text-lg">Л+</span>
+              </div>
+              <span className="font-bold text-xl text-foreground tracking-tight">Личность ПЛЮС</span>
+            </div>
+            <p className="text-muted-foreground text-[13px] font-medium leading-relaxed max-w-xs">
+              Частная общеобразовательная школа нового поколения. Создаем условия для развития лидеров будущего.
+            </p>
+            <div className="flex space-x-3 pt-2">
+              {[
+                { i: SiVk, l: "https://vk.com/lichnostplus", label: "VK" },
+                { i: SiTelegram, l: "https://t.me/lichnost_PLUS", label: "TG" },
+                { i: SiInstagram, l: "https://www.instagram.com/lichnost_plus_gk/", label: "IG" }
+              ].map((Soc, idx) => (
                 <a
-                  href="https://www.instagram.com/lichnost_plus_gk/"
+                  key={idx}
+                  href={Soc.l}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-10 h-10 bg-primary-foreground/10 hover:bg-primary-foreground/20 rounded-lg flex items-center justify-center transition-colors"
+                  aria-label={Soc.label}
+                  className="w-9 h-9 bg-muted rounded-full flex items-center justify-center border border-border hover:bg-primary/10 hover:border-primary transition-all group"
                 >
-                  <SiInstagram className="w-5 h-5" />
+                  <Soc.i className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
                 </a>
-             </div>
-             <p className="text-primary-foreground/80 text-sm mt-4">
-               <a href="mailto:slichnost5@mail.ru" className="hover:text-primary-foreground transition-colors">
-                 slichnost5@mail.ru
-               </a>
-               <br />
-               <a href="tel:+79282619928" className="hover:text-primary-foreground transition-colors">
-                 +7 (928) 261-99-28
-               </a>
-             </p>
-           </div>
-         </div>
- 
-         <div className="border-t border-primary-foreground/20 pt-8 text-center text-sm text-primary-foreground/60">
-           <p>© 2026 Частная школа дополнительного образования «Личность ПЛЮС». Все права защищены.</p>
-         </div>
-       </div>
-     </footer>
-   );
- };
- 
- export default Footer;
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <h4 className="text-foreground font-bold mb-6 uppercase tracking-wider text-[10px]">Навигация</h4>
+            <ul className="space-y-3.5">
+              {["Главная", "Новости", "Галерея", "Программы", "Кружки"].map((item) => (
+                <li key={item}>
+                  <Link
+                    to={item === "Главная" ? "/" : `/${item.toLowerCase()}`}
+                    className="text-muted-foreground hover:text-primary transition-colors text-[13px] font-medium"
+                  >
+                    {item}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="text-foreground font-bold mb-6 uppercase tracking-wider text-[10px]">Информация</h4>
+            <ul className="space-y-3.5">
+              {["Сведения", "Документы", "Лицензия", "Вакансии"].map((item) => (
+                <li key={item}>
+                  <Link
+                    to="/svedeniya"
+                    className="text-muted-foreground hover:text-primary transition-colors text-[13px] font-medium"
+                  >
+                    {item}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="text-foreground font-bold mb-6 uppercase tracking-wider text-[10px]">Контакты</h4>
+            <div className="space-y-4">
+              <p className="text-muted-foreground text-[13px] font-medium leading-relaxed">
+                Краснодарский край,<br />
+                г. Горячий Ключ, пер. Школьный, 27
+              </p>
+              <div className="space-y-1.5 pt-2">
+                <a href="tel:+79282619928" className="block text-lg font-bold text-foreground hover:text-primary transition-colors tracking-tight">
+                  +7 (928) 261-99-28
+                </a>
+                <a href="mailto:slichnost5@mail.ru" className="block text-muted-foreground font-medium hover:text-primary transition-colors text-[13px] underline underline-offset-4 decoration-border">
+                  slichnost5@mail.ru
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="border-t border-border pt-8 flex flex-col md:flex-row justify-between items-center gap-6">
+          <p className="text-muted-foreground text-[10px] font-medium uppercase tracking-widest text-center md:text-left">
+            © 2026 ЧОУ «Личность ПЛЮС». Все права защищены.
+          </p>
+          <div className="flex gap-8">
+            <Link to="/privacy" className="text-muted-foreground text-[10px] font-medium uppercase tracking-widest hover:text-foreground transition-colors">Конфиденциальность</Link>
+            <Link to="/terms" className="text-muted-foreground text-[10px] font-medium uppercase tracking-widest hover:text-foreground transition-colors">Условия</Link>
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+};
+
+export default Footer;

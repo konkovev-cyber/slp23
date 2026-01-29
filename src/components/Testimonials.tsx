@@ -1,105 +1,65 @@
 import { motion } from "framer-motion";
-import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Quote } from "lucide-react";
- 
- const testimonials = [
-   {
-     id: 1,
-     name: "Елена Петрова",
-     role: "Мама ученика 3 класса",
-     image: "/placeholder.svg",
-     text: "Моя дочь занимается в школе уже второй год. Заметны огромные изменения в её развитии - она стала более уверенной, любознательной. Педагоги умеют найти подход к каждому ребенку!",
-   },
-   {
-     id: 2,
-     name: "Дмитрий Иванов",
-     role: "Отец ученика 5 класса",
-     image: "/placeholder.svg",
-     text: "Отличная школа с индивидуальным подходом. Сын с удовольствием посещает занятия. Особенно нравятся проектные работы и кружки по робототехнике. Рекомендую всем!",
-   },
-   {
-     id: 3,
-     name: "Анна Смирнова",
-     role: "Ученица 7 класса",
-     image: "/placeholder.svg",
-     text: "Здесь я нашла настоящих друзей и любимые занятия. Учителя всегда помогут и поддержат. Мне очень нравится атмосфера школы и разнообразие кружков!",
-   },
-   {
-     id: 4,
-     name: "Сергей Козлов",
-     role: "Папа ученика 4 класса",
-     image: "/placeholder.svg",
-     text: "Прекрасная альтернатива обычной школе. Малые группы позволяют уделять больше внимания каждому ребенку. Сын стал более самостоятельным и ответственным.",
-   },
-   {
-     id: 5,
-     name: "Мария Волкова",
-     role: "Мама ученицы 6 класса",
-     image: "/placeholder.svg",
-     text: "Очень довольны выбором этой школы! Дочь получает качественное образование и развивается всесторонне. Отдельное спасибо психологу за профессиональную поддержку.",
-   },
- ];
- 
-  const Testimonials = () => {
-   return (
-     <section className="py-20 bg-muted/30" id="testimonials">
-       <div className="container mx-auto px-4">
-         <motion.div
-           initial={{ opacity: 0, y: 20 }}
-           whileInView={{ opacity: 1, y: 0 }}
-           viewport={{ once: true }}
-           transition={{ duration: 0.5 }}
-           className="text-center mb-12"
-         >
-           <h2 className="text-4xl font-bold text-foreground mb-4">
-             Отзывы родителей и учеников
-           </h2>
-           <p className="text-muted-foreground max-w-2xl mx-auto">
-             Узнайте, что говорят о нас те, кто уже выбрал «Личность ПЛЮС»
-           </p>
-         </motion.div>
- 
-          <div className="max-w-6xl mx-auto">
-            <div className="text-sm text-muted-foreground mb-3">
-              Прокрутите вправо, чтобы посмотреть остальные отзывы
-            </div>
 
-            <div className="flex gap-4 overflow-x-auto pb-2 snap-x snap-mandatory">
-              {testimonials.map((t, idx) => (
-                <motion.div
-                  key={t.id}
-                  initial={{ opacity: 0, y: 12 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.35, delay: idx * 0.05 }}
-                  className="snap-start shrink-0 basis-full sm:basis-1/2 md:basis-1/3"
-                >
-                  <Card className="p-6 bg-card shadow-lg relative h-full">
-                    <Quote className="absolute top-5 right-5 w-10 h-10 text-primary/20" />
+const testimonials = [
+  { id: 1, name: "Елена П.", role: "Мама ученика 3 класса", text: "Моя дочь занимается в школе уже второй год. Заметны огромные изменения — она стала более уверенной и любознательной. Педагоги просто замечательные!" },
+  { id: 2, name: "Дмитрий И.", role: "Отец ученика 5 класса", text: "Отличная школа с индивидуальным подходом. Сын с удовольствием посещает занятия, особенно робототехнику. Уровень знаний растет!" },
+  { id: 3, name: "Мария В.", role: "Мама ученицы 6 класса", text: "Дочь получает качественное образование и развивается всесторонне. Отдельное спасибо за психологическую поддержку и внимание к каждому." },
+  { id: 4, name: "Анна С.", role: "Ученица 7 класса", text: "Здесь я нашла настоящих друзей. Учителя всегда помогут и поддержат. Обожаю атмосферу нашей школы и перемены в холле!" },
+];
 
-                    <div className="flex items-center gap-4 mb-4">
-                      <Avatar className="w-12 h-12 border-4 border-primary/20">
-                        <AvatarImage src={t.image} />
-                        <AvatarFallback className="bg-primary text-primary-foreground text-lg">
-                          {t.name.charAt(0)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <div className="font-semibold text-foreground leading-tight">{t.name}</div>
-                        <div className="text-sm text-muted-foreground">{t.role}</div>
-                      </div>
-                    </div>
+const Testimonials = () => {
+  return (
+    <section className="py-32 bg-background relative overflow-hidden" id="testimonials">
+      <div className="container mx-auto px-4 relative z-10">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+          className="text-center mb-24"
+        >
+          <span className="text-primary font-black tracking-[0.3em] uppercase text-xs mb-4 block">Голоса сообщества</span>
+          <h2 className="text-4xl md:text-6xl font-black text-foreground mb-6 tracking-tighter">Что говорят о нас</h2>
+        </motion.div>
 
-                    <p className="text-foreground/90 italic leading-relaxed">"{t.text}"</p>
-                  </Card>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-       </div>
-     </section>
-   );
- };
- 
- export default Testimonials;
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+          {testimonials.map((t, idx) => (
+            <motion.div
+              key={t.id}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: idx * 0.1 }}
+            >
+              <div className="glass-card p-10 rounded-[3rem] h-full relative group hover:border-primary/30 transition-all flex flex-col shadow-xl">
+                <Quote className="text-primary/10 w-16 h-16 absolute top-8 right-8 group-hover:text-primary/20 transition-colors" />
+
+                <div className="relative mb-10">
+                  <Avatar className="w-20 h-20 border-4 border-background shadow-xl scale-110 group-hover:scale-125 transition-transform duration-500">
+                    <AvatarFallback className="bg-primary text-white text-2xl font-black">
+                      {t.name.charAt(0)}
+                    </AvatarFallback>
+                  </Avatar>
+                </div>
+
+                <p className="text-foreground/80 italic leading-relaxed mb-10 flex-grow font-medium text-lg">"{t.text}"</p>
+
+                <div className="pt-8 border-t border-border">
+                  <div className="font-black text-foreground text-xl tracking-tight">{t.name}</div>
+                  <div className="text-primary font-black text-[10px] uppercase tracking-widest mt-1">{t.role}</div>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+
+      {/* Background Glow */}
+      <div className="absolute bottom-0 right-0 translate-x-1/2 translate-y-1/2 w-[800px] h-[800px] bg-accent/5 blur-[150px] rounded-full" />
+    </section>
+  );
+};
+
+export default Testimonials;

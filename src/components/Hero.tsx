@@ -1,23 +1,13 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Calendar, GraduationCap } from "lucide-react";
+import { ArrowRight, Calendar, GraduationCap, Phone, CheckCircle2 } from "lucide-react";
 import { useContent } from "@/hooks/use-content";
 
 type HeroContent = {
   badge_text?: string;
-  heading_prefix?: string;
-  heading_highlight?: string;
-  lead?: string;
-  bullets?: string[];
-  phone_label?: string;
   phone?: string;
-  primary_cta?: { text?: string; action?: string; target?: string };
-  secondary_cta?: { text?: string; action?: string; target?: string };
-  // Keeping background_image type for backward compatibility if needed, 
-  // but we will primarily use the slider.
-  background_image?: { publicUrl?: string; public_url?: string; alt?: string };
-  scroll_indicator?: boolean;
+  lead?: string;
 };
 
 const SLIDER_IMAGES = [
@@ -36,135 +26,146 @@ const Hero = () => {
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentImageIndex((prev) => (prev + 1) % SLIDER_IMAGES.length);
-    }, 5000); // Change image every 5 seconds
-
+    }, 8000);
     return () => clearInterval(timer);
   }, []);
 
   if (!isVisible) return null;
 
-  const badgeText = content?.badge_text ?? "Набор открыт на 2026/2027 учебный год";
-  const headingPrefix = content?.heading_prefix ?? "«Личность ПЛЮС» —";
-  const headingHighlight = content?.heading_highlight ?? "частная общеобразовательная школа";
-  const lead =
-    content?.lead ??
-    "Дополнительное образование с углублённым изучением математики, физики и английского языка.\nОбучаем детей с 0 по 9 класс.";
-
-  const bullets =
-    content?.bullets ??
-    [
-      "— Подготовка к школе (пребывание полный день)",
-      "— Кружки и секции помимо основных предметов",
-      "— Безопасность: собственная территория под охраной и постоянным контролем",
-      "— До 16 учеников в классе — больше внимания каждому ребёнку",
-      "— Дети ходят в школу с удовольствием, а вы освобождены от домашних уроков",
-    ];
-
-  const phoneLabel = content?.phone_label ?? "Подать заявку или узнать подробности:";
-  const phone = content?.phone ?? "+79282619928";
-
-  const primaryCtaText = content?.primary_cta?.text ?? "Записаться на экскурсию";
-  const secondaryCtaText = content?.secondary_cta?.text ?? "Узнать о программах";
-  const showScrollIndicator = content?.scroll_indicator ?? true;
+  const badgeText = content?.badge_text ?? "Прием на 2026/27 год открыт";
+  const lead = content?.lead ?? "Российское образование с фокусом на результат и гармоничное развитие личности ребенка в Горячем Ключе.";
+  const phone = content?.phone ?? "+7 (928) 261-99-28";
 
   return (
-    <section id="home" className="relative min-h-screen flex items-center pt-20 overflow-hidden">
-      {/* Background Slider with Melting Effect */}
-      <AnimatePresence mode="popLayout">
-        <motion.div
-           key={currentImageIndex}
-           initial={{ opacity: 0 }}
-           animate={{ opacity: 1 }}
-           exit={{ opacity: 0 }}
-           transition={{ duration: 1.5, ease: "easeInOut" }} // "Melting" slow crossfade
-           className="absolute inset-0 z-0"
-        >
-          <img
-            src={SLIDER_IMAGES[currentImageIndex]}
-            alt="Школьная жизнь"
-            className="w-full h-full object-cover select-none"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/85 to-background/60"></div>
-        </motion.div>
-      </AnimatePresence>
-
-      {/* Content */}
-      <div className="container mx-auto px-4 relative z-10">
-        <div className="max-w-3xl">
+    <section id="home" className="relative min-h-[85vh] flex items-center pt-24 pb-12 overflow-hidden bg-[#fafafa] dark:bg-background">
+      {/* Seamless cross-fade background slider */}
+      <div className="absolute inset-0 z-0 overflow-hidden">
+        {SLIDER_IMAGES.map((img, idx) => (
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
+            key={idx}
+            initial={{ opacity: 0 }}
+            animate={{
+              opacity: currentImageIndex === idx ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 0.35 : 0.6) : 0,
+              scale: currentImageIndex === idx ? 1 : 1.05
+            }}
+            transition={{ duration: 2.5, ease: "easeInOut" }}
+            className="absolute inset-0"
+          >
+            <img
+              src={img}
+              className="w-full h-full object-cover pointer-events-none"
+              alt={`School Slide ${idx}`}
+            />
+          </motion.div>
+        ))}
+
+        {/* Slightly darker overlays for better text contrast */}
+        <div className="absolute inset-0 bg-gradient-to-r from-background via-background/50 to-transparent lg:w-3/5" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background/40 via-transparent to-background/10" />
+      </div>
+
+      <div className="container mx-auto px-4 relative z-10">
+        <div className="flex flex-col lg:flex-row items-center justify-between gap-12">
+
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            className="space-y-6"
+            className="flex-1 text-center lg:text-left space-y-6"
           >
-            <div className="inline-block">
-              <span className="bg-accent/10 text-accent px-4 py-2 rounded-full text-sm font-semibold">
+            <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 px-3 py-1 rounded-full backdrop-blur-sm shadow-sm">
+              <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+              <span className="text-[10px] font-bold tracking-widest text-primary uppercase">
                 {badgeText}
               </span>
             </div>
 
-            <h1 className="text-foreground leading-tight">
-              {headingPrefix}
-              <br />
-              <span className="text-primary">{headingHighlight}</span>
-            </h1>
+            <div className="space-y-2">
+              <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight leading-tight text-foreground drop-shadow-[0_2px_2px_rgba(255,255,255,0.5)] dark:drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)]">
+                Личность <span className="text-primary">ПЛЮС</span>
+              </h1>
+              <h2 className="text-xl md:text-3xl font-bold tracking-tight text-foreground/90 leading-tight drop-shadow-sm">
+                частная общеобразовательная школа
+              </h2>
+            </div>
 
-            <p className="text-xl text-muted-foreground max-w-2xl whitespace-pre-line">
+            <p className="text-base md:text-lg text-foreground font-semibold leading-relaxed max-w-xl mx-auto lg:mx-0 drop-shadow-sm">
               {lead}
             </p>
 
-            <ul className="text-muted-foreground space-y-2 max-w-2xl">
-              {bullets.map((t, i) => (
-                <li key={i}>{t}</li>
+            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 pt-2">
+              <Button size="default" className="rounded-full h-11 px-8 text-base font-bold shadow-md shadow-primary/20 active:scale-95 transition-all">
+                Записаться <ArrowRight className="ml-2 w-4 h-4" />
+              </Button>
+              <div className="flex items-center gap-3 py-2 px-1">
+                <div className="w-9 h-9 bg-white/50 dark:bg-black/20 rounded-full flex items-center justify-center border border-border">
+                  <Phone className="w-4 h-4 text-primary" />
+                </div>
+                <a href={`tel:${phone.replace(/\D/g, '')}`} className="text-sm font-bold text-foreground hover:text-primary transition-colors">
+                  {phone}
+                </a>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-6 pt-4">
+              {["Малые группы", "Собственный кампус", "Углубленное обучение"].map((benefit, i) => (
+                <div key={i} className="flex items-center gap-1.5 text-[12px] font-bold text-foreground/80">
+                  <CheckCircle2 className="w-4 h-4 text-primary" />
+                  <span>{benefit}</span>
+                </div>
               ))}
-            </ul>
+            </div>
+          </motion.div>
 
-            <p className="text-foreground font-semibold">
-              {phoneLabel}{" "}
-              <a className="text-primary hover:underline" href={`tel:${phone}`}>
-                {phone.startsWith("+") ? phone : `+${phone}`}
-              </a>
-            </p>
+          {/* Compact Right Side Card */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8, delay: 0.1 }}
+            className="w-full max-w-sm"
+          >
+            <div className="glass-card p-7 md:p-9 rounded-xl relative overflow-hidden group shadow-lg bg-white/80 dark:bg-card/40 backdrop-blur-md border-border">
+              <div className="absolute -top-12 -right-12 w-32 h-32 bg-primary/10 blur-[60px] rounded-full" />
 
-            <div className="flex flex-col sm:flex-row gap-4 pt-4">
-              <Button
-                size="lg"
-                className="bg-accent hover:bg-accent/90 text-accent-foreground group"
-              >
-                <Calendar className="w-5 h-5 mr-2" />
-                {primaryCtaText}
-                <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-              </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                className="border-primary text-primary hover:bg-primary hover:text-primary-foreground"
-              >
-                <GraduationCap className="w-5 h-5 mr-2" />
-                {secondaryCtaText}
-              </Button>
+              <div className="relative space-y-5">
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                    <Calendar className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-foreground">Первый шаг</h3>
+                    <p className="text-[11px] text-muted-foreground font-medium">Бесплатная экскурсия для семьи</p>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  {[
+                    { icon: GraduationCap, label: "Набор в 1-й класс", detail: "2026/27 учебный год" },
+                    { icon: Phone, label: "Обратный звонок", detail: "Перезвоним вам" }
+                  ].map((item, idx) => (
+                    <div key={idx} className="p-3 rounded-lg bg-muted/30 border border-transparent hover:border-primary/20 transition-all cursor-pointer flex items-center justify-between group/line">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-white dark:bg-background flex items-center justify-center shadow-sm">
+                          <item.icon className="w-3.5 h-3.5 text-primary" />
+                        </div>
+                        <div>
+                          <div className="font-bold text-[13px]">{item.label}</div>
+                          <div className="text-[10px] text-muted-foreground">{item.detail}</div>
+                        </div>
+                      </div>
+                      <ArrowRight className="w-3.5 h-3.5 text-muted-foreground group-hover/line:text-primary transition-transform" />
+                    </div>
+                  ))}
+                </div>
+
+                <Button className="w-full h-11 rounded-full bg-foreground text-background hover:bg-foreground/90 font-bold text-sm transition-all shadow-sm">
+                  Подать заявку
+                </Button>
+              </div>
             </div>
           </motion.div>
         </div>
       </div>
-
-      {/* Scroll Indicator */}
-      {showScrollIndicator ? (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1, duration: 1 }}
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10"
-        >
-          <motion.div
-            animate={{ y: [0, 10, 0] }}
-            transition={{ repeat: Infinity, duration: 2 }}
-            className="w-6 h-10 border-2 border-primary rounded-full flex items-start justify-center p-2"
-          >
-            <motion.div className="w-1 h-2 bg-primary rounded-full" />
-          </motion.div>
-        </motion.div>
-      ) : null}
     </section>
   );
 };

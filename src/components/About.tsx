@@ -20,30 +20,19 @@ const About = () => {
   };
 
   return (
-    <section id="about" className="py-20 bg-background">
-      <div className="container mx-auto px-4">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-16"
-        >
-          <h2 className="text-foreground mb-4">О нашей школе</h2>
-          <p className="text-muted-foreground text-lg max-w-3xl mx-auto">
-            «Личность ПЛЮС» — это пространство, где академические знания сочетаются с развитием
-            soft skills, творческим мышлением и эмоциональным интеллектом
-          </p>
-        </motion.div>
+    <section id="about" className="py-20 bg-background relative overflow-hidden">
+      <div className="container mx-auto px-4 relative z-10">
+        <div className="flex flex-col lg:flex-row gap-12 items-start max-w-5xl mx-auto">
 
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
+          {/* Video Side - Form-sized and neat */}
           <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            whileInView={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, scale: 0.98 }}
+            whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
+            transition={{ duration: 0.8 }}
+            className="w-full lg:w-[400px] shrink-0"
           >
-            <div className="max-w-sm mx-auto rounded-3xl overflow-hidden shadow-2xl relative group">
+            <div className="aspect-[3/4] rounded-xl overflow-hidden shadow-md relative group border border-border bg-muted">
               <video
                 ref={videoRef}
                 src={aboutVideo}
@@ -51,137 +40,90 @@ const About = () => {
                 loop
                 muted={isMuted}
                 playsInline
-                className="w-full h-auto object-cover"
+                className="w-full h-full object-cover brightness-95 group-hover:brightness-100 transition-all duration-700"
               />
-              {/* Overlay gradient for aesthetics */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent pointer-events-none" />
 
-              <button
-                onClick={toggleMute}
-                className="absolute bottom-4 right-4 p-2 rounded-full bg-black/40 text-white backdrop-blur-sm hover:bg-black/60 transition-colors z-10"
-                aria-label={isMuted ? "Включить звук" : "Выключить звук"}
-              >
-                {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
-              </button>
+              <div className="absolute bottom-4 right-4">
+                <button
+                  onClick={toggleMute}
+                  className="p-2.5 rounded-full bg-white/20 text-white backdrop-blur-md border border-white/20 hover:bg-white/40 transition-all shadow-sm"
+                >
+                  {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+                </button>
+              </div>
             </div>
           </motion.div>
 
+          {/* Info Side - Proportional to video */}
           <motion.div
-            initial={{ opacity: 0, x: 30 }}
+            initial={{ opacity: 0, x: 20 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
+            transition={{ duration: 0.8 }}
+            className="flex-1 space-y-8"
           >
+            <div className="space-y-3">
+              <span className="text-primary font-bold tracking-widest uppercase text-[10px] mb-1 block">О нашей школе</span>
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground leading-tight tracking-tight">Пространство для роста</h2>
+              <p className="text-sm text-muted-foreground leading-relaxed max-w-xl">
+                Личность ПЛЮС — это экосистема, где ребенка учат думать, созидать и верить в свои силы через современные методики обучения.
+              </p>
+            </div>
+
             <Tabs defaultValue="about" className="w-full">
-              <TabsList className="grid w-full grid-cols-3 mb-8">
-                <TabsTrigger value="about">О школе</TabsTrigger>
-                <TabsTrigger value="facilities">Оснащение</TabsTrigger>
-                <TabsTrigger value="leadership">Руководство</TabsTrigger>
+              <TabsList className="bg-muted/50 p-1 rounded-lg mb-6 flex h-auto w-fit">
+                <TabsTrigger value="about" className="rounded-md px-5 py-2 data-[state=active]:bg-primary data-[state=active]:text-white font-bold transition-all text-xs">Миссия</TabsTrigger>
+                <TabsTrigger value="facilities" className="rounded-md px-5 py-2 data-[state=active]:bg-primary data-[state=active]:text-white font-bold transition-all text-xs">Оснащение</TabsTrigger>
+                <TabsTrigger value="leadership" className="rounded-md px-5 py-2 data-[state=active]:bg-primary data-[state=active]:text-white font-bold transition-all text-xs">Команда</TabsTrigger>
               </TabsList>
 
-              <TabsContent value="about" className="space-y-4">
-                <Card className="p-6 bg-card border-border">
-                  <div className="flex items-start space-x-4">
-                    <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <Award className="w-6 h-6 text-primary" />
+              <div className="min-h-[220px]">
+                <TabsContent value="about" className="space-y-3 mt-0">
+                  <div className="glass-card p-5 rounded-lg space-y-3">
+                    <div className="w-9 h-9 bg-primary/10 rounded-lg flex items-center justify-center border border-primary/20">
+                      <BookOpen className="w-4 h-4 text-primary" />
                     </div>
+                    <div className="space-y-1">
+                      <h4 className="text-base font-bold text-foreground">Авторская методика</h4>
+                      <p className="text-[13px] text-muted-foreground leading-relaxed">Развиваем критическое мышление и soft skills через современный подход к предметам.</p>
+                    </div>
+                  </div>
+                  <div className="glass-card p-5 rounded-lg space-y-3">
+                    <div className="w-9 h-9 bg-accent/10 rounded-lg flex items-center justify-center border border-accent/20">
+                      <Award className="w-4 h-4 text-accent" />
+                    </div>
+                    <div className="space-y-1">
+                      <h4 className="text-base font-bold text-foreground">Лицензия и стандарты</h4>
+                      <p className="text-[13px] text-muted-foreground leading-relaxed">Лицензия государственного образца. Высокие результаты на олимпиадах.</p>
+                    </div>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="facilities" className="space-y-3 mt-0">
+                  <div className="grid grid-cols-2 gap-3">
+                    <img src={facilitiesClassroomImage} alt="Класс" className="rounded-lg border border-border aspect-video object-cover shadow-sm" />
+                    <img src={facilitiesHallImage} alt="Зал" className="rounded-lg border border-border aspect-video object-cover shadow-sm" />
+                  </div>
+                  <div className="glass-card p-5 rounded-lg">
+                    <h4 className="text-base font-bold text-foreground mb-1">Комфорт и безопасность</h4>
+                    <p className="text-[13px] text-muted-foreground leading-relaxed">Современные классы, зоны творчества, охраняемая территория и здоровое питание.</p>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="leadership" className="space-y-3 mt-0">
+                  <div className="glass-card p-5 rounded-lg flex items-center gap-4">
+                    <img src={directorKianImage} alt="Директор" className="w-16 h-16 rounded-full object-cover shadow-sm border-2 border-background" />
                     <div>
-                      <h4 className="font-bold text-foreground mb-2">Лицензия и аккредитация</h4>
-                      <p className="text-muted-foreground">
-                        Образовательная лицензия № 12345 от 15.09.2020.
-                        Все программы соответствуют ФГОС.
-                      </p>
+                      <h4 className="text-base font-bold text-foreground">Киян Юлия Юрьевна</h4>
+                      <p className="text-primary font-bold uppercase tracking-wider text-[9px] mt-0.5">Директор школы</p>
                     </div>
                   </div>
-                </Card>
-
-                <Card className="p-6 bg-card border-border">
-                  <div className="flex items-start space-x-4">
-                    <div className="w-12 h-12 bg-accent/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <BookOpen className="w-6 h-6 text-accent" />
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-foreground mb-2">Наша миссия</h4>
-                      <p className="text-muted-foreground">
-                        Создать среду, в которой каждый ребёнок сможет раскрыть свой потенциал,
-                        развить критическое мышление и стать успешной, гармоничной личностью.
-                      </p>
-                    </div>
+                  <div className="glass-card p-5 rounded-lg border-l-4 border-l-primary">
+                    <p className="text-muted-foreground italic text-sm leading-relaxed">"Мы создаем будущее, воспитывая поколение лидеров и творцов."</p>
                   </div>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="facilities" className="space-y-4">
-                <Card className="p-6 bg-card border-border">
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <img
-                      src={facilitiesClassroomImage}
-                      alt="Учебный класс школы"
-                      className="w-full rounded-xl"
-                      loading="lazy"
-                    />
-                    <img
-                      src={facilitiesHallImage}
-                      alt="Зал для занятий и тренировок"
-                      className="w-full rounded-xl"
-                      loading="lazy"
-                    />
-                  </div>
-                </Card>
-
-                <Card className="p-6 bg-card border-border">
-                  <div className="flex items-start space-x-4">
-                    <div className="w-12 h-12 bg-success/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <Building2 className="w-6 h-6 text-success" />
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-foreground mb-2">Современное оборудование</h4>
-                      <p className="text-muted-foreground">
-                        Интерактивные доски, компьютерные классы, творческие мастерские,
-                        библиотека, спортивный зал и зоны для отдыха.
-                      </p>
-                    </div>
-                  </div>
-                </Card>
-
-                <Card className="p-6 bg-card border-border">
-                  <h4 className="font-bold text-foreground mb-3">Комфортная среда</h4>
-                  <p className="text-muted-foreground">
-                    Просторные светлые классы, удобная мебель, зоны для индивидуальной
-                    и групповой работы. Безопасность обеспечивается системой видеонаблюдения.
-                  </p>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="leadership" className="space-y-4">
-                <Card className="p-6 bg-card border-border">
-                  <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-6">
-                    <img
-                      src={directorKianImage}
-                      alt="Директор школы — Киян Юлия Юрьевна"
-                      className="w-full max-w-[220px] rounded-xl object-cover"
-                      loading="lazy"
-                    />
-                    <div className="min-w-0">
-                      <h4 className="font-bold text-foreground mb-2">Директор школы</h4>
-                      <p className="text-muted-foreground mb-2">
-                        <strong className="text-foreground">Киян Юлия Юрьевна</strong>
-                      </p>
-                    </div>
-                  </div>
-                </Card>
-
-                <Card className="p-6 bg-card border-border">
-                  <h4 className="font-bold text-foreground mb-3">Методист</h4>
-                  <p className="text-muted-foreground mb-2">
-                    <strong className="text-foreground">Смирнова Анна Викторовна</strong>
-                  </p>
-                  <p className="text-muted-foreground">
-                    Эксперт по инновационным образовательным технологиям,
-                    автор учебных программ для детей младшего школьного возраста.
-                  </p>
-                </Card>
-              </TabsContent>
+                </TabsContent>
+              </div>
             </Tabs>
           </motion.div>
         </div>
