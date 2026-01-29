@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { ChevronLeft, ChevronRight, Printer } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 type Section = {
   id: string;
@@ -21,6 +23,23 @@ function buildCanonical(pathname: string) {
 export default function Svedeniya() {
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
+
+  const { data: contentMap = {} } = useQuery({
+    queryKey: ["svedeniya_content_public"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("site_content")
+        .select("content")
+        .eq("section_name", "svedeniya")
+        .maybeSingle();
+
+      if (error) {
+        console.error("Error fetching svedeniya:", error);
+        return {};
+      }
+      return (data?.content as Record<string, string>) || {};
+    },
+  });
 
   const sections: Section[] = useMemo(
     () => [
@@ -216,10 +235,18 @@ export default function Svedeniya() {
                     <p className="mt-2 text-muted-foreground">{s.lead}</p>
 
                     <div className="mt-5 space-y-3 text-foreground leading-relaxed">
-                      <p>
-                        Заполните этот блок официальной информацией (текст, таблицы, ссылки и документы). Мы можем
-                        добавить точные данные и прикрепить файлы в разделе «Документы для родителей».
-                      </p>
+                      {contentMap[s.id] ? (
+                        <div
+                          dangerouslySetInnerHTML={{ __html: contentMap[s.id] }}
+                          className="prose max-w-none dark:prose-invert"
+                        />
+                      ) : (
+                        <div className="p-4 border border-dashed rounded bg-muted/30 text-muted-foreground text-sm">
+                          <p>
+                            Заполните этот блок официальной информацией (текст, таблицы, ссылки и документы).
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </Card>
                 </section>

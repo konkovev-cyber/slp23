@@ -1,7 +1,7 @@
- import { motion } from "framer-motion";
- import { Button } from "@/components/ui/button";
- import { ArrowRight, Calendar, GraduationCap } from "lucide-react";
-import heroImage from "@/assets/hero-main.jpg";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { ArrowRight, Calendar, GraduationCap } from "lucide-react";
 import { useContent } from "@/hooks/use-content";
 
 type HeroContent = {
@@ -14,22 +14,34 @@ type HeroContent = {
   phone?: string;
   primary_cta?: { text?: string; action?: string; target?: string };
   secondary_cta?: { text?: string; action?: string; target?: string };
+  // Keeping background_image type for backward compatibility if needed, 
+  // but we will primarily use the slider.
   background_image?: { publicUrl?: string; public_url?: string; alt?: string };
   scroll_indicator?: boolean;
 };
- 
- const Hero = () => {
+
+const SLIDER_IMAGES = [
+  "https://slp23.ru/wp-content/gallery/d188d0bad0bed0bbd0b0/photo_2023-05-12_15-59-09.jpg",
+  "https://slp23.ru/wp-content/gallery/d188d0bad0bed0bbd0b0/DSC_0212.JPG",
+  "https://slp23.ru/wp-content/gallery/d188d0bad0bed0bbd0b0/NIK_1973.jpg"
+];
+
+const Hero = () => {
   const { data } = useContent<HeroContent>("hero");
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const content = data?.content;
   const isVisible = data?.is_visible ?? true;
 
-  if (!isVisible) return null;
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentImageIndex((prev) => (prev + 1) % SLIDER_IMAGES.length);
+    }, 5000); // Change image every 5 seconds
 
-  const bgUrl =
-    content?.background_image?.publicUrl ??
-    content?.background_image?.public_url ??
-    heroImage;
+    return () => clearInterval(timer);
+  }, []);
+
+  if (!isVisible) return null;
 
   const badgeText = content?.badge_text ?? "Набор открыт на 2026/2027 учебный год";
   const headingPrefix = content?.heading_prefix ?? "«Личность ПЛЮС» —";
@@ -55,97 +67,106 @@ type HeroContent = {
   const secondaryCtaText = content?.secondary_cta?.text ?? "Узнать о программах";
   const showScrollIndicator = content?.scroll_indicator ?? true;
 
-   return (
-     <section id="home" className="relative min-h-screen flex items-center pt-20">
-       {/* Background Image with Overlay */}
-       <div className="absolute inset-0 z-0">
-         <img
-            src={bgUrl}
-            alt={content?.background_image?.alt ?? "Счастливые дети в школе"}
-           className="w-full h-full object-cover"
-         />
-         <div className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/85 to-background/60"></div>
-       </div>
- 
-       {/* Content */}
-       <div className="container mx-auto px-4 relative z-10">
-         <div className="max-w-3xl">
-           <motion.div
-             initial={{ opacity: 0, y: 30 }}
-             animate={{ opacity: 1, y: 0 }}
-             transition={{ duration: 0.8 }}
-             className="space-y-6"
-           >
-             <div className="inline-block">
-               <span className="bg-accent/10 text-accent px-4 py-2 rounded-full text-sm font-semibold">
-                  {badgeText}
-               </span>
-             </div>
- 
-              <h1 className="text-foreground leading-tight">
-                 {headingPrefix}
-                <br />
-                 <span className="text-primary">{headingHighlight}</span>
-              </h1>
- 
-              <p className="text-xl text-muted-foreground max-w-2xl">
-                 {lead}
-              </p>
+  return (
+    <section id="home" className="relative min-h-screen flex items-center pt-20 overflow-hidden">
+      {/* Background Slider with Melting Effect */}
+      <AnimatePresence mode="popLayout">
+        <motion.div
+           key={currentImageIndex}
+           initial={{ opacity: 0 }}
+           animate={{ opacity: 1 }}
+           exit={{ opacity: 0 }}
+           transition={{ duration: 1.5, ease: "easeInOut" }} // "Melting" slow crossfade
+           className="absolute inset-0 z-0"
+        >
+          <img
+            src={SLIDER_IMAGES[currentImageIndex]}
+            alt="Школьная жизнь"
+            className="w-full h-full object-cover select-none"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/85 to-background/60"></div>
+        </motion.div>
+      </AnimatePresence>
 
-              <ul className="text-muted-foreground space-y-2 max-w-2xl">
-                 {bullets.map((t, i) => (
-                   <li key={i}>{t}</li>
-                 ))}
-              </ul>
-
-              <p className="text-foreground font-semibold">
-                 {phoneLabel}{" "}
-                 <a className="text-primary hover:underline" href={`tel:${phone}`}>
-                   {phone.startsWith("+") ? phone : `+${phone}`}
-                 </a>
-              </p>
- 
-             <div className="flex flex-col sm:flex-row gap-4 pt-4">
-               <Button 
-                 size="lg" 
-                 className="bg-accent hover:bg-accent/90 text-accent-foreground group"
-               >
-                 <Calendar className="w-5 h-5 mr-2" />
-                  {primaryCtaText}
-                 <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-               </Button>
-               <Button 
-                 size="lg" 
-                 variant="outline"
-                 className="border-primary text-primary hover:bg-primary hover:text-primary-foreground"
-               >
-                 <GraduationCap className="w-5 h-5 mr-2" />
-                  {secondaryCtaText}
-               </Button>
-             </div>
-           </motion.div>
-         </div>
-       </div>
- 
-       {/* Scroll Indicator */}
-        {showScrollIndicator ? (
+      {/* Content */}
+      <div className="container mx-auto px-4 relative z-10">
+        <div className="max-w-3xl">
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1, duration: 1 }}
-            className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            className="space-y-6"
           >
-            <motion.div
-              animate={{ y: [0, 10, 0] }}
-              transition={{ repeat: Infinity, duration: 2 }}
-              className="w-6 h-10 border-2 border-primary rounded-full flex items-start justify-center p-2"
-            >
-              <motion.div className="w-1 h-2 bg-primary rounded-full" />
-            </motion.div>
+            <div className="inline-block">
+              <span className="bg-accent/10 text-accent px-4 py-2 rounded-full text-sm font-semibold">
+                {badgeText}
+              </span>
+            </div>
+
+            <h1 className="text-foreground leading-tight">
+              {headingPrefix}
+              <br />
+              <span className="text-primary">{headingHighlight}</span>
+            </h1>
+
+            <p className="text-xl text-muted-foreground max-w-2xl whitespace-pre-line">
+              {lead}
+            </p>
+
+            <ul className="text-muted-foreground space-y-2 max-w-2xl">
+              {bullets.map((t, i) => (
+                <li key={i}>{t}</li>
+              ))}
+            </ul>
+
+            <p className="text-foreground font-semibold">
+              {phoneLabel}{" "}
+              <a className="text-primary hover:underline" href={`tel:${phone}`}>
+                {phone.startsWith("+") ? phone : `+${phone}`}
+              </a>
+            </p>
+
+            <div className="flex flex-col sm:flex-row gap-4 pt-4">
+              <Button
+                size="lg"
+                className="bg-accent hover:bg-accent/90 text-accent-foreground group"
+              >
+                <Calendar className="w-5 h-5 mr-2" />
+                {primaryCtaText}
+                <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                className="border-primary text-primary hover:bg-primary hover:text-primary-foreground"
+              >
+                <GraduationCap className="w-5 h-5 mr-2" />
+                {secondaryCtaText}
+              </Button>
+            </div>
           </motion.div>
-        ) : null}
-     </section>
-   );
- };
- 
- export default Hero;
+        </div>
+      </div>
+
+      {/* Scroll Indicator */}
+      {showScrollIndicator ? (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1, duration: 1 }}
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10"
+        >
+          <motion.div
+            animate={{ y: [0, 10, 0] }}
+            transition={{ repeat: Infinity, duration: 2 }}
+            className="w-6 h-10 border-2 border-primary rounded-full flex items-start justify-center p-2"
+          >
+            <motion.div className="w-1 h-2 bg-primary rounded-full" />
+          </motion.div>
+        </motion.div>
+      ) : null}
+    </section>
+  );
+};
+
+export default Hero;

@@ -22,6 +22,9 @@ import AdminNews from "./pages/AdminNews";
 import AboutPage from "./pages/AboutPage";
 import ProgramsPage from "./pages/ProgramsPage";
 import ClubsPage from "./pages/ClubsPage";
+import ContactPage from "./pages/ContactPage";
+import AdminTeachers from "./pages/AdminTeachers";
+import AdminSvedeniya from "./pages/AdminSvedeniya";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +43,7 @@ const App = () => (
           <Route path="/news" element={<NewsIndex />} />
           <Route path="/news/:slug" element={<NewsPost />} />
           <Route path="/svedeniya" element={<Svedeniya />} />
+          <Route path="/contact" element={<ContactPage />} />
           <Route path="/admin" element={<AdminLogin />} />
           <Route
             path="/admin/dashboard"
@@ -75,6 +79,26 @@ const App = () => (
               <ProtectedRoute redirectTo="/admin">
                 <AdminLayout title="Новости">
                   <AdminNews />
+                </AdminLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/teachers"
+            element={
+              <ProtectedRoute redirectTo="/admin">
+                <AdminLayout title="Преподаватели">
+                  <AdminTeachers />
+                </AdminLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/svedeniya"
+            element={
+              <ProtectedRoute redirectTo="/admin">
+                <AdminLayout title="Сведения">
+                  <AdminSvedeniya />
                 </AdminLayout>
               </ProtectedRoute>
             }

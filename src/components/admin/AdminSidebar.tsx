@@ -15,6 +15,9 @@ import {
 
 const items = [
   { title: "Дашборд", url: "/admin/dashboard", icon: LayoutDashboard },
+  { title: "Новости", url: "/admin/news", icon: LayoutTemplate }, // Using existing icon or a new one
+  { title: "Преподаватели", url: "/admin/teachers", icon: UserCog },
+  { title: "Сведения", url: "/admin/svedeniya", icon: LayoutTemplate },
   { title: "Секции", url: "/admin/sections", icon: LayoutTemplate },
   { title: "Медиа", url: "/admin/media", icon: Images },
   { title: "Доступ", url: "/admin/access", icon: ShieldCheck },

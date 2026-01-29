@@ -59,7 +59,7 @@ export default function NewsIndex() {
 
       <Navigation />
 
-      <main className="pt-20">
+      <main className="pt-28">
         <section className="py-16">
           <div className="container mx-auto px-4">
             <header className="mb-10">

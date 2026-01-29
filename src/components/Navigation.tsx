@@ -78,6 +78,11 @@ const Navigation = () => {
                     </div>
                   </NavigationMenuContent>
                 </NavigationMenuItem>
+                <NavigationMenuItem>
+                  <Link to="/contact" className="text-foreground hover:text-primary transition-colors font-medium px-4 py-2 block">
+                    Контакты
+                  </Link>
+                </NavigationMenuItem>
               </NavigationMenuList>
             </NavigationMenu>
           </div>
@@ -101,6 +106,7 @@ const Navigation = () => {
                 {isSchoolMenuOpen && (<div className="pl-4 space-y-2 mt-2">{schoolItems.map((item) => (<Link key={item.href} to={item.href} onClick={() => setIsOpen(false)} className="block py-1 text-sm text-muted-foreground hover:text-primary transition-colors">{item.label}</Link>))}</div>)}
               </div>
               <Link to="/gallery" onClick={() => setIsOpen(false)} className="block py-2 text-foreground hover:text-primary transition-colors font-medium">Галерея</Link>
+              <a href={isHome ? "#contacts" : "/#contacts"} onClick={() => setIsOpen(false)} className="block py-2 text-foreground hover:text-primary transition-colors font-medium">Контакты</a>
               <div className="border-b border-border pb-2">
                 <button onClick={() => setIsSvedeniyaMenuOpen(!isSvedeniyaMenuOpen)} className="flex items-center justify-between w-full py-2 text-foreground hover:text-primary transition-colors font-medium"><span>Сведения</span><ChevronDown className={`w-4 h-4 transition-transform ${isSvedeniyaMenuOpen ? 'rotate-180' : ''}`} /></button>
                 {isSvedeniyaMenuOpen && (<div className="pl-4 space-y-2 mt-2">{svedeniyaItems.map((item) => (<a key={item.href} href={item.href} onClick={() => setIsOpen(false)} className="block py-1 text-sm text-muted-foreground hover:text-primary transition-colors">{item.label}</a>))}</div>)}
