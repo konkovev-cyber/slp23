@@ -129,7 +129,12 @@ const Navigation = () => {
             <Button asChild className="rounded-full font-bold h-9 px-5 text-sm shadow-sm transition-all hidden sm:flex">
               <a href={isHome ? "#contacts" : "/#contacts"}>Записаться</a>
             </Button>
-            <button onClick={() => setIsOpen(!isOpen)} className="lg:hidden w-9 h-9 flex items-center justify-center text-foreground bg-muted rounded-full">
+            <button
+              onClick={() => setIsOpen(!isOpen)}
+              className="lg:hidden w-11 h-11 flex items-center justify-center text-foreground bg-muted rounded-full active:scale-95 transition-transform"
+              aria-label={isOpen ? "Закрыть меню" : "Открыть меню"}
+              aria-expanded={isOpen}
+            >
               {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
           </div>
@@ -142,23 +147,56 @@ const Navigation = () => {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="lg:hidden fixed inset-0 z-40 bg-background/98 backdrop-blur-3xl p-6 pt-20"
+            className="lg:hidden fixed inset-0 z-40 bg-background/98 backdrop-blur-3xl overflow-y-auto"
           >
-            <div className="flex flex-col space-y-5 max-w-sm mx-auto">
-              <Link to="/" onClick={() => setIsOpen(false)} className="text-2xl font-bold">Главная</Link>
-              <Link to="/gallery" onClick={() => setIsOpen(false)} className="text-2xl font-bold">Галерея</Link>
-              <Link to="/news" onClick={() => setIsOpen(false)} className="text-2xl font-bold">Новости</Link>
+            <div className="flex flex-col space-y-6 max-w-sm mx-auto p-6 pt-24 pb-8">
+              <Link
+                to="/"
+                onClick={() => setIsOpen(false)}
+                className="text-2xl font-bold py-2 active:text-primary transition-colors"
+              >
+                Главная
+              </Link>
+              <Link
+                to="/gallery"
+                onClick={() => setIsOpen(false)}
+                className="text-2xl font-bold py-2 active:text-primary transition-colors"
+              >
+                Галерея
+              </Link>
+              <Link
+                to="/news"
+                onClick={() => setIsOpen(false)}
+                className="text-2xl font-bold py-2 active:text-primary transition-colors"
+              >
+                Новости
+              </Link>
 
-              <div className="space-y-2">
-                <button onClick={() => setIsSchoolMenuOpen(!isSchoolMenuOpen)} className="flex items-center justify-between w-full text-lg font-semibold text-muted-foreground">
+              <div className="space-y-3">
+                <button
+                  onClick={() => setIsSchoolMenuOpen(!isSchoolMenuOpen)}
+                  className="flex items-center justify-between w-full text-lg font-semibold text-muted-foreground py-2 active:text-primary transition-colors min-h-[44px]"
+                  aria-expanded={isSchoolMenuOpen}
+                  aria-label="Меню раздела Школа"
+                >
                   <span>Школа</span>
-                  <ChevronDown className={cn("w-5 h-5 transition-all", isSchoolMenuOpen && "rotate-180")} />
+                  <ChevronDown className={cn("w-5 h-5 transition-all", isSchoolMenuOpen && "rotate-180")} aria-hidden="true" />
                 </button>
                 <AnimatePresence>
                   {isSchoolMenuOpen && (
-                    <motion.div className="flex flex-col gap-2 pl-4">
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      className="flex flex-col gap-3 pl-4 overflow-hidden"
+                    >
                       {schoolItems.map((item) => (
-                        <Link key={item.href} to={item.href} onClick={() => setIsOpen(false)} className="text-base font-medium">
+                        <Link
+                          key={item.href}
+                          to={item.href}
+                          onClick={() => setIsOpen(false)}
+                          className="text-base font-medium py-2 active:text-primary transition-colors min-h-[44px] flex items-center"
+                        >
                           {item.label}
                         </Link>
                       ))}
@@ -167,16 +205,31 @@ const Navigation = () => {
                 </AnimatePresence>
               </div>
 
-              <div className="space-y-2">
-                <button onClick={() => setIsSvedeniyaMenuOpen(!isSvedeniyaMenuOpen)} className="flex items-center justify-between w-full text-lg font-semibold text-muted-foreground">
+              <div className="space-y-3">
+                <button
+                  onClick={() => setIsSvedeniyaMenuOpen(!isSvedeniyaMenuOpen)}
+                  className="flex items-center justify-between w-full text-lg font-semibold text-muted-foreground py-2 active:text-primary transition-colors min-h-[44px]"
+                  aria-expanded={isSvedeniyaMenuOpen}
+                  aria-label="Меню раздела Сведения"
+                >
                   <span>Сведения</span>
-                  <ChevronDown className={cn("w-5 h-5 transition-all", isSvedeniyaMenuOpen && "rotate-180")} />
+                  <ChevronDown className={cn("w-5 h-5 transition-all", isSvedeniyaMenuOpen && "rotate-180")} aria-hidden="true" />
                 </button>
                 <AnimatePresence>
                   {isSvedeniyaMenuOpen && (
-                    <motion.div className="flex flex-col gap-2 pl-4">
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      className="flex flex-col gap-3 pl-4 overflow-hidden"
+                    >
                       {svedeniyaItems.map((item) => (
-                        <Link key={item.href} to={item.href} onClick={() => setIsOpen(false)} className="text-base font-medium">
+                        <Link
+                          key={item.href}
+                          to={item.href}
+                          onClick={() => setIsOpen(false)}
+                          className="text-base font-medium py-2 active:text-primary transition-colors min-h-[44px] flex items-center"
+                        >
                           {item.label}
                         </Link>
                       ))}
@@ -185,8 +238,8 @@ const Navigation = () => {
                 </AnimatePresence>
               </div>
 
-              <div className="pt-4">
-                <Button asChild size="lg" className="w-full rounded-full h-12 text-base font-bold">
+              <div className="pt-6 border-t border-border">
+                <Button asChild size="lg" className="w-full rounded-full h-14 text-base font-bold shadow-lg active:scale-95 transition-transform">
                   <a href={isHome ? "#contacts" : "/#contacts"} onClick={() => setIsOpen(false)}>Подать заявку</a>
                 </Button>
               </div>

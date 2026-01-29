@@ -147,31 +147,31 @@ export default function ContactPage() {
                                     <div className="grid md:grid-cols-2 gap-5">
                                         <div className="space-y-1.5">
                                             <label htmlFor="contact-name" className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground ml-1">Как к вам обращаться?</label>
-                                            <Input id="contact-name" required value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} placeholder="Имя" className="h-11 rounded-lg bg-background/50 focus:ring-1 ring-primary/20" />
+                                            <Input id="contact-name" required value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} placeholder="Имя" className="h-12 md:h-11 rounded-lg bg-background/50 focus:ring-2 ring-primary/20 text-base" />
                                         </div>
                                         <div className="space-y-1.5">
                                             <label htmlFor="contact-phone" className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground ml-1">Контактный телефон</label>
-                                            <Input id="contact-phone" required type="tel" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} placeholder="+7 (___) ___-__-__" className="h-11 rounded-lg bg-background/50 focus:ring-1 ring-primary/20" />
+                                            <Input id="contact-phone" required type="tel" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} placeholder="+7 (___) ___-__-__" className="h-12 md:h-11 rounded-lg bg-background/50 focus:ring-2 ring-primary/20 text-base" />
                                         </div>
                                     </div>
 
                                     <div className="grid md:grid-cols-2 gap-5">
                                         <div className="space-y-1.5">
                                             <label htmlFor="contact-email" className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground ml-1">Email адрес</label>
-                                            <Input id="contact-email" type="email" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} placeholder="example@mail.ru" className="h-11 rounded-lg bg-background/50 focus:ring-1 ring-primary/20" />
+                                            <Input id="contact-email" type="email" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} placeholder="example@mail.ru" className="h-12 md:h-11 rounded-lg bg-background/50 focus:ring-2 ring-primary/20 text-base" />
                                         </div>
                                         <div className="space-y-1.5">
                                             <label htmlFor="contact-age" className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground ml-1">Возраст ребёнка</label>
-                                            <Input id="contact-age" value={formData.age} onChange={e => setFormData({ ...formData, age: e.target.value })} placeholder="Например: 7 лет" className="h-11 rounded-lg bg-background/50 focus:ring-1 ring-primary/20" />
+                                            <Input id="contact-age" value={formData.age} onChange={e => setFormData({ ...formData, age: e.target.value })} placeholder="Например: 7 лет" className="h-12 md:h-11 rounded-lg bg-background/50 focus:ring-2 ring-primary/20 text-base" />
                                         </div>
                                     </div>
 
                                     <div className="space-y-1.5">
                                         <label htmlFor="contact-message" className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground ml-1">Ваше сообщение</label>
-                                        <Textarea id="contact-message" value={formData.message} onChange={e => setFormData({ ...formData, message: e.target.value })} placeholder="Задайте ваш вопрос..." rows={3} className="rounded-lg bg-background/50 focus:ring-1 ring-primary/20 resize-none p-3" />
+                                        <Textarea id="contact-message" value={formData.message} onChange={e => setFormData({ ...formData, message: e.target.value })} placeholder="Задайте ваш вопрос..." rows={4} className="rounded-lg bg-background/50 focus:ring-2 ring-primary/20 resize-none p-4 text-base min-h-[120px]" />
                                     </div>
 
-                                    <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-white font-bold h-12 rounded-full shadow-md shadow-primary/20 transition-all text-base">
+                                    <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-white font-bold h-14 md:h-12 rounded-full shadow-md shadow-primary/20 transition-all text-base active:scale-95">
                                         Отправить запрос <Send className="w-4 h-4 ml-2" aria-hidden="true" />
                                     </Button>
 

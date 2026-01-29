@@ -56,7 +56,7 @@ export default function Breadcrumbs() {
                 </script>
             </Helmet>
 
-            <nav aria-label="Навигационная цепочка" className="py-4 print-hidden">
+            <nav aria-label="Навигационная цепочка" className="py-3 md:py-4 print-hidden">
                 <ol className="flex items-center gap-2 text-sm flex-wrap">
                     {breadcrumbs.map((crumb, index) => {
                         const isLast = index === breadcrumbs.length - 1;
@@ -66,27 +66,27 @@ export default function Breadcrumbs() {
                                 {index === 0 ? (
                                     <Link
                                         to={crumb.path}
-                                        className="flex items-center gap-1.5 text-muted-foreground hover:text-primary transition-colors font-medium"
+                                        className="flex items-center gap-1.5 text-muted-foreground hover:text-primary active:text-primary transition-colors font-medium min-h-[44px] py-2"
                                         aria-label="Вернуться на главную страницу"
                                     >
                                         <Home className="w-4 h-4" aria-hidden="true" />
                                         <span className="hidden sm:inline">{crumb.label}</span>
                                     </Link>
                                 ) : isLast ? (
-                                    <span className="text-foreground font-semibold" aria-current="page">
+                                    <span className="text-foreground font-semibold py-2" aria-current="page">
                                         {crumb.label}
                                     </span>
                                 ) : (
                                     <Link
                                         to={crumb.path}
-                                        className="text-muted-foreground hover:text-primary transition-colors font-medium"
+                                        className="text-muted-foreground hover:text-primary active:text-primary transition-colors font-medium min-h-[44px] py-2"
                                     >
                                         {crumb.label}
                                     </Link>
                                 )}
 
                                 {!isLast && (
-                                    <ChevronRight className="w-4 h-4 text-muted-foreground/50" aria-hidden="true" />
+                                    <ChevronRight className="w-4 h-4 text-muted-foreground/50 flex-shrink-0" aria-hidden="true" />
                                 )}
                             </li>
                         );
