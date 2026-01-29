@@ -136,11 +136,11 @@ export default function AdminDashboard() {
             <div className="space-y-1">
               <h3 className="font-semibold text-lg">Нужна помощь?</h3>
               <p className="text-muted-foreground max-w-sm">
-                Все инструкции по наполнению сайта и работе с медиа-хранилищем находятся в разделе сведения.
+                Все инструкции по наполнению сайта и работе с медиа-хранилищем находятся в разделе инструкций.
               </p>
             </div>
             <Button variant="outline" asChild>
-              <Link to="/admin/svedeniya">Инструкции</Link>
+              <Link to="/admin/instructions">Инструкции</Link>
             </Button>
           </div>
         </Card>

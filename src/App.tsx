@@ -1,10 +1,8 @@
-```javascript
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { Calendar } from "lucide-react"; // Added Calendar import
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import NewsIndex from "./pages/NewsIndex";
@@ -63,9 +61,11 @@ const App = () => (
           <Route
             path="/admin/access"
             element={
-              <AdminLayout title="Доступ">
-                <AdminAccess />
-              </AdminLayout>
+              <ProtectedRoute redirectTo="/admin">
+                <AdminLayout title="Доступ">
+                  <AdminAccess />
+                </AdminLayout>
+              </ProtectedRoute>
             }
           />
           <Route
@@ -144,6 +144,16 @@ const App = () => (
               <ProtectedRoute redirectTo="/admin">
                 <AdminLayout title="Медиа">
                   <AdminMedia />
+                </AdminLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/instructions"
+            element={
+              <ProtectedRoute redirectTo="/admin">
+                <AdminLayout title="Инструкции">
+                  <AdminInstructions />
                 </AdminLayout>
               </ProtectedRoute>
             }

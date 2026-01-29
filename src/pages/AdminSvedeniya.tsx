@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Link } from "react-router-dom";
 
 const SECTIONS = [
     { id: "basic", title: "Основные сведения" },
@@ -86,9 +87,14 @@ export default function AdminSvedeniya() {
                     <h1 className="text-2xl font-bold">Основные сведения</h1>
                     <p className="text-muted-foreground text-sm">Редактирование содержимого разделов "Сведения об организации"</p>
                 </div>
-                <Button onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending}>
-                    {saveMutation.isPending ? "Сохранение..." : "Сохранить всё"}
-                </Button>
+                <div className="flex gap-2">
+                    <Button variant="outline" asChild>
+                        <Link to="/admin/instructions">Инструкции</Link>
+                    </Button>
+                    <Button onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending}>
+                        {saveMutation.isPending ? "Сохранение..." : "Сохранить всё"}
+                    </Button>
+                </div>
             </div>
 
             <Card className="p-6">
