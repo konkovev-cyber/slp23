@@ -65,8 +65,6 @@ export default function AdminNews() {
     category: string;
     published_at: string;
     image_value: ImageValue;
-    mediaImages: string[];
-    mediaVideos: string[];
   }>({
     title: "",
     slug: "",
@@ -75,12 +73,7 @@ export default function AdminNews() {
     category: "Анонсы",
     published_at: new Date().toISOString().slice(0, 16),
     image_value: null,
-    mediaImages: [],
-    mediaVideos: [],
   });
-
-  const [newImageUrl, setNewImageUrl] = useState("");
-  const [newVideoUrl, setNewVideoUrl] = useState("");
 
   // Helper for transliteration
   const transliterate = (text: string) => {
@@ -117,47 +110,33 @@ export default function AdminNews() {
 
       if (data) {
         const newTitle = data.title || formData.title;
-        const importedImages = Array.isArray(data.images) ? data.images : (data.image ? [data.image] : []);
-        const importedVideos = Array.isArray(data.videos) ? data.videos : [];
+        // Collect all images into a text block
+        const importedImages = Array.isArray(data.mediaList) ? data.mediaList : [data.image].filter(Boolean);
+        let mediaText = "";
+        if (importedImages.length > 1) {
+          mediaText = "\n\nИзображения:\n" + importedImages.slice(1).map((url: string) => `• ${url}`).join("\n");
+        }
 
         setFormData(prev => ({
           ...prev,
           title: newTitle,
           slug: generateUniqueSlug(newTitle),
           excerpt: data.description || prev.excerpt,
-          content: data.content || data.description || prev.content,
-          mediaImages: [...new Set([...prev.mediaImages, ...importedImages])],
-          mediaVideos: [...new Set([...prev.mediaVideos, ...importedVideos])],
-          image_value: (!prev.image_value && importedImages[0]) ? {
+          content: (data.content || data.description || prev.content) + mediaText,
+          image_value: data.image ? {
             bucket: "news",
             path: "external_link_no_delete",
-            publicUrl: importedImages[0],
+            publicUrl: data.image,
             alt: newTitle
           } : prev.image_value
         }));
-        toast({ title: "Данные загружены", description: "Поля формы заполнены." });
+        toast({ title: "Данные загружены", description: "Текст и медиа-ссылки добавлены." });
       }
     } catch (e: any) {
-      toast({ title: "Ошибка", description: "Не удалось загрузить данные: " + e.message, variant: "destructive" });
+      toast({ title: "Ошибка импорта", description: e.message, variant: "destructive" });
     } finally {
       setIsFetchingInfo(false);
     }
-  };
-
-  const insertMediaIntoContent = () => {
-    let mediaText = "\n\n";
-    if (formData.mediaImages.length > 0) {
-      mediaText += "Изображения:\n" + formData.mediaImages.map((url, i) => `${i + 1}. ${url}`).join("\n") + "\n";
-    }
-    if (formData.mediaVideos.length > 0) {
-      mediaText += "\nВидео:\n" + formData.mediaVideos.map((url, i) => `${i + 1}. ${url}`).join("\n") + "\n";
-    }
-
-    setFormData(prev => ({
-      ...prev,
-      content: prev.content + mediaText
-    }));
-    toast({ title: "Готово", description: "Ссылки вставлены в текст" });
   };
 
   const { data: posts = [], isLoading } = useQuery({
@@ -450,83 +429,15 @@ export default function AdminNews() {
                   </div>
 
                   <div className="md:col-span-2 space-y-4 pt-4 border-t border-border/50">
-                    <div className="flex items-center justify-between">
-                      <Label className="text-base font-bold flex items-center gap-2">
-                        <ImageIcon className="w-5 h-5 text-primary" />
-                        Изображение (обложка)
-                      </Label>
-                      <Button
-                        type="button"
-                        variant="link"
-                        size="sm"
-                        onClick={insertMediaIntoContent}
-                        className="text-primary font-bold h-6"
-                      >
-                        Вставить медиа-ссылки в текст
-                      </Button>
-                    </div>
+                    <Label className="text-base font-bold flex items-center gap-2">
+                      <ImageIcon className="w-5 h-5 text-primary" />
+                      Изображение (обложка)
+                    </Label>
                     <ImageUploader
                       bucket="news"
                       value={formData.image_value}
                       onChange={(v) => setFormData({ ...formData, image_value: v })}
                     />
-                  </div>
-
-                  {/* Additional Media Links UI */}
-                  <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 bg-muted/20 p-4 rounded-xl border border-border/50">
-                    {/* Images URLs */}
-                    <div className="space-y-3">
-                      <Label className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                        Доп. изображения (URL)
-                      </Label>
-                      <div className="flex gap-2">
-                        <Input
-                          placeholder="https://..."
-                          value={newImageUrl}
-                          onChange={(e) => setNewImageUrl(e.target.value)}
-                          onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), setFormData(p => ({ ...p, mediaImages: [...p.mediaImages, newImageUrl] })), setNewImageUrl(""))}
-                          className="h-9"
-                        />
-                        <Button size="icon" variant="outline" className="h-9 w-9 shrink-0" onClick={() => { if (newImageUrl) { setFormData(p => ({ ...p, mediaImages: [...new Set([...p.mediaImages, newImageUrl])] })); setNewImageUrl(""); } }}>
-                          <Plus className="w-4 h-4" />
-                        </Button>
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        {formData.mediaImages.map((url, i) => (
-                          <div key={i} className="flex items-center gap-2 bg-background border px-2 py-1 rounded-md text-[10px] group">
-                            <span className="truncate max-w-[120px]">{url.split('/').pop()}</span>
-                            <button onClick={() => setFormData(p => ({ ...p, mediaImages: p.mediaImages.filter((_, idx) => idx !== i) }))} className="text-muted-foreground hover:text-destructive"><X className="w-3 h-3" /></button>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Videos URLs */}
-                    <div className="space-y-3">
-                      <Label className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                        Видео (URL)
-                      </Label>
-                      <div className="flex gap-2">
-                        <Input
-                          placeholder="https://..."
-                          value={newVideoUrl}
-                          onChange={(e) => setNewVideoUrl(e.target.value)}
-                          onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), setFormData(p => ({ ...p, mediaVideos: [...p.mediaVideos, newVideoUrl] })), setNewVideoUrl(""))}
-                          className="h-9"
-                        />
-                        <Button size="icon" variant="outline" className="h-9 w-9 shrink-0" onClick={() => { if (newVideoUrl) { setFormData(p => ({ ...p, mediaVideos: [...new Set([...p.mediaVideos, newVideoUrl])] })); setNewVideoUrl(""); } }}>
-                          <Plus className="w-4 h-4" />
-                        </Button>
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        {formData.mediaVideos.map((url, i) => (
-                          <div key={i} className="flex items-center gap-2 bg-background border px-2 py-1 rounded-md text-[10px] group">
-                            <span className="truncate max-w-[120px]">{url.split('/').pop()}</span>
-                            <button onClick={() => setFormData(p => ({ ...p, mediaVideos: p.mediaVideos.filter((_, idx) => idx !== i) }))} className="text-muted-foreground hover:text-destructive"><X className="w-3 h-3" /></button>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
                   </div>
                 </div>
               </div>
