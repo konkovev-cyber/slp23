@@ -48,12 +48,49 @@ export default function NewsPost() {
     },
   });
 
+  // Media Parsing Logic
+  const parseMedia = (content: string) => {
+    const images: string[] = [];
+    const videos: string[] = [];
+    const urlPattern = /(https?:\/\/[^\s]+)/g;
+
+    const imageBlockMatch = content.match(/Изображения:([\s\S]*?)(?=Видео:|$)/i);
+    const videoBlockMatch = content.match(/Видео:([\s\S]*?)(?=Изображения:|$)/i);
+
+    if (imageBlockMatch) {
+      const urls = imageBlockMatch[1].match(urlPattern);
+      if (urls) images.push(...urls);
+    }
+
+    if (videoBlockMatch) {
+      const urls = videoBlockMatch[1].match(urlPattern);
+      if (urls) videos.push(...urls);
+    }
+
+    if (images.length === 0 && videos.length === 0) {
+      const allUrls = content.match(urlPattern) || [];
+      allUrls.forEach(url => {
+        if (/\.(jpg|jpeg|png|webp|gif|svg)/i.test(url)) images.push(url);
+        else if (/\.(mp4|webm|ogg|mov)/i.test(url)) videos.push(url);
+      });
+    }
+
+    let cleanContent = content
+      .replace(/Изображения:[\s\S]*?(?=Видео:|$)/i, "")
+      .replace(/Видео:[\s\S]*?(?=Изображения:|$)/i, "")
+      .trim();
+
+    return { images: [...new Set(images)], videos: [...new Set(videos)], cleanContent };
+  };
+
   const canonical = buildCanonical(`/news/${safeSlug}`);
   const title = post ? `${post.title} — Личность ПЛЮС` : "Новость — Личность ПЛЮС";
+  const { images, videos, cleanContent } = post ? parseMedia(post.content) : { images: [], videos: [], cleanContent: "" };
+
   const description = post
     ? (post.excerpt ?? stripText(post.content).slice(0, 160))
     : "Новость школы «Личность ПЛЮС».";
-  const image = post?.image_url ?? "/placeholder.svg";
+  const mainImage = post?.image_url ?? "/placeholder.svg";
 
   const publishedText = post?.published_at
     ? format(new Date(post.published_at), "d MMMM yyyy", { locale: ru })
@@ -117,21 +154,72 @@ export default function NewsPost() {
                 className="relative aspect-video rounded-2xl overflow-hidden shadow-lg border border-border/50"
               >
                 <img
-                  src={image}
+                  src={mainImage}
                   alt={post.title}
                   className="w-full h-full object-cover"
                 />
               </motion.div>
 
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="prose prose-neutral dark:prose-invert max-w-none"
-              >
-                <div className="text-foreground/90 text-base md:text-lg leading-relaxed font-medium whitespace-pre-wrap">
-                  {post.content}
-                </div>
-              </motion.div>
+              <div className="space-y-12">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="prose prose-neutral dark:prose-invert max-w-none"
+                >
+                  <div className="text-foreground/90 text-base md:text-lg leading-relaxed font-medium whitespace-pre-wrap">
+                    {cleanContent}
+                  </div>
+                </motion.div>
+
+                {(images.length > 0 || videos.length > 0) && (
+                  <section className="space-y-8 pt-8 border-t border-border/50">
+                    {videos.length > 0 && (
+                      <div className="space-y-4">
+                        <h2 className="text-xl font-bold tracking-tight">Видеоматериалы</h2>
+                        <div className="grid grid-cols-1 gap-6">
+                          {videos.map((vid, idx) => (
+                            <motion.div
+                              key={idx}
+                              initial={{ opacity: 0, y: 10 }}
+                              whileInView={{ opacity: 1, y: 0 }}
+                              viewport={{ once: true }}
+                              className="aspect-video rounded-xl overflow-hidden bg-muted border border-border/50 shadow-sm"
+                            >
+                              <video src={vid} controls className="w-full h-full" poster={mainImage}>
+                                Ваш браузер не поддерживает видео.
+                              </video>
+                            </motion.div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {images.filter(img => img !== mainImage).length > 0 && (
+                      <div className="space-y-4">
+                        <h2 className="text-xl font-bold tracking-tight">Фотогалерея</h2>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                          {images.filter(img => img !== mainImage).map((img, idx) => (
+                            <motion.div
+                              key={idx}
+                              initial={{ opacity: 0, scale: 0.9 }}
+                              whileInView={{ opacity: 1, scale: 1 }}
+                              viewport={{ once: true }}
+                              whileHover={{ scale: 1.02 }}
+                              className="aspect-square rounded-xl overflow-hidden bg-muted border border-border/50 shadow-sm cursor-zoom-in group"
+                            >
+                              <img
+                                src={img}
+                                alt={`Изображение ${idx + 1}`}
+                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                              />
+                            </motion.div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </section>
+                )}
+              </div>
             </div>
           )}
         </article>
