@@ -215,13 +215,13 @@ export default function NewsPost() {
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="prose prose-neutral dark:prose-invert max-w-none clear-both"
+                  className="prose prose-neutral dark:prose-invert max-w-none"
                 >
-                  <div className="text-foreground/90 text-base md:text-lg leading-relaxed font-medium">
+                  <div className="text-foreground/90 text-base md:text-lg leading-relaxed font-medium min-h-[300px] md:min-h-[400px]">
                     {/* Floating image for single media variant */}
                     {isSingleMedia && mediaItems[0].type === "image" && (
                       <div
-                        className="float-none md:float-left mb-4 md:mr-6 w-full md:w-[240px] rounded-xl overflow-hidden shadow-sm border border-border/40 cursor-zoom-in group bg-muted"
+                        className="float-none md:float-left mb-6 md:mr-8 w-full md:w-[280px] lg:w-[320px] rounded-xl overflow-hidden shadow-sm border border-border/40 cursor-zoom-in group bg-muted"
                         onClick={() => openLightbox(0)}
                       >
                         <img
@@ -234,6 +234,8 @@ export default function NewsPost() {
                     <div className="whitespace-pre-wrap pt-1">
                       {cleanContent}
                     </div>
+                    {/* Clearfix for short texts */}
+                    <div className="clear-both" />
                   </div>
                 </motion.div>
 
@@ -301,14 +303,13 @@ export default function NewsPost() {
           <DialogTitle className="sr-only">Просмотр изображения</DialogTitle>
           {activeIndex !== null && mediaItems[activeIndex] && (
             <div className="relative group flex flex-col items-center animate-in fade-in zoom-in duration-300">
-              {/* Floating close button - closer to image */}
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={closeLightbox}
-                className="absolute -top-4 -right-4 md:-top-6 md:-right-6 z-50 rounded-full bg-black/60 text-white hover:bg-black/80 border-none h-10 w-10 transition-all shadow-xl"
+                className="absolute -top-12 right-0 md:-top-4 md:-right-12 z-50 rounded-full bg-black/40 text-white hover:bg-black/60 border-none h-10 w-10 transition-all shadow-lg"
               >
-                <X className="w-6 h-6" />
+                <X className="w-5 h-5" />
               </Button>
 
               <div className="relative flex items-center justify-center max-h-[85vh] max-w-full">
