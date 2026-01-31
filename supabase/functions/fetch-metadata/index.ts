@@ -181,13 +181,19 @@ serve(async (req) => {
         const { url } = await req.json();
         let normalizedUrl = url.trim();
 
-        // For Telegram, remove ?single to potentially get the full album/context
-        if (normalizedUrl.includes("t.me/") && normalizedUrl.includes("?single")) {
-            normalizedUrl = normalizedUrl.replace("?single", "");
+        // For Telegram, use embed URL for better metadata/content extraction
+        let fetchUrl = normalizedUrl;
+        if (normalizedUrl.includes("t.me/")) {
+            // Remove ?single if present
+            fetchUrl = normalizedUrl.replace("?single", "");
+            // Ensure it has ?embed=1
+            if (!fetchUrl.includes("?embed=1")) {
+                fetchUrl += (fetchUrl.includes("?") ? "&" : "?") + "embed=1";
+            }
         }
 
         // Fetch the page
-        const res = await fetch(normalizedUrl, {
+        const res = await fetch(fetchUrl, {
             headers: {
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
                 "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
@@ -234,7 +240,7 @@ serve(async (req) => {
             JSON.stringify({
                 title: metadata.title,
                 description: metadata.description,
-                content: content,
+                content: content || metadata.description,
                 image: mediaList[0] || "",
                 mediaList: mediaList,
                 source: normalizedUrl.includes("t.me") ? "telegram" :
