@@ -8,7 +8,9 @@ import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
 import { motion } from "framer-motion";
-import { ArrowLeft, Clock, Calendar } from "lucide-react";
+import { ArrowLeft, Calendar, ChevronLeft, ChevronRight, X } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 type Post = {
   id: string;
@@ -96,6 +98,42 @@ export default function NewsPost() {
     ? format(new Date(post.published_at), "d MMMM yyyy", { locale: ru })
     : "";
 
+  // Общий список медиа для работы лайтбокса (изображения + видео)
+  const mediaItems = useMemo(
+    () => {
+      if (!post) return [] as { type: "image" | "video"; src: string }[];
+
+      const main = post.image_url ? [{ type: "image" as const, src: post.image_url }] : [];
+      const galleryImages = images
+        .filter((img) => img !== post.image_url)
+        .map((src) => ({ type: "image" as const, src }));
+      const galleryVideos = videos.map((src) => ({ type: "video" as const, src }));
+
+      return [...main, ...galleryImages, ...galleryVideos];
+    },
+    [post, images, videos]
+  );
+
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+
+  const openLightbox = (index: number) => {
+    if (index >= 0 && index < mediaItems.length) {
+      setActiveIndex(index);
+    }
+  };
+
+  const closeLightbox = () => setActiveIndex(null);
+
+  const showPrev = () => {
+    if (activeIndex === null || mediaItems.length === 0) return;
+    setActiveIndex((prev) => (prev! - 1 + mediaItems.length) % mediaItems.length);
+  };
+
+  const showNext = () => {
+    if (activeIndex === null || mediaItems.length === 0) return;
+    setActiveIndex((prev) => (prev! + 1) % mediaItems.length);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Helmet>
@@ -151,12 +189,14 @@ export default function NewsPost() {
               <motion.div
                 initial={{ opacity: 0, scale: 0.98 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="relative aspect-video rounded-2xl overflow-hidden shadow-lg border border-border/50"
+                className="relative aspect-video rounded-2xl overflow-hidden shadow-lg border border-border/50 cursor-zoom-in group"
+                onClick={() => openLightbox(0)}
+                aria-label="Открыть изображение в полном размере"
               >
                 <img
                   src={mainImage}
                   alt={post.title}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.02]"
                 />
               </motion.div>
 
@@ -177,13 +217,14 @@ export default function NewsPost() {
                       <div className="space-y-4">
                         <h2 className="text-xl font-bold tracking-tight">Видеоматериалы</h2>
                         <div className="grid grid-cols-1 gap-6">
-                          {videos.map((vid, idx) => (
+                           {videos.map((vid, idx) => (
                             <motion.div
                               key={idx}
                               initial={{ opacity: 0, y: 10 }}
                               whileInView={{ opacity: 1, y: 0 }}
                               viewport={{ once: true }}
-                              className="aspect-video rounded-xl overflow-hidden bg-muted border border-border/50 shadow-sm"
+                               className="aspect-video rounded-xl overflow-hidden bg-muted border border-border/50 shadow-sm cursor-zoom-in"
+                               onClick={() => openLightbox((post?.image_url ? 1 : 0) + images.filter((img) => img !== mainImage).length + idx)}
                             >
                               <video src={vid} controls className="w-full h-full" poster={mainImage}>
                                 Ваш браузер не поддерживает видео.
@@ -198,14 +239,15 @@ export default function NewsPost() {
                       <div className="space-y-4">
                         <h2 className="text-xl font-bold tracking-tight">Фотогалерея</h2>
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                          {images.filter(img => img !== mainImage).map((img, idx) => (
+                           {images.filter(img => img !== mainImage).map((img, idx) => (
                             <motion.div
                               key={idx}
                               initial={{ opacity: 0, scale: 0.9 }}
                               whileInView={{ opacity: 1, scale: 1 }}
                               viewport={{ once: true }}
                               whileHover={{ scale: 1.02 }}
-                              className="aspect-square rounded-xl overflow-hidden bg-muted border border-border/50 shadow-sm cursor-zoom-in group"
+                               className="aspect-square rounded-xl overflow-hidden bg-muted border border-border/50 shadow-sm cursor-zoom-in group"
+                               onClick={() => openLightbox((post?.image_url ? 1 : 0) + idx)}
                             >
                               <img
                                 src={img}
@@ -218,7 +260,7 @@ export default function NewsPost() {
                       </div>
                     )}
                   </section>
-                )}
+                 )}
               </div>
             </div>
           )}
@@ -226,6 +268,68 @@ export default function NewsPost() {
       </main>
 
       <Footer />
+
+      {/* Лайтбокс для полноразмерного просмотра изображений и видео */}
+      <Dialog open={activeIndex !== null} onOpenChange={(open) => !open && closeLightbox()}>
+        <DialogContent className="max-w-5xl w-full h-auto bg-background/95 p-4 md:p-6 flex flex-col gap-4">
+          {activeIndex !== null && mediaItems[activeIndex] && (
+            <div className="relative flex flex-col items-center gap-4">
+              <button
+                type="button"
+                onClick={closeLightbox}
+                className="absolute right-0 -top-2 md:-top-4 inline-flex items-center justify-center rounded-full border border-border bg-background/80 text-foreground hover:bg-muted h-8 w-8"
+                aria-label="Закрыть"
+              >
+                <X className="w-4 h-4" />
+              </button>
+
+              <div className="w-full max-h-[70vh] flex items-center justify-center">
+                {mediaItems[activeIndex].type === "image" ? (
+                  <img
+                    src={mediaItems[activeIndex].src}
+                    alt={post?.title ?? ""}
+                    className="max-h-[70vh] w-auto max-w-full object-contain rounded-xl shadow-lg"
+                  />
+                ) : (
+                  <video
+                    src={mediaItems[activeIndex].src}
+                    controls
+                    autoPlay
+                    className="max-h-[70vh] w-auto max-w-full rounded-xl shadow-lg"
+                    poster={mainImage}
+                  >
+                    Ваш браузер не поддерживает видео.
+                  </video>
+                )}
+              </div>
+
+              {mediaItems.length > 1 && (
+                <div className="flex items-center justify-between w-full mt-2">
+                  <button
+                    type="button"
+                    onClick={showPrev}
+                    className="inline-flex items-center justify-center rounded-full border border-border bg-background/80 text-foreground hover:bg-muted h-9 w-9"
+                    aria-label="Предыдущее медиа"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                  <span className="text-xs text-muted-foreground">
+                    {activeIndex + 1} / {mediaItems.length}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={showNext}
+                    className="inline-flex items-center justify-center rounded-full border border-border bg-background/80 text-foreground hover:bg-muted h-9 w-9"
+                    aria-label="Следующее медиа"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
