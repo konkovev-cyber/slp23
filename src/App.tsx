@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 // Lazy-loaded components
 const Index = lazy(() => import("./pages/Index"));
@@ -30,8 +30,14 @@ const AdminSvedeniya = lazy(() => import("./pages/AdminSvedeniya"));
 const AdminInstructions = lazy(() => import("./pages/AdminInstructions"));
 const PrivacyPage = lazy(() => import("./pages/PrivacyPage"));
 
+// School pages
+const StudentDiary = lazy(() => import("./pages/school/StudentDiaryPage"));
+const StudentGrades = lazy(() => import("./pages/school/StudentGradesPage"));
+const StudentSchedule = lazy(() => import("./pages/school/StudentSchedulePage"));
+
 import ProtectedRoute from "@/components/admin/ProtectedRoute";
 import AdminLayout from "@/components/admin/AdminLayout";
+import SchoolProtectedRoute from "@/components/school/SchoolProtectedRoute";
 
 const PageLoader = () => (
   <div className="flex items-center justify-center min-h-screen bg-background">
@@ -171,6 +177,33 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+
+            {/* School Portal Routes */}
+            <Route
+              path="/school/diary"
+              element={
+                <SchoolProtectedRoute allowedRoles={['student', 'admin']}>
+                  <StudentDiary />
+                </SchoolProtectedRoute>
+              }
+            />
+            <Route
+              path="/school/grades"
+              element={
+                <SchoolProtectedRoute allowedRoles={['student', 'parent', 'admin']}>
+                  <StudentGrades />
+                </SchoolProtectedRoute>
+              }
+            />
+            <Route
+              path="/school/schedule"
+              element={
+                <SchoolProtectedRoute allowedRoles={['student', 'teacher', 'admin']}>
+                  <StudentSchedule />
+                </SchoolProtectedRoute>
+              }
+            />
+            <Route path="/school" element={<Navigate to="/school/diary" replace />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

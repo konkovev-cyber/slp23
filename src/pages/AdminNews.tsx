@@ -119,13 +119,11 @@ export default function AdminNews() {
         // Use content from the response (properly decoded now)
         const importedContent = data.content || data.description || "";
 
-        // Build media gallery text for additional images
+        // Build media gallery text for additional images/videos
         let mediaGalleryText = "";
         if (importedImages.length > 1) {
-          mediaGalleryText = "\n\n📸 Дополнительные изображения:\n" +
-            importedImages.slice(1).map((url: string, idx: number) =>
-              `${idx + 1}. ${url}`
-            ).join("\n");
+          mediaGalleryText = "\n\nИзображения:\n" +
+            importedImages.slice(1).map((url: string) => url).join("\n");
         }
 
         setFormData(prev => ({
@@ -156,6 +154,7 @@ export default function AdminNews() {
         description: e.message || "Не удалось загрузить данные. Проверьте URL и доступность ссылки.",
         variant: "destructive"
       });
+      console.error("DEBUG: Import Full Error:", e);
     } finally {
       setIsFetchingInfo(false);
     }

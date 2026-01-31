@@ -35,7 +35,17 @@ function stripHtml(html: string): string {
 // всегда жёстко используем UTF-8.
 async function getTextWithEncoding(res: Response, _url: string): Promise<string> {
     const buffer = await res.arrayBuffer();
-    return new TextDecoder("utf-8", { fatal: false }).decode(buffer);
+    const utf8Text = new TextDecoder("utf-8").decode(buffer);
+
+    // If text contains replacement characters, it's likely not UTF-8
+    if (utf8Text.includes("") || /[\u0000-\u0008\u000B\u000C\u000E-\u001F]/.test(utf8Text)) {
+        try {
+            return new TextDecoder("windows-1251").decode(buffer);
+        } catch {
+            return utf8Text;
+        }
+    }
+    return utf8Text;
 }
 
 // Extract metadata from HTML
@@ -85,7 +95,7 @@ function extractTelegramContent(html: string) {
 
     // Extract all images from Telegram post
     const images: string[] = [];
-    const imgMatches = html.matchAll(/<a[^>]+class="[^"]*tgme_widget_message_photo_wrap[^"]*"[^>]*style="[^"]*background-image:url\('([^']+)'\)/gi);
+    const imgMatches = html.matchAll(/<a[^>]+class="[^"]*tgme_widget_message_photo_wrap[^"]*"[^>]*style="[^"]*background-image:url\(['"]?([^'"]+)['"]?\)/gi);
     for (const match of imgMatches) {
         if (match[1]) images.push(match[1]);
     }
