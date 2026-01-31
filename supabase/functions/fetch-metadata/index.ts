@@ -95,9 +95,19 @@ function extractTelegramContent(html: string) {
 
     // Extract all images from Telegram post
     const images: string[] = [];
-    const imgMatches = html.matchAll(/<a[^>]+class="[^"]*tgme_widget_message_photo_wrap[^"]*"[^>]*style="[^"]*background-image:url\(['"]?([^'"]+)['"]?\)/gi);
-    for (const match of imgMatches) {
-        if (match[1]) images.push(match[1]);
+
+    // Background images in photo wraps
+    const bgMatches = html.matchAll(/class="[^"]*tgme_widget_message_photo_wrap[^"]*"[^>]*style="[^"]*background-image:url\(['"]?([^'"]+)['"]?\)/gi);
+    for (const match of bgMatches) {
+        if (match[1] && !images.includes(match[1])) images.push(match[1]);
+    }
+
+    // Data attributes like data-src or data-url
+    const dataMatches = html.matchAll(/data-(?:src|url|image)=["']([^"']+)["']/gi);
+    for (const match of dataMatches) {
+        if (match[1] && match[1].startsWith("http") && !images.includes(match[1])) {
+            images.push(match[1]);
+        }
     }
 
     // Also try regular img tags
@@ -169,7 +179,12 @@ serve(async (req) => {
 
     try {
         const { url } = await req.json();
-        const normalizedUrl = url.trim();
+        let normalizedUrl = url.trim();
+
+        // For Telegram, remove ?single to potentially get the full album/context
+        if (normalizedUrl.includes("t.me/") && normalizedUrl.includes("?single")) {
+            normalizedUrl = normalizedUrl.replace("?single", "");
+        }
 
         // Fetch the page
         const res = await fetch(normalizedUrl, {
