@@ -221,7 +221,7 @@ export default function NewsPost() {
                     {/* Floating image for single media variant */}
                     {isSingleMedia && mediaItems[0].type === "image" && (
                       <div
-                        className="float-none md:float-left mb-6 md:mr-8 max-w-full md:max-w-[45%] rounded-xl overflow-hidden shadow-md border border-border/50 cursor-zoom-in group"
+                        className="float-none md:float-left mb-4 md:mr-6 w-full md:w-[240px] rounded-xl overflow-hidden shadow-sm border border-border/40 cursor-zoom-in group bg-muted"
                         onClick={() => openLightbox(0)}
                       >
                         <img
@@ -231,14 +231,14 @@ export default function NewsPost() {
                         />
                       </div>
                     )}
-                    <div className="whitespace-pre-wrap">
+                    <div className="whitespace-pre-wrap pt-1">
                       {cleanContent}
                     </div>
                   </div>
                 </motion.div>
 
                 {(images.length > 0 || videos.length > 0) && (
-                  <section className="space-y-8 pt-8 border-t border-border/50">
+                  <section className="space-y-8 pt-8 border-t border-border/50 clear-both">
                     {videos.length > 0 && (
                       <div className="space-y-4">
                         <h2 className="text-xl font-bold tracking-tight">Видеоматериалы</h2>
@@ -297,25 +297,21 @@ export default function NewsPost() {
 
       {/* Лайтбокс для полноразмерного просмотра изображений и видео */}
       <Dialog open={activeIndex !== null} onOpenChange={(open) => !open && closeLightbox()}>
-        <DialogContent className="max-w-5xl w-full h-auto bg-transparent border-none p-0 shadow-none flex flex-col gap-4">
+        <DialogContent className="max-w-[95vw] md:max-w-5xl w-full h-auto bg-transparent border-none p-0 shadow-none flex flex-col items-center justify-center outline-none [&>button]:hidden">
           <DialogTitle className="sr-only">Просмотр изображения</DialogTitle>
           {activeIndex !== null && mediaItems[activeIndex] && (
-            <div className="relative flex flex-col items-center gap-4 animate-in fade-in zoom-in duration-300">
-              {/* No explicit X button here as shadcn DialogContent has one, 
-                  but since we made it transparent, we might need a custom one positioned better. 
-                  However, the user complained about "2 crosses", so let's see. 
-                  Actually, with bg-transparent/p-0 the default shadcn close might be invisible. 
-                  Let's add 1 clean floating close button. */}
+            <div className="relative group flex flex-col items-center animate-in fade-in zoom-in duration-300">
+              {/* Floating close button - closer to image */}
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={closeLightbox}
-                className="absolute right-4 top-4 z-50 rounded-full bg-black/40 text-white hover:bg-black/60 hover:text-white border-none h-10 w-10 flex items-center justify-center"
+                className="absolute -top-4 -right-4 md:-top-6 md:-right-6 z-50 rounded-full bg-black/60 text-white hover:bg-black/80 border-none h-10 w-10 transition-all shadow-xl"
               >
                 <X className="w-6 h-6" />
               </Button>
 
-              <div className="w-full h-full flex items-center justify-center overflow-hidden">
+              <div className="relative flex items-center justify-center max-h-[85vh] max-w-full">
                 {mediaItems[activeIndex].type === "image" ? (
                   <img
                     src={mediaItems[activeIndex].src}
