@@ -65,6 +65,7 @@ export default function AdminNews() {
     category: string;
     published_at: string;
     image_value: ImageValue;
+    mediaList?: string[]; // Array of additional image URLs
   }>({
     title: "",
     slug: "",
@@ -73,6 +74,7 @@ export default function AdminNews() {
     category: "Анонсы",
     published_at: new Date().toISOString().slice(0, 16),
     image_value: null,
+    mediaList: [],
   });
 
   // Helper for transliteration
@@ -110,11 +112,20 @@ export default function AdminNews() {
 
       if (data) {
         const newTitle = data.title || formData.title;
-        // Collect all images into a text block
-        const importedImages = Array.isArray(data.mediaList) ? data.mediaList : [data.image].filter(Boolean);
-        let mediaText = "";
+        const importedImages = Array.isArray(data.mediaList) && data.mediaList.length > 0
+          ? data.mediaList
+          : (data.image ? [data.image] : []);
+
+        // Use content from the response (properly decoded now)
+        const importedContent = data.content || data.description || "";
+
+        // Build media gallery text for additional images
+        let mediaGalleryText = "";
         if (importedImages.length > 1) {
-          mediaText = "\n\nИзображения:\n" + importedImages.slice(1).map((url: string) => `• ${url}`).join("\n");
+          mediaGalleryText = "\n\n📸 Дополнительные изображения:\n" +
+            importedImages.slice(1).map((url: string, idx: number) =>
+              `${idx + 1}. ${url}`
+            ).join("\n");
         }
 
         setFormData(prev => ({
@@ -122,18 +133,29 @@ export default function AdminNews() {
           title: newTitle,
           slug: generateUniqueSlug(newTitle),
           excerpt: data.description || prev.excerpt,
-          content: (data.content || data.description || prev.content) + mediaText,
-          image_value: data.image ? {
+          content: importedContent + mediaGalleryText,
+          image_value: importedImages[0] ? {
             bucket: "news",
             path: "external_link_no_delete",
-            publicUrl: data.image,
+            publicUrl: importedImages[0],
             alt: newTitle
-          } : prev.image_value
+          } : prev.image_value,
+          mediaList: importedImages,
         }));
-        toast({ title: "Данные загружены", description: "Текст и медиа-ссылки добавлены." });
+
+        const imageCount = importedImages.length;
+        toast({
+          title: "✅ Данные загружены",
+          description: `Импортировано: ${imageCount} ${imageCount === 1 ? 'изображение' : imageCount < 5 ? 'изображения' : 'изображений'}`
+        });
       }
     } catch (e: any) {
-      toast({ title: "Ошибка импорта", description: e.message, variant: "destructive" });
+      console.error("Import error:", e);
+      toast({
+        title: "Ошибка импорта",
+        description: e.message || "Не удалось загрузить данные. Проверьте URL и доступность ссылки.",
+        variant: "destructive"
+      });
     } finally {
       setIsFetchingInfo(false);
     }
@@ -208,6 +230,7 @@ export default function AdminNews() {
       category: "Анонсы",
       published_at: new Date().toISOString().slice(0, 16),
       image_value: null,
+      mediaList: [],
     });
     setImportUrl("");
   };
@@ -317,15 +340,18 @@ export default function AdminNews() {
                   <div className="bg-primary/5 p-4 rounded-xl border border-primary/10 shadow-sm">
                     <div className="flex flex-col gap-2">
                       <Label className="text-xs font-semibold text-primary/70 uppercase tracking-wider">
-                        Импорт из соцсетей (VK, Telegram)
+                        🌐 Импорт из внешних источников
                       </Label>
+                      <p className="text-xs text-muted-foreground mb-1">
+                        Поддерживаются: Telegram, VK, и другие сайты с Open Graph метаданными
+                      </p>
                       <div className="flex items-center gap-2">
                         <div className="relative flex-1">
                           <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                           <Input
                             value={importUrl}
                             onChange={(e) => setImportUrl(e.target.value)}
-                            placeholder="Вставьте ссылку на пост VK или Telegram..."
+                            placeholder="Вставьте ссылку на пост (Telegram, VK) или статью..."
                             className="bg-background h-10 pl-9"
                           />
                         </div>
@@ -336,7 +362,7 @@ export default function AdminNews() {
                           className="shrink-0 gap-2"
                         >
                           <Download className="w-4 h-4" />
-                          Импорт
+                          {isFetchingInfo ? "Загрузка..." : "Импорт"}
                         </Button>
                       </div>
                     </div>
@@ -438,6 +464,61 @@ export default function AdminNews() {
                       value={formData.image_value}
                       onChange={(v) => setFormData({ ...formData, image_value: v })}
                     />
+
+                    {/* Media Gallery Preview */}
+                    {formData.mediaList && formData.mediaList.length > 0 && (
+                      <div className="space-y-3 pt-4">
+                        <div className="flex items-center justify-between">
+                          <Label className="text-sm font-semibold text-muted-foreground">
+                            📸 Импортированные изображения ({formData.mediaList.length})
+                          </Label>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 text-xs text-destructive"
+                            onClick={() => setFormData({ ...formData, mediaList: [] })}
+                          >
+                            <X className="w-3 h-3 mr-1" />
+                            Очистить все
+                          </Button>
+                        </div>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                          {formData.mediaList.map((url, idx) => (
+                            <div key={idx} className="relative group">
+                              <div className="aspect-square rounded-lg overflow-hidden bg-muted border border-border">
+                                <img
+                                  src={url}
+                                  alt={`Изображение ${idx + 1}`}
+                                  className="w-full h-full object-cover"
+                                  onError={(e) => {
+                                    (e.target as HTMLImageElement).src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect fill="%23ddd" width="100" height="100"/><text x="50%" y="50%" text-anchor="middle" dy=".3em" fill="%23999">Ошибка</text></svg>';
+                                  }}
+                                />
+                              </div>
+                              <Button
+                                type="button"
+                                variant="destructive"
+                                size="icon"
+                                className="absolute -top-2 -right-2 h-6 w-6 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                                onClick={() => {
+                                  const newList = formData.mediaList?.filter((_, i) => i !== idx) || [];
+                                  setFormData({ ...formData, mediaList: newList });
+                                }}
+                              >
+                                <X className="w-3 h-3" />
+                              </Button>
+                              <div className="absolute bottom-1 left-1 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded">
+                                #{idx + 1}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          💡 Первое изображение используется как обложка. Остальные добавлены в текст новости.
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
