@@ -9,7 +9,9 @@ import { format } from "date-fns";
 import { ru } from "date-fns/locale";
 import { motion } from "framer-motion";
 import { ArrowLeft, Calendar, ChevronLeft, ChevronRight, X } from "lucide-react";
+import { useMemo, useState } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 type Post = {
