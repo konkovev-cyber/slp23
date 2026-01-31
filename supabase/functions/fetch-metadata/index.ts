@@ -29,33 +29,13 @@ function stripHtml(html: string): string {
         .trim();
 }
 
-// Detect and decode text with proper encoding
-async function getTextWithEncoding(res: Response, url: string): Promise<string> {
+// Decode response body strictly as UTF-8.
+// Раньше здесь была эвристика с windows-1251, из-за которой UTF-8 текст
+// из Telegram/VK иногда превращался в "кракозябры". По требованию теперь
+// всегда жёстко используем UTF-8.
+async function getTextWithEncoding(res: Response, _url: string): Promise<string> {
     const buffer = await res.arrayBuffer();
-
-    // Always try UTF-8 first for social media and modern sites
-    const isSocial = url.includes("t.me") || url.includes("vk.com") ||
-        url.includes("instagram.com") || url.includes("facebook.com");
-
-    if (isSocial) {
-        return new TextDecoder("utf-8").decode(buffer);
-    }
-
-    // Try UTF-8 first
-    const utf8Text = new TextDecoder("utf-8", { fatal: false }).decode(buffer);
-
-    // Check if text contains replacement characters or control characters (indicates wrong encoding)
-    if (utf8Text.includes("�") || /[\u0000-\u0008\u000B\u000C\u000E-\u001F]/.test(utf8Text)) {
-        // Try windows-1251 for Cyrillic sites
-        try {
-            return new TextDecoder("windows-1251").decode(buffer);
-        } catch {
-            // Fallback to UTF-8
-            return utf8Text;
-        }
-    }
-
-    return utf8Text;
+    return new TextDecoder("utf-8", { fatal: false }).decode(buffer);
 }
 
 // Extract metadata from HTML
