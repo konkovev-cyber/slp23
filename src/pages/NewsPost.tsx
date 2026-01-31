@@ -9,8 +9,8 @@ import { format } from "date-fns";
 import { ru } from "date-fns/locale";
 import { motion } from "framer-motion";
 import { ArrowLeft, Calendar, ChevronLeft, ChevronRight, X } from "lucide-react";
-import { useMemo, useState } from "react";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
 
 type Post = {
   id: string;
@@ -115,6 +115,7 @@ export default function NewsPost() {
   );
 
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const isSingleMedia = mediaItems.length === 1;
 
   const openLightbox = (index: number) => {
     if (index >= 0 && index < mediaItems.length) {
@@ -186,28 +187,51 @@ export default function NewsPost() {
                 </h1>
               </header>
 
-              <motion.div
-                initial={{ opacity: 0, scale: 0.98 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="relative aspect-video rounded-2xl overflow-hidden shadow-lg border border-border/50 cursor-zoom-in group"
-                onClick={() => openLightbox(0)}
-                aria-label="Открыть изображение в полном размере"
-              >
-                <img
-                  src={mainImage}
-                  alt={post.title}
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.02]"
-                />
-              </motion.div>
+              {/* Main Image - Only shown as full-width if multiple items exist, otherwise it floats below */}
+              {!isSingleMedia && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.98 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="relative aspect-video rounded-2xl overflow-hidden shadow-lg border border-border/50 cursor-zoom-in group"
+                  onClick={() => openLightbox(0)}
+                  aria-label="Открыть изображение в полном размере"
+                >
+                  <img
+                    src={mainImage}
+                    alt={post.title}
+                    className="w-full h-full object-contain bg-black/5 transition-transform duration-700 group-hover:scale-[1.02]"
+                  />
+                  <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <div className="bg-white/20 backdrop-blur-md p-3 rounded-full">
+                      <ChevronRight className="w-6 h-6 text-white" />
+                    </div>
+                  </div>
+                </motion.div>
+              )}
 
               <div className="space-y-12">
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="prose prose-neutral dark:prose-invert max-w-none"
+                  className="prose prose-neutral dark:prose-invert max-w-none clear-both"
                 >
-                  <div className="text-foreground/90 text-base md:text-lg leading-relaxed font-medium whitespace-pre-wrap">
-                    {cleanContent}
+                  <div className="text-foreground/90 text-base md:text-lg leading-relaxed font-medium">
+                    {/* Floating image for single media variant */}
+                    {isSingleMedia && mediaItems[0].type === "image" && (
+                      <div
+                        className="float-none md:float-left mb-6 md:mr-8 max-w-full md:max-w-[45%] rounded-xl overflow-hidden shadow-md border border-border/50 cursor-zoom-in group"
+                        onClick={() => openLightbox(0)}
+                      >
+                        <img
+                          src={mediaItems[0].src}
+                          alt={post.title}
+                          className="w-full h-auto object-contain transition-transform duration-500 group-hover:scale-105 m-0"
+                        />
+                      </div>
+                    )}
+                    <div className="whitespace-pre-wrap">
+                      {cleanContent}
+                    </div>
                   </div>
                 </motion.div>
 
@@ -217,14 +241,14 @@ export default function NewsPost() {
                       <div className="space-y-4">
                         <h2 className="text-xl font-bold tracking-tight">Видеоматериалы</h2>
                         <div className="grid grid-cols-1 gap-6">
-                           {videos.map((vid, idx) => (
+                          {videos.map((vid, idx) => (
                             <motion.div
                               key={idx}
                               initial={{ opacity: 0, y: 10 }}
                               whileInView={{ opacity: 1, y: 0 }}
                               viewport={{ once: true }}
-                               className="aspect-video rounded-xl overflow-hidden bg-muted border border-border/50 shadow-sm cursor-zoom-in"
-                               onClick={() => openLightbox((post?.image_url ? 1 : 0) + images.filter((img) => img !== mainImage).length + idx)}
+                              className="aspect-video rounded-xl overflow-hidden bg-muted border border-border/50 shadow-sm cursor-zoom-in"
+                              onClick={() => openLightbox((post?.image_url ? 1 : 0) + images.filter((img) => img !== mainImage).length + idx)}
                             >
                               <video src={vid} controls className="w-full h-full" poster={mainImage}>
                                 Ваш браузер не поддерживает видео.
@@ -239,15 +263,15 @@ export default function NewsPost() {
                       <div className="space-y-4">
                         <h2 className="text-xl font-bold tracking-tight">Фотогалерея</h2>
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                           {images.filter(img => img !== mainImage).map((img, idx) => (
+                          {images.filter(img => img !== mainImage).map((img, idx) => (
                             <motion.div
                               key={idx}
                               initial={{ opacity: 0, scale: 0.9 }}
                               whileInView={{ opacity: 1, scale: 1 }}
                               viewport={{ once: true }}
                               whileHover={{ scale: 1.02 }}
-                               className="aspect-square rounded-xl overflow-hidden bg-muted border border-border/50 shadow-sm cursor-zoom-in group"
-                               onClick={() => openLightbox((post?.image_url ? 1 : 0) + idx)}
+                              className="aspect-square rounded-xl overflow-hidden bg-muted border border-border/50 shadow-sm cursor-zoom-in group"
+                              onClick={() => openLightbox((post?.image_url ? 1 : 0) + idx)}
                             >
                               <img
                                 src={img}
@@ -260,7 +284,7 @@ export default function NewsPost() {
                       </div>
                     )}
                   </section>
-                 )}
+                )}
               </div>
             </div>
           )}
@@ -271,31 +295,37 @@ export default function NewsPost() {
 
       {/* Лайтбокс для полноразмерного просмотра изображений и видео */}
       <Dialog open={activeIndex !== null} onOpenChange={(open) => !open && closeLightbox()}>
-        <DialogContent className="max-w-5xl w-full h-auto bg-background/95 p-4 md:p-6 flex flex-col gap-4">
+        <DialogContent className="max-w-5xl w-full h-auto bg-transparent border-none p-0 shadow-none flex flex-col gap-4">
+          <DialogTitle className="sr-only">Просмотр изображения</DialogTitle>
           {activeIndex !== null && mediaItems[activeIndex] && (
-            <div className="relative flex flex-col items-center gap-4">
-              <button
-                type="button"
+            <div className="relative flex flex-col items-center gap-4 animate-in fade-in zoom-in duration-300">
+              {/* No explicit X button here as shadcn DialogContent has one, 
+                  but since we made it transparent, we might need a custom one positioned better. 
+                  However, the user complained about "2 crosses", so let's see. 
+                  Actually, with bg-transparent/p-0 the default shadcn close might be invisible. 
+                  Let's add 1 clean floating close button. */}
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={closeLightbox}
-                className="absolute right-0 -top-2 md:-top-4 inline-flex items-center justify-center rounded-full border border-border bg-background/80 text-foreground hover:bg-muted h-8 w-8"
-                aria-label="Закрыть"
+                className="absolute right-4 top-4 z-50 rounded-full bg-black/40 text-white hover:bg-black/60 hover:text-white border-none h-10 w-10 flex items-center justify-center"
               >
-                <X className="w-4 h-4" />
-              </button>
+                <X className="w-6 h-6" />
+              </Button>
 
-              <div className="w-full max-h-[70vh] flex items-center justify-center">
+              <div className="w-full h-full flex items-center justify-center overflow-hidden">
                 {mediaItems[activeIndex].type === "image" ? (
                   <img
                     src={mediaItems[activeIndex].src}
                     alt={post?.title ?? ""}
-                    className="max-h-[70vh] w-auto max-w-full object-contain rounded-xl shadow-lg"
+                    className="max-h-[85vh] w-auto max-w-full object-contain rounded-lg shadow-2xl"
                   />
                 ) : (
                   <video
                     src={mediaItems[activeIndex].src}
                     controls
                     autoPlay
-                    className="max-h-[70vh] w-auto max-w-full rounded-xl shadow-lg"
+                    className="max-h-[85vh] w-auto max-w-full rounded-lg shadow-2xl"
                     poster={mainImage}
                   >
                     Ваш браузер не поддерживает видео.
@@ -304,26 +334,26 @@ export default function NewsPost() {
               </div>
 
               {mediaItems.length > 1 && (
-                <div className="flex items-center justify-between w-full mt-2">
-                  <button
-                    type="button"
+                <div className="flex items-center justify-between w-full mt-4 px-4">
+                  <Button
+                    variant="ghost"
+                    size="icon"
                     onClick={showPrev}
-                    className="inline-flex items-center justify-center rounded-full border border-border bg-background/80 text-foreground hover:bg-muted h-9 w-9"
-                    aria-label="Предыдущее медиа"
+                    className="rounded-full bg-black/20 text-white hover:bg-black/40 h-12 w-12"
                   >
-                    <ChevronLeft className="w-4 h-4" />
-                  </button>
-                  <span className="text-xs text-muted-foreground">
+                    <ChevronLeft className="w-8 h-8" />
+                  </Button>
+                  <div className="bg-black/40 backdrop-blur-md px-4 py-1.5 rounded-full text-white font-bold text-sm">
                     {activeIndex + 1} / {mediaItems.length}
-                  </span>
-                  <button
-                    type="button"
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
                     onClick={showNext}
-                    className="inline-flex items-center justify-center rounded-full border border-border bg-background/80 text-foreground hover:bg-muted h-9 w-9"
-                    aria-label="Следующее медиа"
+                    className="rounded-full bg-black/20 text-white hover:bg-black/40 h-12 w-12"
                   >
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
+                    <ChevronRight className="w-8 h-8" />
+                  </Button>
                 </div>
               )}
             </div>
