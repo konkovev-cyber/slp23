@@ -97,8 +97,7 @@ serve(async (req) => {
 
     const res = await fetch(fetchUrl, {
       headers: {
-        "User-Agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
       },
     });
 
@@ -128,12 +127,12 @@ serve(async (req) => {
       JSON.stringify({
         title: metadata.title || "Новости",
         description: metadata.description,
-        content: content || metadata.description, // Если спец. парсер не нашел текст, берем описание
+        content: content || metadata.description,
         image: mediaList[0] || "",
         mediaList: mediaList.slice(0, 15),
         source: normalizedUrl.includes("t.me") ? "telegram" : "web",
       }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json; charset=utf-8" } },
+      { headers: { ...corsHeaders, "Content-Type": "application/json; charset=utf-8" } }
     );
   } catch (e) {
     return new Response(JSON.stringify({ error: String(e) }), { status: 500, headers: corsHeaders });

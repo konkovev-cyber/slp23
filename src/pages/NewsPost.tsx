@@ -221,13 +221,13 @@ export default function NewsPost() {
                     {/* Floating image for single media variant */}
                     {isSingleMedia && mediaItems[0].type === "image" && (
                       <div
-                        className="float-none md:float-left mb-6 md:mr-8 w-full md:w-[280px] lg:w-[320px] rounded-xl overflow-hidden shadow-sm border border-border/40 cursor-zoom-in group bg-muted"
+                        className="float-none md:float-left mb-6 md:mr-8 w-fit max-w-full md:max-w-[280px] lg:max-w-[320px] rounded-xl overflow-hidden cursor-zoom-in group"
                         onClick={() => openLightbox(0)}
                       >
                         <img
                           src={mediaItems[0].src}
                           alt={post.title}
-                          className="w-full h-auto object-contain transition-transform duration-500 group-hover:scale-105 m-0"
+                          className="max-w-full h-auto object-contain transition-transform duration-500 group-hover:scale-105 m-0 block"
                         />
                       </div>
                     )}
@@ -312,12 +312,12 @@ export default function NewsPost() {
                 <X className="w-5 h-5" />
               </Button>
 
-              <div className="relative flex items-center justify-center max-h-[85vh] max-w-full">
+              <div className="relative flex items-center justify-center max-h-[85vh] max-w-full overflow-hidden">
                 {mediaItems[activeIndex].type === "image" ? (
                   <img
                     src={mediaItems[activeIndex].src}
                     alt={post?.title ?? ""}
-                    className="max-h-[85vh] w-auto max-w-full object-contain rounded-lg shadow-2xl"
+                    className="max-h-[85vh] md:max-h-[90vh] w-auto max-w-full object-contain rounded-lg shadow-2xl"
                   />
                 ) : (
                   <video
