@@ -73,6 +73,7 @@ export default function SchoolSidebar() {
                 { title: "Классы и Предметы", url: "/school/admin/classes", icon: GraduationCap },
                 { title: "Расписание (ред.)", url: "/school/admin/schedule", icon: Calendar },
                 { title: "Все оценки", url: "/school/admin/grades", icon: Award },
+                { title: "Просмотр дневника", url: "/school/diary", icon: BookOpen },
             ];
         }
 
