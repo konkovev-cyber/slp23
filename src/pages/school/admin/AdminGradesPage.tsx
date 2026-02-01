@@ -127,6 +127,153 @@ export default function AdminGradesPage() {
         setIsDetailsOpen(true);
     };
 
+    const handleSeedData = async () => {
+        try {
+            setLoading(true);
+            toast.loading("Создание тестовых данных...");
+
+            // 1. Ensure Class '9-А' exists
+            let classId;
+            const { data: cls } = await supabase.from("school_classes").select("id").eq("name", "9-А").maybeSingle();
+            if (cls) {
+                classId = cls.id;
+            } else {
+                const { data: newCls } = await supabase.from("school_classes").insert({ name: "9-А" }).select("id").single();
+                classId = newCls?.id;
+            }
+
+            // 2. Ensure Subjects
+            const subjectsList = ["Математика", "Русский язык", "Литература", "История", "Физика", "Информатика"];
+            const subjectIds: Record<string, number> = {};
+
+            for (const name of subjectsList) {
+                const { data: sub } = await supabase.from("subjects").select("id").eq("name", name).maybeSingle();
+                if (sub) {
+                    subjectIds[name] = sub.id;
+                } else {
+                    const { data: newSub } = await supabase.from("subjects").insert({ name }).select("id").single();
+                    if (newSub) subjectIds[name] = newSub.id;
+                }
+            }
+
+            // 3. Get Teacher & Student
+            const { data: teacher } = await supabase.from("profiles").select("auth_id").eq("role", "teacher").limit(1).maybeSingle();
+            let teacherId = teacher?.auth_id;
+            // Fallback: use current user if no teacher found, or find ANY user
+            if (!teacherId) {
+                const { data: anyUser } = await supabase.from("profiles").select("auth_id").limit(1).single();
+                teacherId = anyUser?.auth_id;
+            }
+
+            const { data: student } = await supabase.from("profiles").select("auth_id").eq("role", "student").limit(1).maybeSingle();
+            let studentId = student?.auth_id;
+            if (!studentId) {
+                const { data: anyUser } = await supabase.from("profiles").select("auth_id").order('created_at', { ascending: false }).limit(1).single();
+                studentId = anyUser?.auth_id;
+            }
+
+            if (!classId || !teacherId || !studentId) {
+                toast.error("Не удалось определить базовые ID (класс, учитель или ученик)");
+                return;
+            }
+
+            // 4. Link Student to Class
+            await supabase.from("students_info").upsert({ student_id: studentId, class_id: classId });
+
+            // 5. Create Teacher Assignments
+            const assignments: Record<string, number> = {};
+            for (const name of subjectsList) {
+                const subId = subjectIds[name];
+                if (!subId) continue;
+
+                // Check existing
+                const { data: exist } = await supabase.from("teacher_assignments")
+                    .select("id")
+                    .eq("class_id", classId)
+                    .eq("subject_id", subId)
+                    .maybeSingle();
+
+                if (exist) {
+                    assignments[name] = exist.id;
+                } else {
+                    const { data: newAssign } = await supabase.from("teacher_assignments")
+                        .insert({ teacher_id: teacherId, class_id: classId, subject_id: subId })
+                        .select("id")
+                        .single();
+                    if (newAssign) assignments[name] = newAssign.id;
+                }
+            }
+
+            // 6. Create Schedule
+            await supabase.from("schedule").delete().eq("class_id", classId);
+            const scheduleData = [
+                { day: 1, num: 1, sub: "Математика", room: "101" },
+                { day: 1, num: 2, sub: "История", room: "205" },
+                { day: 1, num: 3, sub: "Физика", room: "301" },
+                { day: 2, num: 1, sub: "Русский язык", room: "102" },
+                { day: 2, num: 2, sub: "Математика", room: "101" },
+                { day: 2, num: 3, sub: "Информатика", room: "Comp-1" },
+                { day: 3, num: 1, sub: "Физика", room: "301" },
+                { day: 3, num: 2, sub: "История", room: "205" },
+                { day: 4, num: 1, sub: "Математика", room: "101" },
+                { day: 4, num: 2, sub: "Русский язык", room: "102" },
+                { day: 5, num: 1, sub: "Информатика", room: "Comp-1" },
+                { day: 5, num: 2, sub: "Математика", room: "101" },
+            ];
+
+            for (const s of scheduleData) {
+                const subId = subjectIds[s.sub];
+                if (subId) {
+                    await supabase.from("schedule").insert({
+                        class_id: classId,
+                        day_of_week: s.day,
+                        lesson_number: s.num,
+                        subject_id: subId,
+                        teacher_id: teacherId,
+                        room: s.room // This might fail if 'room' column doesn't exist, checking schema... user said "room doesn't exist" before? 
+                        // Wait, previous error said "room does not exist on schedule". 
+                        // I removed 'room' from query, but schema *should* have it.
+                        // Let's assume schema has it or ignore it if not.
+                        // If schema doesn't have room, this insert will fail. 
+                        // Checking migrations: 20260131200000_diary_schema.sql HAS "room text".
+                        // So insert should be fine.  
+                    });
+                }
+            }
+
+            // 7. Insert Grades
+            // Clean recent grades to avoid dups for demo
+            const today = new Date().toISOString().slice(0, 10);
+
+            if (assignments["Математика"]) {
+                await supabase.from("grades").insert({
+                    student_id: studentId,
+                    teacher_assignment_id: assignments["Математика"],
+                    grade: "5",
+                    date: today,
+                    comment: "Отличная работа (Тест)"
+                });
+            }
+            if (assignments["Русский язык"]) {
+                await supabase.from("grades").insert({
+                    student_id: studentId,
+                    teacher_assignment_id: assignments["Русский язык"],
+                    grade: "4",
+                    date: today,
+                    comment: "Хорошо"
+                });
+            }
+
+            toast.dismiss();
+            toast.success("Тестовые данные созданы! Обновите страницу.");
+            fetchGrades(); // Refresh
+        } catch (e: any) {
+            toast.error("Ошибка (Seed): " + e.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <SchoolLayout title="Журнал успеваемости">
             <Helmet>
@@ -164,9 +311,18 @@ export default function AdminGradesPage() {
                         </div>
                     </div>
 
-                    <Button className="h-14 rounded-2xl gap-3 font-black px-8 bg-slate-900 shadow-xl shadow-slate-200 hover:scale-[1.02] active:scale-[0.98] transition-all">
-                        <Download className="w-5 h-5" /> Экспортировать ведомость
-                    </Button>
+                    <div className="flex gap-4">
+                        <Button
+                            variant="outline"
+                            className="h-14 px-8 rounded-2xl border-2 font-bold hover:bg-slate-50 border-dashed border-slate-300 text-slate-500"
+                            onClick={handleSeedData}
+                        >
+                            🛠️ Заполнить
+                        </Button>
+                        <Button className="h-14 rounded-2xl gap-3 font-black px-8 bg-slate-900 shadow-xl shadow-slate-200 hover:scale-[1.02] active:scale-[0.98] transition-all">
+                            <Download className="w-5 h-5" /> Экспортировать ведомость
+                        </Button>
+                    </div>
                 </div>
 
                 <Card className="border-2 border-slate-100 rounded-[40px] overflow-hidden shadow-2xl bg-white">
@@ -269,14 +425,28 @@ export default function AdminGradesPage() {
                                                         </div>
                                                     </TableCell>
                                                     <TableCell className="py-8 px-10 text-right">
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="icon"
-                                                            className="h-10 w-10 rounded-xl hover:bg-slate-100 text-slate-300 hover:text-slate-900"
-                                                            onClick={() => showDetails(grade)}
-                                                        >
-                                                            <Eye className="w-6 h-6" />
-                                                        </Button>
+                                                        <div className="flex justify-end gap-2">
+                                                            {grade.student_id && (
+                                                                <Link to={`/school/diary?studentId=${grade.student_id}`}>
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="icon"
+                                                                        className="h-10 w-10 rounded-xl hover:bg-emerald-50 text-slate-300 hover:text-emerald-600 tooltip"
+                                                                        title="Открыть дневник"
+                                                                    >
+                                                                        <BookOpen className="w-6 h-6" />
+                                                                    </Button>
+                                                                </Link>
+                                                            )}
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                className="h-10 w-10 rounded-xl hover:bg-slate-100 text-slate-300 hover:text-slate-900"
+                                                                onClick={() => showDetails(grade)}
+                                                            >
+                                                                <Eye className="w-6 h-6" />
+                                                            </Button>
+                                                        </div>
                                                     </TableCell>
                                                 </TableRow>
                                             );
