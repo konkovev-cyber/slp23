@@ -74,6 +74,9 @@ export default function SchoolSidebar() {
                 { title: "Расписание (ред.)", url: "/school/admin/schedule", icon: Calendar },
                 { title: "Все оценки", url: "/school/admin/grades", icon: Award },
                 { title: "Просмотр дневника", url: "/school/diary", icon: BookOpen },
+                // Enable Teacher tools for Admin
+                { title: "Мой Журнал", url: "/school/journal", icon: ClipboardList },
+                { title: "Домашнее задание", url: "/school/homework", icon: BookOpen },
             ];
         }
 
