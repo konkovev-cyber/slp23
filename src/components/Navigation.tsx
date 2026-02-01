@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Menu, X, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import ThemeToggle from "./ThemeToggle";
+import { useAuth } from "@/hooks/use-auth";
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -18,6 +19,8 @@ const Navigation = () => {
   const [isSchoolMenuOpen, setIsSchoolMenuOpen] = useState(false);
   const [isSvedeniyaMenuOpen, setIsSvedeniyaMenuOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { userId } = useAuth();
   const isHome = location.pathname === "/";
 
   useEffect(() => {
@@ -46,6 +49,12 @@ const Navigation = () => {
   ];
 
   const navLinkClass = "text-[11px] font-bold uppercase tracking-widest text-foreground/80 hover:text-primary px-4 h-10 flex items-center transition-all hover:bg-transparent focus:bg-transparent data-[state=open]:text-primary cursor-pointer outline-none";
+
+  const handleDiaryClick = () => {
+    // School portal is protected; if user isn't signed in, send them to login.
+    navigate(userId ? "/school/diary" : "/admin");
+    setIsOpen(false);
+  };
 
   return (
     <nav
@@ -127,6 +136,14 @@ const Navigation = () => {
 
           <div className="flex items-center gap-2">
             <ThemeToggle />
+            <Button
+              type="button"
+              variant="outline"
+              className="rounded-full font-bold h-9 px-4 text-sm shadow-sm transition-all hidden sm:flex"
+              onClick={handleDiaryClick}
+            >
+              Дневник
+            </Button>
             <Button asChild className="rounded-full font-bold h-9 px-5 text-sm shadow-sm transition-all hidden sm:flex bg-primary hover:bg-primary/90 text-white">
               <a href={isHome ? "#contacts" : "/#contacts"}>Записаться</a>
             </Button>
@@ -172,6 +189,15 @@ const Navigation = () => {
               >
                 Новости
               </Link>
+
+              <button
+                type="button"
+                onClick={handleDiaryClick}
+                className="text-2xl font-bold py-2 active:text-primary transition-colors text-left"
+                aria-label="Перейти в дневник"
+              >
+                Дневник
+              </button>
 
               <div className="space-y-3">
                 <button
