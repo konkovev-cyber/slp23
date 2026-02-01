@@ -71,7 +71,7 @@ export default function AdminNews() {
     slug: "",
     excerpt: "",
     content: "",
-    category: "Анонсы",
+    category: "Новости",
     published_at: new Date().toISOString().slice(0, 16),
     image_value: null,
     mediaList: [],
@@ -111,13 +111,54 @@ export default function AdminNews() {
       if (error) throw error;
 
       if (data) {
-        const newTitle = data.title || formData.title;
+        const toPlainText = (t: string) =>
+          (t ?? "")
+            .replace(/\r\n/g, "\n")
+            // remove obvious markdown bullets/headers for title/excerpt derivation
+            .replace(/^\s*[#>*\-•]+\s*/gm, "")
+            .trim();
+
+        const buildTitleFromText = (t: string) => {
+          const plain = toPlainText(t);
+          if (!plain) return "";
+          const firstLine = plain.split("\n").find(Boolean) ?? plain;
+          // Prefer a short, readable title
+          const max = 90;
+          const cutAt = (() => {
+            const candidates = [".", "!", "?", ":", "—", "–"].map((c) => firstLine.indexOf(c));
+            const valid = candidates.filter((i) => i > 20 && i < max);
+            return valid.length ? Math.min(...valid) + 1 : -1;
+          })();
+          const base = (cutAt > 0 ? firstLine.slice(0, cutAt) : firstLine.slice(0, max)).trim();
+          return base.length ? base : plain.slice(0, max).trim();
+        };
+
+        const buildExcerptFromText = (t: string) => {
+          const plain = toPlainText(t).replace(/\s+/g, " ").trim();
+          if (!plain) return "";
+          const max = 180;
+          const sentenceEnd = [".", "!", "?"]
+            .map((c) => plain.indexOf(c))
+            .filter((i) => i > 40 && i < max);
+          const cut = sentenceEnd.length ? Math.min(...sentenceEnd) + 1 : Math.min(max, plain.length);
+          const out = plain.slice(0, cut).trim();
+          return out + (plain.length > cut ? "..." : "");
+        };
+
         const importedImages = Array.isArray(data.mediaList) && data.mediaList.length > 0
           ? data.mediaList
           : (data.image ? [data.image] : []);
 
         // Use content from the response (properly decoded now)
-        const importedContent = data.content || data.description || "";
+        const importedContent = (data.content || data.description || "").trim();
+
+        // Title priority: beginning of the news text → metadata title → existing form title
+        const titleFromText = buildTitleFromText(importedContent);
+        const newTitle = titleFromText || data.title || formData.title;
+
+        // Excerpt priority: derived from imported text → metadata description → existing excerpt
+        const excerptFromText = buildExcerptFromText(importedContent);
+        const newExcerpt = excerptFromText || data.description || formData.excerpt;
 
         // Build media gallery text for additional images/videos
         let mediaGalleryText = "";
@@ -130,8 +171,9 @@ export default function AdminNews() {
           ...prev,
           title: newTitle,
           slug: generateUniqueSlug(newTitle),
-          excerpt: data.description || prev.excerpt,
-          content: importedContent + mediaGalleryText,
+          category: "Новости",
+          excerpt: newExcerpt,
+          content: (importedContent || newExcerpt) + mediaGalleryText,
           image_value: importedImages[0] ? {
             bucket: "news",
             path: "external_link_no_delete",
@@ -226,7 +268,7 @@ export default function AdminNews() {
       slug: "",
       excerpt: "",
       content: "",
-      category: "Анонсы",
+      category: "Новости",
       published_at: new Date().toISOString().slice(0, 16),
       image_value: null,
       mediaList: [],
