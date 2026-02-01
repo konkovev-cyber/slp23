@@ -22,6 +22,7 @@ import {
     TrendingUp,
     Filter
 } from "lucide-react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import SchoolLayout from "@/components/school/SchoolLayout";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -44,25 +45,28 @@ type DiaryEntry = {
 const DAYS_RU = ["Воскресенье", "Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота"];
 
 export default function StudentDiaryPage() {
-    const { userId } = useAuth();
+    const { userId: currentUserId } = useAuth();
+    const [searchParams] = useSearchParams();
+    const studentId = searchParams.get("studentId") || currentUserId;
+
     const [loading, setLoading] = useState(true);
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [diaryEntries, setDiaryEntries] = useState<DiaryEntry[]>([]);
     const [className, setClassName] = useState("");
 
     useEffect(() => {
-        if (userId) {
+        if (studentId) {
             fetchDiaryData();
         }
-    }, [userId, selectedDate]);
+    }, [studentId, selectedDate]);
 
     const fetchDiaryData = async () => {
         try {
             setLoading(true);
             const { data: studentInfo } = await supabase
-                .from("students_info" as any)
+                .from("students_info")
                 .select("class_id, school_classes(name)")
-                .eq("student_id", userId)
+                .eq("student_id", studentId)
                 .maybeSingle();
 
             if (!studentInfo) {
@@ -76,44 +80,65 @@ export default function StudentDiaryPage() {
 
             // 1. Get schedule for this day
             const { data: scheduleData } = await supabase
-                .from("schedule" as any)
+                .from("schedule")
                 .select(`
-          lesson_number,
-          room,
-          subjects(name),
-          profiles!schedule_teacher_id_fkey(full_name)
-        `)
+                    lesson_number,
+                    teacher_id,
+                    subjects(name)
+                `)
                 .eq("class_id", (studentInfo as any).class_id)
                 .eq("day_of_week", dayOfWeek)
                 .order("lesson_number");
 
+            // Fetch teacher profiles
+            const teacherIds = (scheduleData || []).map(s => s.teacher_id);
+            const { data: teachers } = await supabase
+                .from("profiles")
+                .select("auth_id, full_name")
+                .in("auth_id", teacherIds);
+
             // 2. Get grades for this day
             const { data: gradesData } = await supabase
-                .from("grades" as any)
-                .select("grade, comment, teacher_assignment_id, teacher_assignments(class_id, subject_id)")
-                .eq("student_id", userId)
+                .from("grades")
+                .select(`
+                    grade, 
+                    comment, 
+                    assignment:teacher_assignments(
+                        subject_id,
+                        subjects(name)
+                    )
+                `)
+                .eq("student_id", studentId)
                 .eq("date", dateStr);
 
-            // 3. Get homework for this date (where due_date matches or where it was assigned)
-            // Usually, we show homework that IS DUE for this date.
+            // 3. Get homework for this date
             const { data: hwData } = await supabase
-                .from("homework" as any)
-                .select("title, description, teacher_assignment_id")
+                .from("homework")
+                .select(`
+                    title, 
+                    description, 
+                    assignment:teacher_assignments(
+                        subjects(name)
+                    )
+                `)
                 .eq("due_date", dateStr);
 
             // 4. Combine
             const combined: DiaryEntry[] = (scheduleData as any[] || []).map(s => {
-                // Find assignment for this subject/class to match homework/grades
-                // Note: For simplicity, we match by subject name if teacher_assignment_id is not directly in schedule
-                // In a real app, schedule would have a column teacher_assignment_id
-                const homeworkForLesson = (hwData as any[])?.find(h => h.title.includes(s.subjects.name) || h.description?.includes(s.subjects.name));
-                const gradeForLesson = (gradesData as any[])?.find(g => (g.teacher_assignments as any)?.subjects?.name === s.subjects.name);
+                const homeworkForLesson = (hwData as any[])?.find(h =>
+                    h.assignment?.subjects?.name === s.subjects?.name
+                );
+                const gradeForLesson = (gradesData as any[])?.find(g =>
+                    g.assignment?.subjects?.name === s.subjects?.name
+                );
+
+                const teacher = teachers?.find(t => t.auth_id === s.teacher_id);
 
                 return {
                     lesson_number: s.lesson_number,
-                    subject_name: s.subjects.name,
-                    teacher_name: (s.profiles as any)?.full_name || "Преподаватель",
-                    room: s.room,
+                    subject_name: s.subjects?.name || "Предмет",
+                    teacher_name: teacher?.full_name || "Преподаватель",
+                    room: (s as any).room || null,
                     homework: homeworkForLesson ? { title: homeworkForLesson.title, description: homeworkForLesson.description } : undefined,
                     grade: gradeForLesson ? { grade: gradeForLesson.grade, comment: gradeForLesson.comment } : undefined
                 };

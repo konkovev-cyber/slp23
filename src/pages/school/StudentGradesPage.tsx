@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { BookOpen, Calendar, Clock, Loader2, Info, GraduationCap, MapPin, User, Award, ClipboardCheck, TrendingUp, Filter } from "lucide-react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import SchoolLayout from "@/components/school/SchoolLayout";
 import { toast } from "sonner";
 
@@ -27,47 +28,54 @@ type SubjectGrades = {
 };
 
 export default function StudentGradesPage() {
-    const { userId } = useAuth();
+    const { userId: currentUserId } = useAuth();
+    const [searchParams] = useSearchParams();
+    const studentId = searchParams.get("studentId") || currentUserId;
+
     const [loading, setLoading] = useState(true);
     const [subjectGrades, setSubjectGrades] = useState<SubjectGrades[]>([]);
 
     useEffect(() => {
-        if (userId) {
+        if (studentId) {
             fetchGrades();
         }
-    }, [userId]);
+    }, [studentId]);
 
     const fetchGrades = async () => {
         try {
             setLoading(true);
 
             // 1. Get student's class
-            const { data: studentInfoRaw } = await supabase
-                .from("students_info" as any)
+            const { data: studentInfo } = await supabase
+                .from("students_info")
                 .select("class_id")
-                .eq("student_id", userId)
+                .eq("student_id", studentId)
                 .maybeSingle();
 
-            const studentInfo = (studentInfoRaw as any) as { class_id?: number } | null;
-
-            if (!studentInfo) {
+            if (!studentInfo?.class_id) {
                 setLoading(false);
                 return;
             }
 
-            // 2. Fetch all assignments for this class to ensure we show all subjects
-            const { data: assignmentsRaw } = await supabase
-                .from("teacher_assignments" as any)
+            // 2. Fetch all assignments for this class
+            const { data: assignments } = await supabase
+                .from("teacher_assignments")
                 .select("id, subject_id, subjects(name)")
-                .eq("class_id", (studentInfo as any)?.class_id);
+                .eq("class_id", studentInfo.class_id);
 
-            const assignments = (assignmentsRaw as any) as any[] | null;
-
-            // 3. Fetch student's grades with joined subject info
+            // 3. Fetch student's grades
             const { data: gradesData, error } = await supabase
-                .from("grades" as any)
-                .select("*, teacher_assignments(id, subjects(name))")
-                .eq("student_id", userId)
+                .from("grades")
+                .select(`
+                    id,
+                    grade,
+                    date,
+                    comment,
+                    assignment:teacher_assignments(
+                        subjects(name)
+                    )
+                `)
+                .eq("student_id", studentId)
                 .order("date", { ascending: false });
 
             if (error) throw error;
@@ -81,7 +89,7 @@ export default function StudentGradesPage() {
             });
 
             gradesData?.forEach((g: any) => {
-                const name = g.teacher_assignments?.subjects?.name || "Предмет";
+                const name = g.assignment?.subjects?.name || "Предмет";
                 if (!groupedData[name]) groupedData[name] = [];
                 groupedData[name].push({
                     id: g.id,

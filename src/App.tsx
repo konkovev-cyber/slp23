@@ -34,6 +34,18 @@ const PrivacyPage = lazy(() => import("./pages/PrivacyPage"));
 const StudentDiary = lazy(() => import("./pages/school/StudentDiaryPage"));
 const StudentGrades = lazy(() => import("./pages/school/StudentGradesPage"));
 const StudentSchedule = lazy(() => import("./pages/school/StudentSchedulePage"));
+const StudentProfile = lazy(() => import("./pages/school/StudentProfilePage"));
+
+// School Admin pages
+const AdminUsers = lazy(() => import("./pages/school/admin/AdminUsersPage"));
+const AdminClasses = lazy(() => import("./pages/school/admin/AdminClassesPage"));
+const AdminSchedule = lazy(() => import("./pages/school/admin/AdminSchedulePage"));
+const AdminGrades = lazy(() => import("./pages/school/admin/AdminGradesPage"));
+
+// School Teacher and Parent pages
+const TeacherJournal = lazy(() => import("./pages/school/TeacherJournalPage"));
+const TeacherHomework = lazy(() => import("./pages/school/TeacherHomeworkPage"));
+const ParentChildren = lazy(() => import("./pages/school/ParentChildrenPage"));
 
 import ProtectedRoute from "@/components/admin/ProtectedRoute";
 import AdminLayout from "@/components/admin/AdminLayout";
@@ -203,6 +215,75 @@ const App = () => (
                 </SchoolProtectedRoute>
               }
             />
+            <Route
+              path="/school/profile"
+              element={
+                <SchoolProtectedRoute allowedRoles={['student', 'teacher', 'parent', 'admin']}>
+                  <StudentProfile />
+                </SchoolProtectedRoute>
+              }
+            />
+
+            {/* School Teacher & Parent Routes */}
+            <Route
+              path="/school/journal"
+              element={
+                <SchoolProtectedRoute allowedRoles={['teacher', 'admin']}>
+                  <TeacherJournal />
+                </SchoolProtectedRoute>
+              }
+            />
+            <Route
+              path="/school/homework"
+              element={
+                <SchoolProtectedRoute allowedRoles={['teacher', 'admin']}>
+                  <TeacherHomework />
+                </SchoolProtectedRoute>
+              }
+            />
+            <Route
+              path="/school/children"
+              element={
+                <SchoolProtectedRoute allowedRoles={['parent', 'admin']}>
+                  <ParentChildren />
+                </SchoolProtectedRoute>
+              }
+            />
+
+            {/* School Admin Routes */}
+            <Route
+              path="/school/admin/users"
+              element={
+                <SchoolProtectedRoute allowedRoles={['admin']}>
+                  <AdminUsers />
+                </SchoolProtectedRoute>
+              }
+            />
+            <Route
+              path="/school/admin/classes"
+              element={
+                <SchoolProtectedRoute allowedRoles={['admin']}>
+                  <AdminClasses />
+                </SchoolProtectedRoute>
+              }
+            />
+            <Route
+              path="/school/admin/schedule"
+              element={
+                <SchoolProtectedRoute allowedRoles={['admin']}>
+                  <AdminSchedule />
+                </SchoolProtectedRoute>
+              }
+            />
+            <Route
+              path="/school/admin/grades"
+              element={
+                <SchoolProtectedRoute allowedRoles={['admin']}>
+                  <AdminGrades />
+                </SchoolProtectedRoute>
+              }
+            />
+
             <Route path="/school" element={<Navigate to="/school/diary" replace />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

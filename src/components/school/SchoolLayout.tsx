@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
@@ -43,8 +43,10 @@ export default function SchoolLayout({ title, children }: Props) {
                             </div>
 
                             <div className="flex items-center gap-3">
-                                <Button variant="ghost" size="icon" className="rounded-full h-10 w-10 text-slate-500 hover:text-primary hover:bg-primary/5 border border-transparent hover:border-primary/10 transition-all">
-                                    <User className="h-5 w-5" />
+                                <Button asChild variant="ghost" size="icon" className="rounded-full h-10 w-10 text-slate-500 hover:text-primary hover:bg-primary/5 border border-transparent hover:border-primary/10 transition-all">
+                                    <Link to="/school/profile">
+                                        <User className="h-5 w-5" />
+                                    </Link>
                                 </Button>
                                 <div className="h-8 w-px bg-border/40" />
                                 <Button
