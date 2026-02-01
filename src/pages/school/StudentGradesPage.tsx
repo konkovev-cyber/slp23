@@ -42,11 +42,13 @@ export default function StudentGradesPage() {
             setLoading(true);
 
             // 1. Get student's class
-            const { data: studentInfo } = await supabase
+            const { data: studentInfoRaw } = await supabase
                 .from("students_info" as any)
                 .select("class_id")
                 .eq("student_id", userId)
                 .maybeSingle();
+
+            const studentInfo = (studentInfoRaw as any) as { class_id?: number } | null;
 
             if (!studentInfo) {
                 setLoading(false);
@@ -54,10 +56,12 @@ export default function StudentGradesPage() {
             }
 
             // 2. Fetch all assignments for this class to ensure we show all subjects
-            const { data: assignments } = await supabase
+            const { data: assignmentsRaw } = await supabase
                 .from("teacher_assignments" as any)
                 .select("id, subject_id, subjects(name)")
-                .eq("class_id", studentInfo.class_id as any);
+                .eq("class_id", (studentInfo as any)?.class_id);
+
+            const assignments = (assignmentsRaw as any) as any[] | null;
 
             // 3. Fetch student's grades with joined subject info
             const { data: gradesData, error } = await supabase
