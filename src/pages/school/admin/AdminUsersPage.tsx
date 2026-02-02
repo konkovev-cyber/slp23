@@ -178,13 +178,24 @@ export default function AdminUsersPage() {
 
     const getRoleBadge = (role: string) => {
         const variants: Record<string, string> = {
-            admin: "bg-rose-100 text-rose-600 border-rose-200 shadow-rose-100",
-            teacher: "bg-blue-100 text-blue-600 border-blue-200 shadow-blue-100",
-            student: "bg-emerald-100 text-emerald-600 border-emerald-200 shadow-emerald-100",
-            parent: "bg-amber-100 text-amber-600 border-amber-200 shadow-amber-100",
-            user: "bg-slate-100 text-slate-600 border-slate-200 shadow-slate-100"
+            admin: "bg-rose-100/50 text-rose-700 border-rose-200",
+            teacher: "bg-blue-100/50 text-blue-700 border-blue-200",
+            student: "bg-emerald-100/50 text-emerald-700 border-emerald-200",
+            parent: "bg-amber-100/50 text-amber-700 border-amber-200",
+            user: "bg-slate-100/50 text-slate-600 border-slate-200"
         };
         return variants[role] || variants.user;
+    };
+
+    const getRoleName = (role: string) => {
+        const names: Record<string, string> = {
+            admin: "Администратор",
+            teacher: "Учитель",
+            student: "Ученик",
+            parent: "Родитель",
+            user: "Пользователь"
+        };
+        return names[role] || role;
     };
 
     return (
@@ -193,31 +204,31 @@ export default function AdminUsersPage() {
                 <title>Пользователи | Админ-панель</title>
             </Helmet>
 
-            <div className="space-y-8">
-                <div className="flex flex-col md:flex-row gap-6 justify-between items-start md:items-center">
-                    <div className="relative w-full md:w-96">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+            <div className="space-y-6">
+                <div className="flex flex-col md:flex-row gap-4 justify-between items-start md:items-center">
+                    <div className="relative w-full md:w-80 group">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-primary transition-colors" />
                         <Input
-                            placeholder="Поиск по имени..."
-                            className="pl-12 h-14 rounded-2xl border-2 border-slate-100 shadow-xl shadow-slate-100/30"
+                            placeholder="Поиск..."
+                            className="pl-10 h-10 rounded-xl border border-slate-100 shadow-sm font-medium text-sm"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
                     </div>
-                    <Button className="h-14 rounded-2xl gap-2 font-black px-8 shadow-xl shadow-primary/20 bg-slate-900 hover:bg-slate-800 transition-all">
-                        <UserPlus className="w-5 h-5" /> Добавить
+                    <Button className="h-10 rounded-xl gap-2 font-bold px-6 shadow-md bg-slate-900 hover:bg-slate-800 transition-all text-sm">
+                        <UserPlus className="w-4 h-4" /> Добавить
                     </Button>
                 </div>
 
-                <Card className="border-2 border-slate-100 rounded-[40px] overflow-hidden shadow-2xl bg-white">
-                    <CardHeader className="p-10 border-b bg-slate-50/50">
-                        <div className="flex items-center gap-5">
-                            <div className="w-16 h-16 rounded-3xl bg-white border-2 border-slate-100 flex items-center justify-center text-slate-900 shadow-sm">
-                                <ShieldCheck className="w-8 h-8" />
+                <Card className="border border-slate-100 rounded-[24px] overflow-hidden shadow-sm bg-white hover:shadow-md transition-all">
+                    <CardHeader className="p-6 border-b bg-slate-50/30">
+                        <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-slate-900 shadow-sm">
+                                <ShieldCheck className="w-6 h-6" />
                             </div>
                             <div>
-                                <CardTitle className="text-2xl font-black">Управление доступом</CardTitle>
-                                <CardDescription className="font-bold text-slate-500">Права пользователей и привязки к ролям</CardDescription>
+                                <CardTitle className="text-xl font-black">Управление доступом</CardTitle>
+                                <CardDescription className="text-xs font-medium text-slate-500">Права и роли пользователей</CardDescription>
                             </div>
                         </div>
                     </CardHeader>
@@ -232,82 +243,82 @@ export default function AdminUsersPage() {
                                 <Table>
                                     <TableHeader>
                                         <TableRow className="bg-slate-50/30">
-                                            <TableHead className="py-6 px-10 font-black text-[11px] uppercase tracking-widest text-slate-400">Пользователь</TableHead>
-                                            <TableHead className="py-6 px-10 font-black text-[11px] uppercase tracking-widest text-slate-400">Роль</TableHead>
-                                            <TableHead className="py-6 px-10 font-black text-[11px] uppercase tracking-widest text-slate-400">Класс</TableHead>
-                                            <TableHead className="py-6 px-10 text-right font-black text-[11px] uppercase tracking-widest text-slate-400 text-right">Меню</TableHead>
+                                            <TableHead className="py-4 px-6 font-bold text-[10px] uppercase tracking-wider text-slate-400">Пользователь</TableHead>
+                                            <TableHead className="py-4 px-6 font-bold text-[10px] uppercase tracking-wider text-slate-400">Роль</TableHead>
+                                            <TableHead className="py-4 px-6 font-bold text-[10px] uppercase tracking-wider text-slate-400">Класс</TableHead>
+                                            <TableHead className="py-4 px-6 text-right font-bold text-[10px] uppercase tracking-wider text-slate-400">Меню</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
                                         {filteredUsers.map((user) => (
-                                            <TableRow key={user.id} className="group hover:bg-primary/[0.02] border-b border-slate-50 last:border-0 transition-colors">
-                                                <TableCell className="py-8 px-10">
-                                                    <div className="flex items-center gap-4">
-                                                        <Avatar className="w-14 h-14 border-4 border-white shadow-lg rounded-2xl">
+                                            <TableRow key={user.id} className="group hover:bg-slate-50/50 border-b border-slate-100 last:border-0 transition-colors">
+                                                <TableCell className="py-4 px-6">
+                                                    <div className="flex items-center gap-3">
+                                                        <Avatar className="w-10 h-10 border shadow-sm rounded-lg">
                                                             <AvatarImage src={user.avatar_url || ""} />
-                                                            <AvatarFallback className="font-black bg-slate-100 text-slate-400">
+                                                            <AvatarFallback className="font-bold bg-slate-50 text-slate-400 text-xs">
                                                                 {user.full_name?.[0]}
                                                             </AvatarFallback>
                                                         </Avatar>
                                                         <div className="flex flex-col">
                                                             <Link
                                                                 to={`/school/profile?id=${user.auth_id}`}
-                                                                className="font-black text-slate-900 text-lg hover:text-primary transition-colors cursor-pointer"
+                                                                className="font-bold text-slate-900 text-sm hover:text-primary transition-colors cursor-pointer"
                                                             >
                                                                 {user.full_name}
                                                             </Link>
-                                                            <span className="text-[10px] font-bold text-slate-400 flex items-center gap-1 uppercase tracking-widest mt-0.5">
-                                                                <Mail className="w-3 h-3" /> {user.auth_id ? `Active: ${user.auth_id.slice(0, 4)}...` : 'Inactive'}
+                                                            <span className="text-[10px] font-medium text-slate-400 flex items-center gap-1 mt-0.5">
+                                                                <Mail className="w-3 h-3" /> {user.auth_id ? `ID: ${user.auth_id.slice(0, 4)}` : 'Inactive'}
                                                             </span>
                                                         </div>
                                                     </div>
                                                 </TableCell>
-                                                <TableCell className="py-8 px-10">
-                                                    <Badge variant="outline" className={`px-5 py-2 rounded-2xl font-black text-[10px] uppercase tracking-[0.1em] border-2 shadow-sm ${getRoleBadge(user.role)}`}>
-                                                        {user.role}
+                                                <TableCell className="py-4 px-6">
+                                                    <Badge variant="outline" className={`px-3 py-1 rounded-lg font-bold text-[10px] uppercase tracking-wider border shadow-none ${getRoleBadge(user.role)}`}>
+                                                        {getRoleName(user.role)}
                                                     </Badge>
                                                 </TableCell>
-                                                <TableCell className="py-8 px-10">
+                                                <TableCell className="py-4 px-6">
                                                     {user.role === 'student' ? (
-                                                        user.class_name ? <Badge className="bg-emerald-50 text-emerald-600 border-2 border-emerald-100 font-black rounded-xl px-4 py-1.5">{user.class_name}</Badge> : <span className="text-[10px] font-black uppercase text-rose-400">Не прикреплен</span>
+                                                        user.class_name ? <Badge variant="outline" className="bg-emerald-50 text-emerald-600 border-emerald-100 font-bold rounded-lg px-3 py-1 text-[10px]">{user.class_name}</Badge> : <span className="text-[10px] font-bold uppercase text-rose-400">Не прикреплен</span>
                                                     ) : <span className="text-slate-200">—</span>}
                                                 </TableCell>
-                                                <TableCell className="py-8 px-10 text-right">
+                                                <TableCell className="py-4 px-6 text-right">
                                                     <DropdownMenu>
                                                         <DropdownMenuTrigger asChild>
-                                                            <Button variant="ghost" className="h-12 w-12 p-0 rounded-2xl hover:bg-slate-100 text-slate-300 hover:text-slate-900 transition-all shadow-inner">
-                                                                <MoreHorizontal className="w-6 h-6" />
+                                                            <Button variant="ghost" className="h-8 w-8 p-0 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-900 transition-all">
+                                                                <MoreHorizontal className="w-5 h-5" />
                                                             </Button>
                                                         </DropdownMenuTrigger>
-                                                        <DropdownMenuContent align="end" className="w-64 rounded-3xl border-2 p-3 shadow-2xl bg-white">
-                                                            <DropdownMenuItem asChild className="flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-slate-600 hover:text-primary hover:bg-primary/5 cursor-pointer">
+                                                        <DropdownMenuContent align="end" className="w-56 rounded-xl border p-1 bg-white shadow-xl">
+                                                            <DropdownMenuItem asChild className="flex items-center gap-2 px-3 py-2 rounded-lg font-medium text-slate-600 hover:text-primary hover:bg-primary/5 cursor-pointer text-sm">
                                                                 <Link to={`/school/profile?id=${user.auth_id}`}>
-                                                                    <UserIcon className="w-4 h-4" /> Перейти в профиль
+                                                                    <UserIcon className="w-4 h-4" /> Профиль
                                                                 </Link>
                                                             </DropdownMenuItem>
                                                             {user.role === 'student' && (
-                                                                <DropdownMenuItem asChild className="flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-slate-600 hover:text-emerald-500 hover:bg-emerald-50 cursor-pointer">
+                                                                <DropdownMenuItem asChild className="flex items-center gap-2 px-3 py-2 rounded-lg font-medium text-slate-600 hover:text-emerald-500 hover:bg-emerald-50 cursor-pointer text-sm">
                                                                     <Link to={`/school/diary?studentId=${user.auth_id}`}>
-                                                                        <BookOpen className="w-4 h-4" /> Посмотреть дневник
+                                                                        <BookOpen className="w-4 h-4" /> Дневник
                                                                     </Link>
                                                                 </DropdownMenuItem>
                                                             )}
-                                                            <DropdownMenuSeparator className="my-2 bg-slate-50" />
+                                                            <DropdownMenuSeparator className="my-1" />
                                                             {user.role === 'student' && (
-                                                                <DropdownMenuItem className="flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-slate-600 hover:text-primary hover:bg-primary/5 cursor-pointer" onClick={() => { setSelectedUser(user); setIsClassLinkOpen(true); setSelectedId(""); }}>
-                                                                    <LinkIcon className="w-4 h-4" /> Прикрепить к классу
+                                                                <DropdownMenuItem className="flex items-center gap-2 px-3 py-2 rounded-lg font-medium text-slate-600 hover:text-primary hover:bg-primary/5 cursor-pointer text-sm" onClick={() => { setSelectedUser(user); setIsClassLinkOpen(true); setSelectedId(""); }}>
+                                                                    <LinkIcon className="w-4 h-4" /> К классу
                                                                 </DropdownMenuItem>
                                                             )}
                                                             {user.role === 'parent' && (
-                                                                <DropdownMenuItem className="flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-slate-600 hover:text-blue-500 hover:bg-blue-50 cursor-pointer" onClick={() => { setSelectedUser(user); setIsChildLinkOpen(true); setSelectedId(""); }}>
+                                                                <DropdownMenuItem className="flex items-center gap-2 px-3 py-2 rounded-lg font-medium text-slate-600 hover:text-blue-500 hover:bg-blue-50 cursor-pointer text-sm" onClick={() => { setSelectedUser(user); setIsChildLinkOpen(true); setSelectedId(""); }}>
                                                                     <Baby className="w-4 h-4" /> Привязать ребенка
                                                                 </DropdownMenuItem>
                                                             )}
-                                                            <DropdownMenuSeparator className="my-2 bg-slate-50" />
-                                                            <DropdownMenuLabel className="px-4 py-1 text-[10px] font-black uppercase tracking-widest text-slate-300">Сменить роль</DropdownMenuLabel>
+                                                            <DropdownMenuSeparator className="my-1" />
+                                                            <DropdownMenuLabel className="px-3 py-1 text-[9px] font-bold uppercase tracking-wider text-slate-400">Роль</DropdownMenuLabel>
                                                             {ROLES.map(r => (
-                                                                <DropdownMenuItem key={r.value} className="flex items-center justify-between px-4 py-3 rounded-xl font-bold text-slate-700 hover:bg-slate-50 cursor-pointer" onClick={() => handleUpdateRole(user.auth_id, r.value)}>
-                                                                    <div className="flex items-center gap-3"><r.icon className="w-4 h-4" /> {r.label}</div>
+                                                                <DropdownMenuItem key={r.value} className="flex items-center justify-between px-3 py-2 rounded-lg font-medium text-slate-700 hover:bg-slate-50 cursor-pointer text-sm" onClick={() => handleUpdateRole(user.auth_id, r.value)}>
+                                                                    <div className="flex items-center gap-2"><r.icon className="w-4 h-4" /> {r.label}</div>
                                                                     {user.role === r.value && <Check className="w-4 h-4 text-emerald-500" />}
                                                                 </DropdownMenuItem>
                                                             ))}
@@ -326,33 +337,33 @@ export default function AdminUsersPage() {
 
             {/* Dialogs */}
             <Dialog open={isClassLinkOpen} onOpenChange={setIsClassLinkOpen}>
-                <DialogContent className="rounded-[40px] p-10 max-w-sm">
-                    <DialogHeader><DialogTitle className="text-3xl font-black">Класс</DialogTitle></DialogHeader>
-                    <div className="py-6">
+                <DialogContent className="rounded-[24px] p-6 max-w-sm bg-white shadow-xl border">
+                    <DialogHeader><DialogTitle className="text-xl font-black">Класс</DialogTitle></DialogHeader>
+                    <div className="py-4">
                         <Select value={selectedId} onValueChange={setSelectedId}>
-                            <SelectTrigger className="h-16 rounded-2xl border-2 font-black"><SelectValue placeholder="Выберите класс..." /></SelectTrigger>
-                            <SelectContent className="rounded-2xl">
-                                {classes.map(c => <SelectItem key={c.id} value={c.id.toString()} className="h-12 font-bold rounded-xl">{c.name}</SelectItem>)}
+                            <SelectTrigger className="h-10 rounded-xl border font-bold text-sm"><SelectValue placeholder="Выберите класс..." /></SelectTrigger>
+                            <SelectContent className="rounded-xl">
+                                {classes.map(c => <SelectItem key={c.id} value={c.id.toString()} className="h-10 font-bold rounded-lg text-sm">{c.name}</SelectItem>)}
                             </SelectContent>
                         </Select>
                     </div>
-                    <DialogFooter><Button onClick={handleLinkToClass} className="w-full h-16 rounded-3xl bg-primary text-white font-black text-xl shadow-xl shadow-primary/20">Подтвердить</Button></DialogFooter>
+                    <DialogFooter><Button onClick={handleLinkToClass} className="w-full h-11 rounded-xl bg-slate-900 text-white font-bold text-base shadow-lg">Подтвердить</Button></DialogFooter>
                 </DialogContent>
             </Dialog>
 
             <Dialog open={isChildLinkOpen} onOpenChange={setIsChildLinkOpen}>
-                <DialogContent className="rounded-[40px] p-10 max-w-sm">
-                    <DialogHeader><DialogTitle className="text-3xl font-black">Связь</DialogTitle></DialogHeader>
-                    <div className="py-6 space-y-2">
-                        <Label className="font-black text-[10px] uppercase tracking-widest text-slate-400 pl-1">Выберите своего ребенка</Label>
+                <DialogContent className="rounded-[24px] p-6 max-w-sm bg-white shadow-xl border">
+                    <DialogHeader><DialogTitle className="text-xl font-black">Связь</DialogTitle></DialogHeader>
+                    <div className="py-4 space-y-2">
+                        <Label className="font-bold text-[10px] uppercase tracking-wider text-slate-400 pl-1">Выберите своего ребенка</Label>
                         <Select value={selectedId} onValueChange={setSelectedId}>
-                            <SelectTrigger className="h-16 rounded-2xl border-2 font-black"><SelectValue placeholder="Ученик..." /></SelectTrigger>
-                            <SelectContent className="rounded-2xl">
-                                {users.filter(u => u.role === 'student').map(u => <SelectItem key={u.auth_id} value={u.auth_id || ""} className="h-12 font-bold rounded-xl">{u.full_name}</SelectItem>)}
+                            <SelectTrigger className="h-10 rounded-xl border font-bold text-sm"><SelectValue placeholder="Ученик..." /></SelectTrigger>
+                            <SelectContent className="rounded-xl">
+                                {users.filter(u => u.role === 'student').map(u => <SelectItem key={u.auth_id} value={u.auth_id || ""} className="h-10 font-bold rounded-lg text-sm">{u.full_name}</SelectItem>)}
                             </SelectContent>
                         </Select>
                     </div>
-                    <DialogFooter><Button onClick={handleLinkChild} className="w-full h-16 rounded-3xl bg-blue-500 text-white font-black text-xl shadow-xl shadow-blue-200">Привязать</Button></DialogFooter>
+                    <DialogFooter><Button onClick={handleLinkChild} className="w-full h-11 rounded-xl bg-blue-600 text-white font-bold text-base shadow-lg shadow-blue-200">Привязать</Button></DialogFooter>
                 </DialogContent>
             </Dialog>
         </SchoolLayout>

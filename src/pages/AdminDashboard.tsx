@@ -11,7 +11,8 @@ import {
   ArrowRight,
   PlusCircle,
   Activity,
-  UserPlus
+  UserPlus,
+  BookOpen
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -66,6 +67,14 @@ export default function AdminDashboard() {
       icon: Settings,
       href: "/admin/sections",
       color: "orange",
+    },
+    {
+      title: "Школьный журнал",
+      description: "Управление классами, расписанием и оценками учеников.",
+      count: "School",
+      icon: BookOpen,
+      href: "/school/",
+      color: "indigo",
     }
   ];
 

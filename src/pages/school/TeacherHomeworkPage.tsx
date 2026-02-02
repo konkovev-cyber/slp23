@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -132,23 +133,23 @@ export default function TeacherHomeworkPage() {
             </Helmet>
 
             <div className="space-y-10">
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-white p-8 rounded-[32px] border-2 border-slate-100 shadow-xl shadow-slate-100/50">
-                    <div className="flex items-center gap-5">
-                        <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shadow-inner">
-                            <BookOpen className="w-8 h-8" />
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-[24px] border border-slate-100 shadow-sm">
+                    <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary shadow-sm">
+                            <BookOpen className="w-6 h-6" />
                         </div>
                         <div>
-                            <h2 className="text-2xl font-black">Управление ДЗ</h2>
-                            <p className="font-bold text-slate-400">Назначайте и отслеживайте задания для ваших классов</p>
+                            <h2 className="text-xl font-black text-slate-900">Управление ДЗ</h2>
+                            <p className="text-sm font-medium text-slate-500">Назначайте задания для классов</p>
                         </div>
                     </div>
                     <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
                         <DialogTrigger asChild>
-                            <Button className="h-14 rounded-2xl gap-3 font-black px-8 bg-slate-900 shadow-xl hover:translate-y-[-2px] transition-all">
-                                <Plus className="w-6 h-6" /> Новое задание
+                            <Button className="h-12 rounded-xl gap-2 font-bold px-6 bg-slate-900 shadow-md hover:translate-y-[-1px] transition-all">
+                                <Plus className="w-5 h-5" /> Новое задание
                             </Button>
                         </DialogTrigger>
-                        <DialogContent className="rounded-[40px] p-10 max-w-lg">
+                        <DialogContent className="rounded-[24px] p-6 max-w-lg">
                             <DialogHeader>
                                 <DialogTitle className="text-3xl font-black">Новое ДЗ</DialogTitle>
                             </DialogHeader>
@@ -198,29 +199,29 @@ export default function TeacherHomeworkPage() {
                         </Card>
                     ) : (
                         homeworkList.map(hw => (
-                            <Card key={hw.id} className="group border-2 border-slate-100 rounded-[40px] overflow-hidden shadow-2xl bg-white hover:border-primary/20 transition-all duration-500 flex flex-col">
-                                <CardHeader className="p-8 border-b bg-slate-50/50">
-                                    <div className="flex items-center justify-between mb-4">
-                                        <Badge className="bg-white border-2 border-slate-100 text-slate-400 font-black h-10 px-4 rounded-xl flex items-center gap-2">
-                                            <Calendar className="w-4 h-4" /> До {new Date(hw.due_date).toLocaleDateString('ru-RU')}
+                            <Card key={hw.id} className="group border border-slate-100 rounded-[24px] overflow-hidden shadow-sm bg-white hover:border-primary/20 hover:shadow-md transition-all duration-300 flex flex-col">
+                                <CardHeader className="p-5 border-b bg-slate-50/30">
+                                    <div className="flex items-center justify-between mb-3">
+                                        <Badge className="bg-white border border-slate-200 text-slate-500 font-bold h-8 px-3 rounded-lg flex items-center gap-1.5 text-xs shadow-none">
+                                            <Calendar className="w-3.5 h-3.5" /> До {new Date(hw.due_date).toLocaleDateString('ru-RU')}
                                         </Badge>
-                                        <Button variant="ghost" size="icon" onClick={() => handleDeleteHomework(hw.id)} className="h-10 w-10 text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all">
-                                            <Trash2 className="w-5 h-5" />
+                                        <Button variant="ghost" size="icon" onClick={() => handleDeleteHomework(hw.id)} className="h-8 w-8 text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all">
+                                            <Trash2 className="w-4 h-4" />
                                         </Button>
                                     </div>
-                                    <CardTitle className="text-2xl font-black text-slate-900 mb-1 group-hover:text-primary transition-colors">{hw.title}</CardTitle>
-                                    <CardDescription className="flex items-center gap-2 font-bold text-slate-400 uppercase tracking-widest text-[10px]">
-                                        <GraduationCap className="w-4 h-4" /> {hw.assignment.school_classes.name} • {hw.assignment.subjects.name}
+                                    <CardTitle className="text-lg font-black text-slate-800 mb-1 group-hover:text-primary transition-colors">{hw.title}</CardTitle>
+                                    <CardDescription className="flex items-center gap-1.5 font-semibold text-slate-400 uppercase tracking-wider text-[9px]">
+                                        <GraduationCap className="w-3.5 h-3.5" /> {hw.assignment.school_classes.name} • {hw.assignment.subjects.name}
                                     </CardDescription>
                                 </CardHeader>
-                                <CardContent className="p-8 flex-1">
-                                    <div className="bg-slate-50 rounded-2xl p-6 border-2 border-slate-50 min-h-[100px] flex items-center">
-                                        <p className="text-slate-600 font-bold italic leading-relaxed">{hw.description}</p>
+                                <CardContent className="p-5 flex-1">
+                                    <div className="bg-slate-50 rounded-xl p-4 border border-slate-100 min-h-[80px] flex items-center">
+                                        <p className="text-slate-600 font-medium text-sm italic leading-relaxed">{hw.description}</p>
                                     </div>
                                 </CardContent>
-                                <div className="p-8 pt-0 flex justify-end">
-                                    <Button variant="ghost" className="rounded-xl font-black text-[10px] uppercase tracking-[0.2em] text-primary gap-2 hover:bg-primary/5">
-                                        Посмотреть ответы <ChevronRight className="w-4 h-4" />
+                                <div className="p-5 pt-0 flex justify-end">
+                                    <Button variant="ghost" className="rounded-lg font-bold text-[10px] uppercase tracking-wider text-primary gap-1.5 hover:bg-primary/5 h-8 px-3">
+                                        Ответы <ChevronRight className="w-3.5 h-3.5" />
                                     </Button>
                                 </div>
                             </Card>

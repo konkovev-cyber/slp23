@@ -33,6 +33,7 @@ import {
     DialogTitle,
     DialogFooter,
 } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import {
     Select,
     SelectContent,
@@ -280,26 +281,26 @@ export default function AdminGradesPage() {
                 <title>Журнал оценок | Админ-панель</title>
             </Helmet>
 
-            <div className="space-y-8 pb-10">
+            <div className="space-y-6 pb-10">
                 {/* Search & Filter Header */}
-                <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6">
-                    <div className="flex flex-col md:flex-row gap-4 w-full xl:w-auto">
+                <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4">
+                    <div className="flex flex-col md:flex-row gap-3 w-full xl:w-auto">
                         <div className="relative w-full md:w-80 group">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-primary transition-colors" />
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-primary transition-colors" />
                             <Input
-                                placeholder="Поиск по ученику или предмету..."
-                                className="pl-12 h-14 rounded-2xl border-2 border-slate-100 shadow-xl shadow-slate-100/30 font-bold"
+                                placeholder="Поиск..."
+                                className="pl-10 h-10 rounded-xl border border-slate-100 shadow-sm font-medium text-sm"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
                         </div>
-                        <div className="w-full md:w-56">
+                        <div className="w-full md:w-52">
                             <Select value={selectedClass} onValueChange={setSelectedClass}>
-                                <SelectTrigger className="h-14 rounded-2xl border-2 border-slate-100 bg-white font-bold">
-                                    <Filter className="w-4 h-4 mr-2 text-slate-400" />
+                                <SelectTrigger className="h-10 rounded-xl border border-slate-100 bg-white font-bold text-sm">
+                                    <Filter className="w-3.5 h-3.5 mr-2 text-slate-400" />
                                     <SelectValue placeholder="Все классы" />
                                 </SelectTrigger>
-                                <SelectContent className="rounded-2xl border-2">
+                                <SelectContent className="rounded-xl border shadow-lg">
                                     <SelectItem value="all" className="font-bold">Все классы</SelectItem>
                                     {classes.map(c => (
                                         <SelectItem key={c.id} value={c.id.toString()} className="font-bold">
@@ -311,37 +312,37 @@ export default function AdminGradesPage() {
                         </div>
                     </div>
 
-                    <div className="flex gap-4">
+                    <div className="flex gap-3">
                         <Button
                             variant="outline"
-                            className="h-14 px-8 rounded-2xl border-2 font-bold hover:bg-slate-50 border-dashed border-slate-300 text-slate-500"
+                            className="h-10 px-6 rounded-xl border font-bold hover:bg-slate-50 border-dashed border-slate-300 text-slate-500 text-sm"
                             onClick={handleSeedData}
                         >
                             🛠️ Заполнить
                         </Button>
-                        <Button className="h-14 rounded-2xl gap-3 font-black px-8 bg-slate-900 shadow-xl shadow-slate-200 hover:scale-[1.02] active:scale-[0.98] transition-all">
-                            <Download className="w-5 h-5" /> Экспортировать ведомость
+                        <Button className="h-10 rounded-xl gap-2 font-bold px-6 bg-slate-900 shadow-md hover:translate-y-[-1px] transition-all text-sm">
+                            <Download className="w-4 h-4" /> Экспорт
                         </Button>
                     </div>
                 </div>
 
-                <Card className="border-2 border-slate-100 rounded-[40px] overflow-hidden shadow-2xl bg-white">
-                    <CardHeader className="p-10 border-b bg-slate-50/50">
+                <Card className="border border-slate-100 rounded-[24px] overflow-hidden shadow-sm bg-white hover:shadow-md transition-all">
+                    <CardHeader className="p-6 border-b bg-slate-50/30">
                         <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-6">
-                                <div className="w-16 h-16 rounded-3xl bg-white border-2 border-slate-100 flex items-center justify-center text-primary shadow-lg">
-                                    <Award className="w-8 h-8" />
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-primary shadow-sm">
+                                    <Award className="w-6 h-6" />
                                 </div>
                                 <div>
-                                    <CardTitle className="text-3xl font-black text-slate-900 tracking-tight">Ведомость оценок</CardTitle>
-                                    <div className="flex items-center gap-2 mt-1">
-                                        <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                                        <p className="font-bold text-slate-500 text-sm italic">Прямой доступ к учебным данным всей школы</p>
+                                    <CardTitle className="text-xl font-black text-slate-900 tracking-tight">Ведомость оценок</CardTitle>
+                                    <div className="flex items-center gap-2 mt-0.5">
+                                        <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                                        <p className="font-medium text-slate-500 text-xs italic">Академические данные школы</p>
                                     </div>
                                 </div>
                             </div>
                             <div className="hidden md:flex gap-2">
-                                <Badge className="bg-slate-900 text-white rounded-xl px-4 py-2 font-black uppercase text-[10px] tracking-widest">
+                                <Badge className="bg-slate-900 text-white rounded-lg px-3 py-1 font-bold uppercase text-[9px] tracking-widest shadow-none">
                                     {filteredGrades.length} записей
                                 </Badge>
                             </div>
@@ -363,12 +364,12 @@ export default function AdminGradesPage() {
                                 <Table>
                                     <TableHeader>
                                         <TableRow className="bg-slate-50/30">
-                                            <TableHead className="py-8 px-10 font-black text-[11px] uppercase tracking-[0.2em] text-slate-400">Ученик</TableHead>
-                                            <TableHead className="py-8 px-10 font-black text-[11px] uppercase tracking-[0.2em] text-slate-400">Класс</TableHead>
-                                            <TableHead className="py-8 px-10 font-black text-[11px] uppercase tracking-[0.2em] text-slate-400">Предмет и Учитель</TableHead>
-                                            <TableHead className="py-8 px-10 font-black text-[11px] uppercase tracking-[0.2em] text-slate-400">Дата</TableHead>
-                                            <TableHead className="py-8 px-10 font-black text-[11px] uppercase tracking-[0.2em] text-slate-400 text-center">Оценка</TableHead>
-                                            <TableHead className="py-8 px-10 text-right font-black text-[11px] uppercase tracking-[0.2em] text-slate-400">Инфо</TableHead>
+                                            <TableHead className="py-4 px-6 font-bold text-[10px] uppercase tracking-wider text-slate-400">Ученик</TableHead>
+                                            <TableHead className="py-4 px-6 font-bold text-[10px] uppercase tracking-wider text-slate-400">Класс</TableHead>
+                                            <TableHead className="py-4 px-6 font-bold text-[10px] uppercase tracking-wider text-slate-400">Предмет</TableHead>
+                                            <TableHead className="py-4 px-6 font-bold text-[10px] uppercase tracking-wider text-slate-400">Дата</TableHead>
+                                            <TableHead className="py-4 px-6 font-bold text-[10px] uppercase tracking-wider text-slate-400 text-center">Оценка</TableHead>
+                                            <TableHead className="py-4 px-6 text-right font-bold text-[10px] uppercase tracking-wider text-slate-400">Инфо</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -377,74 +378,59 @@ export default function AdminGradesPage() {
                                             const className = studentInfo?.school_classes?.name;
 
                                             return (
-                                                <TableRow key={grade.id} className="group hover:bg-primary/[0.02] border-b border-slate-50 last:border-0 transition-all">
-                                                    <TableCell className="py-8 px-10">
-                                                        <div className="flex items-center gap-4">
-                                                            <Avatar className="w-12 h-12 border-2 border-white shadow-lg rounded-2xl">
+                                                <TableRow key={grade.id} className="group hover:bg-slate-50/50 border-b border-slate-50 last:border-0 transition-all">
+                                                    <TableCell className="py-4 px-6">
+                                                        <div className="flex items-center gap-3">
+                                                            <Avatar className="w-10 h-10 border-2 border-white shadow-sm rounded-xl">
                                                                 <AvatarImage src={grade.student?.avatar_url || ""} />
-                                                                <AvatarFallback className="font-black bg-slate-100 text-slate-400 text-sm">
+                                                                <AvatarFallback className="font-bold bg-slate-50 text-slate-400 text-xs">
                                                                     {grade.student?.full_name?.[0]}
                                                                 </AvatarFallback>
                                                             </Avatar>
                                                             <Link
                                                                 to={`/school/profile?id=${grade.student?.auth_id}`}
-                                                                className="font-black text-slate-900 text-lg hover:text-primary transition-colors cursor-pointer"
+                                                                className="font-bold text-slate-800 text-sm hover:text-primary transition-colors cursor-pointer"
                                                             >
-                                                                {grade.student?.full_name || "Неизвестный ученик"}
+                                                                {grade.student?.full_name || "Ученик"}
                                                             </Link>
                                                         </div>
                                                     </TableCell>
-                                                    <TableCell className="py-8 px-10">
+                                                    <TableCell className="py-4 px-6">
                                                         {className ? (
-                                                            <Badge variant="outline" className="px-4 py-1.5 rounded-xl font-black text-emerald-600 bg-emerald-50 border-emerald-100">
+                                                            <Badge variant="outline" className="px-2.5 py-0.5 rounded-lg font-bold text-emerald-600 bg-emerald-50 border-emerald-100 text-[10px]">
                                                                 {className}
                                                             </Badge>
                                                         ) : (
                                                             <span className="text-slate-300">—</span>
                                                         )}
                                                     </TableCell>
-                                                    <TableCell className="py-8 px-10">
-                                                        <div className="flex flex-col gap-1">
-                                                            <span className="font-black text-slate-700">{grade.assignment?.subject?.name || "Предмет"}</span>
-                                                            <Link
-                                                                to={`/school/profile?id=${grade.assignment?.teacher_id}`}
-                                                                className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5 hover:text-primary transition-colors"
-                                                            >
-                                                                <GraduationCap className="w-3 h-3" /> {grade.assignment?.teacher?.full_name || "Учитель"}
-                                                            </Link>
+                                                    <TableCell className="py-4 px-6">
+                                                        <div className="flex flex-col">
+                                                            <span className="font-bold text-slate-700 text-sm">{grade.assignment?.subject?.name || "Предмет"}</span>
+                                                            <span className="text-[9px] font-medium text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                                                                {grade.assignment?.teacher?.full_name || "Учитель"}
+                                                            </span>
                                                         </div>
                                                     </TableCell>
-                                                    <TableCell className="py-8 px-10">
-                                                        <span className="text-sm font-black text-slate-500 tabular-nums">
-                                                            {new Date(grade.date).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                                                    <TableCell className="py-4 px-6">
+                                                        <span className="text-[12px] font-medium text-slate-500 tabular-nums">
+                                                            {new Date(grade.date).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' })}
                                                         </span>
                                                     </TableCell>
-                                                    <TableCell className="py-8 px-10 text-center">
-                                                        <div className={`inline-flex w-12 h-12 items-center justify-center rounded-2xl text-white font-black text-xl shadow-xl transition-transform group-hover:scale-110 ${getGradeColor(grade.grade)}`}>
+                                                    <TableCell className="py-4 px-6 text-center">
+                                                        <div className={`inline-flex w-9 h-9 items-center justify-center rounded-lg text-white font-bold text-sm shadow-md transition-transform group-hover:scale-110 ${getGradeColor(grade.grade)}`}>
                                                             {grade.grade}
                                                         </div>
                                                     </TableCell>
-                                                    <TableCell className="py-8 px-10 text-right">
-                                                        <div className="flex justify-end gap-2">
-                                                            {grade.student_id && (
-                                                                <Link to={`/school/diary?studentId=${grade.student_id}`}>
-                                                                    <Button
-                                                                        variant="ghost"
-                                                                        size="icon"
-                                                                        className="h-10 w-10 rounded-xl hover:bg-emerald-50 text-slate-300 hover:text-emerald-600 tooltip"
-                                                                        title="Открыть дневник"
-                                                                    >
-                                                                        <BookOpen className="w-6 h-6" />
-                                                                    </Button>
-                                                                </Link>
-                                                            )}
+                                                    <TableCell className="py-4 px-6 text-right">
+                                                        <div className="flex justify-end gap-1.5">
                                                             <Button
                                                                 variant="ghost"
                                                                 size="icon"
-                                                                className="h-10 w-10 rounded-xl hover:bg-slate-100 text-slate-300 hover:text-slate-900"
+                                                                className="h-8 w-8 rounded-lg hover:bg-slate-100 text-slate-300 hover:text-slate-900"
                                                                 onClick={() => showDetails(grade)}
                                                             >
-                                                                <Eye className="w-6 h-6" />
+                                                                <Eye className="w-4 h-4" />
                                                             </Button>
                                                         </div>
                                                     </TableCell>
@@ -461,104 +447,82 @@ export default function AdminGradesPage() {
 
             {/* Detailed Grade Dialog */}
             <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
-                <DialogContent className="rounded-[40px] border-2 p-0 max-w-2xl bg-white overflow-hidden">
-                    <div className="h-32 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent flex items-end px-10 pb-6 relative">
-                        <div className={`absolute top-0 right-0 p-8 text-8xl font-black text-slate-100 select-none`}>
+                <DialogContent className="rounded-[24px] border p-0 max-w-lg bg-white overflow-hidden shadow-2xl">
+                    <div className="h-24 bg-slate-50 flex items-center px-8 relative overflow-hidden">
+                        <div className="absolute top-0 right-0 p-4 text-6xl font-black text-slate-100/50 select-none">
                             {selectedGrade?.grade}
                         </div>
-                        <CardTitle className="text-3xl font-black tracking-tight">Карточка оценки</CardTitle>
+                        <CardTitle className="text-xl font-black tracking-tight text-slate-800">Детали оценки</CardTitle>
                     </div>
 
-                    <div className="p-10 space-y-10">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                    <div className="p-8 space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {/* Student Info */}
-                            <div className="space-y-4">
-                                <div className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                                    <User className="w-3 h-3" /> Ученик
-                                </div>
-                                <div className="flex items-center gap-4 bg-slate-50 p-4 rounded-3xl border-2 border-slate-100">
-                                    <Avatar className="w-14 h-14 border-4 border-white shadow-lg rounded-2xl">
+                            <div className="space-y-3">
+                                <Label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Ученик</Label>
+                                <div className="flex items-center gap-3 bg-slate-50/50 p-3 rounded-2xl border border-slate-100">
+                                    <Avatar className="w-10 h-10 border-2 border-white shadow-sm rounded-xl">
                                         <AvatarImage src={selectedGrade?.student?.avatar_url || ""} />
-                                        <AvatarFallback className="font-black bg-white text-slate-300">
+                                        <AvatarFallback className="font-bold bg-white text-slate-300 text-xs">
                                             {selectedGrade?.student?.full_name?.[0]}
                                         </AvatarFallback>
                                     </Avatar>
                                     <div className="flex flex-col">
-                                        <span className="font-black text-lg text-slate-900 leading-tight">{selectedGrade?.student?.full_name}</span>
-                                        <span className="text-xs font-bold text-slate-500 mt-1">
-                                            Класс {selectedGrade?.student?.info?.[0]?.school_classes?.name || "—"}
+                                        <span className="font-bold text-sm text-slate-800 leading-tight">{selectedGrade?.student?.full_name}</span>
+                                        <span className="text-[10px] font-medium text-slate-500">
+                                            {selectedGrade?.student?.info?.[0]?.school_classes?.name || "Класс"}
                                         </span>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Teacher/Subject Info */}
-                            <div className="space-y-4">
-                                <div className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                                    <BookOpen className="w-3 h-3" /> Дисциплина
-                                </div>
-                                <div className="bg-slate-50 p-6 rounded-3xl text-slate-900 border-2 border-slate-100 shadow-sm">
-                                    <h4 className="text-2xl font-black mb-1 text-slate-800">{selectedGrade?.assignment?.subject?.name}</h4>
-                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
-                                        Учитель: <span className="text-primary">{selectedGrade?.assignment?.teacher?.full_name}</span>
+                            {/* Info */}
+                            <div className="space-y-3">
+                                <Label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Предмет</Label>
+                                <div className="bg-slate-50/50 p-4 rounded-2xl border border-slate-100 h-full flex flex-col justify-center">
+                                    <h4 className="text-base font-black text-slate-800">{selectedGrade?.assignment?.subject?.name}</h4>
+                                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">
+                                        {selectedGrade?.assignment?.teacher?.full_name}
                                     </p>
                                 </div>
                             </div>
                         </div>
 
                         <div className="space-y-4">
-                            <div className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                                <MessageSquare className="w-3 h-3" /> Детализация
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="bg-slate-50/50 p-4 rounded-2xl border border-slate-100 flex items-center justify-between">
+                                    <span className="font-bold text-[10px] uppercase text-slate-400 tracking-wider">Оценка</span>
+                                    <div className={`w-9 h-9 rounded-lg flex items-center justify-center text-white font-black text-lg shadow-md ${getGradeColor(selectedGrade?.grade)}`}>
+                                        {selectedGrade?.grade}
+                                    </div>
+                                </div>
+                                <div className="bg-slate-50/50 p-4 rounded-2xl border border-slate-100 flex items-center justify-between">
+                                    <span className="font-bold text-[10px] uppercase text-slate-400 tracking-wider">Дата</span>
+                                    <span className="font-bold text-slate-700 text-xs tabular-nums">
+                                        {selectedGrade?.date && new Date(selectedGrade.date).toLocaleDateString('ru-RU')}
+                                    </span>
+                                </div>
                             </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="bg-slate-50 p-6 rounded-[32px] border-2 border-slate-100 space-y-3">
-                                    <div className="flex items-center justify-between">
-                                        <span className="font-black text-[10px] uppercase text-slate-400 tracking-widest">Оценка</span>
-                                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-white font-black text-xl shadow-lg ${getGradeColor(selectedGrade?.grade)}`}>
-                                            {selectedGrade?.grade}
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center justify-between pt-2 border-t border-slate-200">
-                                        <span className="font-black text-[10px] uppercase text-slate-400 tracking-widest">Дата выставления</span>
-                                        <span className="font-black text-slate-900 flex items-center gap-2">
-                                            <Calendar className="w-4 h-4 text-primary" />
-                                            {selectedGrade?.date && new Date(selectedGrade.date).toLocaleDateString('ru-RU')}
-                                        </span>
-                                    </div>
-                                </div>
 
-                                <div className="bg-primary/5 p-6 rounded-[32px] border-2 border-primary/10 flex flex-col">
-                                    <span className="font-black text-[10px] uppercase text-primary/60 tracking-widest mb-3">Комментарий</span>
-                                    {selectedGrade?.comment ? (
-                                        <p className="font-bold text-slate-700 italic leading-relaxed">
-                                            «{selectedGrade.comment}»
-                                        </p>
-                                    ) : (
-                                        <p className="text-slate-300 font-bold italic">Комментарий не оставлен</p>
-                                    )}
-                                </div>
+                            <div className="bg-primary/5 p-4 rounded-2xl border border-primary/10">
+                                <Label className="text-[10px] font-bold uppercase text-primary/60 tracking-wider mb-2 block">Комментарий</Label>
+                                <p className="text-sm font-medium text-slate-700 italic">
+                                    {selectedGrade?.comment ? `«${selectedGrade.comment}»` : "Комментарий не оставлен"}
+                                </p>
                             </div>
                         </div>
                     </div>
 
-                    <div className="bg-slate-50 p-8 border-t border-slate-100 flex gap-4">
-                        <Button variant="ghost" className="flex-1 h-14 rounded-2xl font-black text-slate-400 uppercase tracking-widest text-[10px]" onClick={() => setIsDetailsOpen(false)}>
+                    <div className="bg-slate-50 p-6 border-t border-slate-100 flex gap-3">
+                        <Button variant="ghost" className="flex-1 h-10 rounded-xl font-bold text-slate-400 uppercase tracking-wider text-[10px]" onClick={() => setIsDetailsOpen(false)}>
                             Закрыть
                         </Button>
                         <Button
                             asChild
-                            className="flex-1 h-14 rounded-2xl bg-white border-2 border-slate-200 text-slate-900 font-black uppercase tracking-widest text-[10px] gap-2 shadow-sm hover:bg-white hover:border-primary transition-all"
-                        >
-                            <Link to={`/school/diary?studentId=${selectedGrade?.student?.auth_id}`}>
-                                <BookOpen className="w-4 h-4" /> Посмотреть дневник
-                            </Link>
-                        </Button>
-                        <Button
-                            asChild
-                            className="flex-1 h-14 rounded-2xl bg-slate-900 text-white font-black uppercase tracking-widest text-[10px] gap-2 shadow-sm hover:bg-slate-800 transition-all"
+                            className="flex-1 h-10 rounded-xl bg-slate-900 text-white font-bold uppercase tracking-wider text-[10px] gap-2 shadow-md hover:bg-slate-800"
                         >
                             <Link to={`/school/profile?id=${selectedGrade?.student?.auth_id}`}>
-                                <User className="w-4 h-4" /> Профиль ученика
+                                <User className="w-3.5 h-3.5" /> Профиль
                             </Link>
                         </Button>
                     </div>

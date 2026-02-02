@@ -279,7 +279,7 @@ export default function StudentDiaryPage() {
                 <title>Дневник | {className}</title>
             </Helmet>
 
-            <div className="max-w-4xl mx-auto space-y-6 pb-20">
+            <div className="max-w-4xl mx-auto space-y-4 pb-20">
                 {/* Controls */}
                 <div className="flex flex-col md:flex-row items-center justify-between gap-4 bg-white p-4 rounded-[32px] border-2 border-slate-100 shadow-xl shadow-slate-100/50">
                     <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as any)} className="w-full md:w-auto">
@@ -291,7 +291,13 @@ export default function StudentDiaryPage() {
                     </Tabs>
 
                     <div className="flex items-center gap-4">
-                        <Button variant="ghost" size="icon" onClick={handlePrev} className="rounded-2xl h-12 w-12 hover:bg-slate-50 text-slate-400 hover:text-primary">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={handlePrev}
+                            className="rounded-2xl h-12 w-12 hover:bg-slate-50 text-slate-400 hover:text-primary"
+                            title={viewMode === 'day' ? "Предыдущий день" : viewMode === 'week' ? "Предыдущая неделя" : "Предыдущий месяц"}
+                        >
                             <ChevronLeft className="w-6 h-6" />
                         </Button>
                         <div className="text-center min-w-[200px]">
@@ -304,7 +310,13 @@ export default function StudentDiaryPage() {
                                 <p className="text-xs font-bold text-slate-400 mt-0.5">{DAYS_RU[selectedDate.getDay()]}</p>
                             )}
                         </div>
-                        <Button variant="ghost" size="icon" onClick={handleNext} className="rounded-2xl h-12 w-12 hover:bg-slate-50 text-slate-400 hover:text-primary">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={handleNext}
+                            className="rounded-2xl h-12 w-12 hover:bg-slate-50 text-slate-400 hover:text-primary"
+                            title={viewMode === 'day' ? "Следующий день" : viewMode === 'week' ? "Следующая неделя" : "Следующий месяц"}
+                        >
                             <ChevronRight className="w-6 h-6" />
                         </Button>
                     </div>
@@ -365,10 +377,15 @@ export default function StudentDiaryPage() {
                                                 day.entries.map((entry, idx) => (
                                                     <div key={idx} className="bg-white rounded-2xl p-4 border-2 border-slate-50 shadow-sm flex flex-col md:flex-row md:items-center gap-4">
                                                         <div className="flex items-center gap-3 min-w-[200px]">
-                                                            <div className="w-8 h-8 rounded-lg bg-slate-900 text-white flex items-center justify-center font-black text-sm">{entry.lesson_number}</div>
+                                                            <div
+                                                                className="w-8 h-8 rounded-lg bg-slate-900 text-white flex items-center justify-center font-black text-sm cursor-help"
+                                                                title={`Номер урока: ${entry.lesson_number}`}
+                                                            >
+                                                                {entry.lesson_number}
+                                                            </div>
                                                             <div>
-                                                                <p className="font-bold text-slate-900">{entry.subject_name}</p>
-                                                                <p className="text-[10px] uppercase font-bold text-slate-400 truncate max-w-[120px]">{entry.teacher_name}</p>
+                                                                <p className="font-bold text-slate-900" title="Предмет">{entry.subject_name}</p>
+                                                                <p className="text-[10px] uppercase font-bold text-slate-400 truncate max-w-[120px]" title={`Преподаватель: ${entry.teacher_name}`}>{entry.teacher_name}</p>
                                                             </div>
                                                         </div>
 
@@ -381,7 +398,10 @@ export default function StudentDiaryPage() {
                                                         </div>
 
                                                         {entry.grade && (
-                                                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-white font-black shadow-md ${getGradeColor(entry.grade.grade)}`}>
+                                                            <div
+                                                                className={`w-10 h-10 rounded-xl flex items-center justify-center text-white font-black shadow-md cursor-help ${getGradeColor(entry.grade.grade)}`}
+                                                                title={entry.grade.comment ? `Оценка: ${entry.grade.grade}. Комментарий: ${entry.grade.comment}` : `Оценка: ${entry.grade.grade}`}
+                                                            >
                                                                 {entry.grade.grade}
                                                             </div>
                                                         )}
@@ -453,43 +473,52 @@ function EmptyState() {
 
 function DiaryCard({ entry, getGradeColor }: { entry: DiaryEntry, getGradeColor: (g: string) => string }) {
     return (
-        <Card className="group overflow-hidden border-2 border-slate-100 hover:border-primary/20 transition-all duration-500 rounded-[32px] bg-white shadow-xl shadow-slate-100/30">
+        <Card className="group overflow-hidden border border-slate-100 hover:border-primary/20 transition-all duration-300 rounded-[20px] bg-white shadow-sm hover:shadow-md">
             <CardContent className="p-0">
                 <div className="flex flex-col md:flex-row">
-                    <div className="w-full md:w-1/3 bg-slate-50/50 p-8 border-b md:border-b-0 md:border-r border-slate-100 flex flex-col justify-center">
-                        <div className="flex items-center gap-4 mb-4">
-                            <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center text-white font-black shadow-lg">
+                    {/* Left Side: Subject Info */}
+                    <div className="w-full md:w-1/3 bg-slate-50/50 p-4 border-b md:border-b-0 md:border-r border-slate-100 flex flex-col justify-center">
+                        <div className="flex items-center gap-3 mb-2">
+                            <div
+                                className="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center text-white font-bold text-sm shadow-md cursor-help"
+                                title={`Номер урока: ${entry.lesson_number}`}
+                            >
                                 {entry.lesson_number}
                             </div>
-                            <div className="h-0.5 flex-1 bg-slate-200" />
+                            <div className="h-px flex-1 bg-slate-200" />
                         </div>
-                        <h3 className="text-xl font-black text-slate-900 mb-2 leading-tight tracking-tight group-hover:text-primary transition-colors">
+                        <h3
+                            className="text-base font-bold text-slate-800 mb-1 leading-tight group-hover:text-primary transition-colors cursor-help"
+                            title="Название предмета"
+                        >
                             {entry.subject_name}
                         </h3>
-                        <div className="space-y-1.5">
-                            <p className="text-xs font-bold text-slate-400 flex items-center gap-2">
-                                <GraduationCap className="w-3.5 h-3.5" /> {entry.teacher_name}
-                            </p>
-                        </div>
+                        <p
+                            className="text-[10px] font-semibold text-slate-400 flex items-center gap-1.5 cursor-help uppercase tracking-wider"
+                            title="ФИО преподавателя"
+                        >
+                            <GraduationCap className="w-3 h-3" /> {entry.teacher_name}
+                        </p>
                     </div>
 
-                    <div className="flex-1 p-8 flex flex-col justify-between gap-6">
-                        <div className="space-y-4">
+                    {/* Right Side: Homework & Grade */}
+                    <div className="flex-1 p-4 flex flex-col justify-between gap-3">
+                        <div className="space-y-2">
                             <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2 text-primary">
-                                    <BookOpen className="w-4 h-4" />
-                                    <span className="text-[10px] font-black uppercase tracking-widest">Домашнее задание</span>
+                                <div className="flex items-center gap-1.5 text-primary">
+                                    <BookOpen className="w-3.5 h-3.5" />
+                                    <span className="text-[9px] font-black uppercase tracking-widest">Д/З</span>
                                 </div>
-                                {entry.homework && <CheckCircle2 className="w-4 h-4 text-emerald-500" />}
+                                {entry.homework && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />}
                             </div>
 
-                            <div className="p-5 rounded-2xl bg-white border-2 border-slate-50 shadow-inner group-hover:bg-slate-50/30 transition-colors">
+                            <div className="px-3 py-2 rounded-xl bg-white border border-slate-100 shadow-sm group-hover:bg-slate-50/50 transition-colors">
                                 {entry.homework ? (
-                                    <p className="text-sm font-bold text-slate-700 leading-relaxed italic">
+                                    <p className="text-xs font-medium text-slate-700 leading-snug">
                                         {entry.homework.description}
                                     </p>
                                 ) : (
-                                    <p className="text-xs font-bold text-slate-300 uppercase tracking-widest italic">
+                                    <p className="text-[10px] font-medium text-slate-300 uppercase tracking-wider italic">
                                         Задание не задано
                                     </p>
                                 )}
@@ -497,19 +526,24 @@ function DiaryCard({ entry, getGradeColor }: { entry: DiaryEntry, getGradeColor:
                         </div>
 
                         {entry.grade && (
-                            <div className="flex items-center justify-between pt-4 border-t border-slate-50">
-                                <div className="flex items-center gap-2">
-                                    <FileText className="w-4 h-4 text-slate-400" />
-                                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Результат урока</span>
+                            <div className="flex items-center justify-between pt-2 border-t border-slate-50">
+                                <div className="flex items-center gap-1.5">
+                                    <FileText className="w-3.5 h-3.5 text-slate-400" />
+                                    <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Итог</span>
                                 </div>
-                                <div className="flex items-center gap-3">
+                                <div className="flex items-center gap-2">
                                     {entry.grade.comment && (
-                                        <span className="text-[10px] font-bold text-slate-400 italic">"{entry.grade.comment}"</span>
+                                        <span className="text-[10px] font-medium text-slate-400 italic truncate max-w-[150px]" title={entry.grade.comment}>
+                                            "{entry.grade.comment}"
+                                        </span>
                                     )}
-                                    <div className={cn(
-                                        "w-12 h-12 rounded-[20px] flex items-center justify-center text-white font-black shadow-xl scale-110",
-                                        getGradeColor(entry.grade.grade)
-                                    )}>
+                                    <div
+                                        className={cn(
+                                            "w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-sm shadow-md cursor-help",
+                                            getGradeColor(entry.grade.grade)
+                                        )}
+                                        title={entry.grade.comment ? `Оценка: ${entry.grade.grade} (${entry.grade.comment})` : `Оценка: ${entry.grade.grade}`}
+                                    >
                                         {entry.grade.grade}
                                     </div>
                                 </div>

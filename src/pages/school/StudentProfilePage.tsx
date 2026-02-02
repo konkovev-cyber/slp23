@@ -21,7 +21,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-const DEFAULT_AVATAR = "https://api.dicebear.com/7.x/avataaars/svg?seed=user";
+// Import local avatars using Vite glob import
+const avatarModules = import.meta.glob('@/assets/avatar/*.{png,jpg,jpeg,svg}', { eager: true });
+const LOCAL_AVATARS = Object.values(avatarModules).map((mod: any) => mod.default);
+
+// If local avatars are found, use the first one as default, otherwise keep dicebear
+const DEFAULT_AVATAR = LOCAL_AVATARS.length > 0 ? LOCAL_AVATARS[0] : "https://api.dicebear.com/7.x/avataaars/svg?seed=user";
 
 export default function StudentProfilePage() {
     const { userId: currentUserId } = useAuth();
@@ -212,26 +217,15 @@ export default function StudentProfilePage() {
 
                         <div className="space-y-4">
                             <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 pl-1">Выберите персонажа (пресеты)</Label>
-                            <div className="flex flex-wrap gap-3 p-2 bg-slate-50 rounded-2xl border-2 border-slate-100">
-                                {[
-                                    "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix",
-                                    "https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka",
-                                    "https://api.dicebear.com/7.x/avataaars/svg?seed=Scooter",
-                                    "https://api.dicebear.com/7.x/avataaars/svg?seed=Buddy",
-                                    "https://api.dicebear.com/7.x/avataaars/svg?seed=Ginger",
-                                    // New cartoon avatars
-                                    "https://img.freepik.com/premium-vector/man-avatar-profile-picture-vector-illustration_268834-538.jpg",
-                                    "https://img.freepik.com/premium-vector/woman-avatar-profile-picture-vector-illustration_268834-541.jpg",
-                                    "https://img.freepik.com/premium-vector/man-avatar-profile-picture-vector-illustration_268834-535.jpg",
-                                    "https://img.freepik.com/premium-vector/woman-avatar-profile-picture-vector-illustration_268834-537.jpg"
-                                ].map(url => (
+                            <div className="flex flex-wrap gap-3 p-2 bg-slate-50 rounded-2xl border-2 border-slate-100 max-h-60 overflow-y-auto custom-scrollbar">
+                                {LOCAL_AVATARS.map((url, idx) => (
                                     <button
-                                        key={url}
+                                        key={idx}
                                         type="button"
                                         onClick={() => setAvatarUrl(url)}
-                                        className={`w-12 h-12 rounded-xl overflow-hidden border-2 transition-all ${avatarUrl === url ? 'border-primary ring-2 ring-primary/20 scale-110' : 'border-white hover:border-slate-300'}`}
+                                        className={`w-14 h-14 rounded-xl overflow-hidden border-2 transition-all ${avatarUrl === url ? 'border-primary ring-2 ring-primary/20 scale-110' : 'border-white hover:border-slate-300'}`}
                                     >
-                                        <img src={url} alt="avatar" className="w-full h-full object-cover" />
+                                        <img src={url} alt={`avatar-${idx}`} className="w-full h-full object-cover" />
                                     </button>
                                 ))}
                             </div>
