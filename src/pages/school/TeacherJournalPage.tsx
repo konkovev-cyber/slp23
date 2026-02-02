@@ -57,11 +57,15 @@ type Student = {
     auth_id: string;
     full_name: string;
     avatar_url?: string;
+
     grades: any[];
 };
 
+import { useNavigate } from "react-router-dom";
+
 export default function TeacherJournalPage() {
     const { userId } = useAuth();
+    const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
     const [assignments, setAssignments] = useState<Assignment[]>([]);
     const [selectedAssignmentId, setSelectedAssignmentId] = useState<string>("");
@@ -515,7 +519,14 @@ export default function TeacherJournalPage() {
                                 <span className="font-black text-slate-900">{studentHistory.length}</span>
                             </div>
                         </div>
-                        <Button className="h-14 rounded-2xl gap-2 font-black px-8 bg-white border-2 border-slate-200 text-slate-900 hover:bg-slate-50 transition-all shadow-sm">
+                        <Button
+                            className="h-14 rounded-2xl gap-2 font-black px-8 bg-white border-2 border-slate-200 text-slate-900 hover:bg-slate-50 transition-all shadow-sm"
+                            onClick={() => {
+                                if (selectedStudent) {
+                                    navigate(`/school/diary?studentId=${selectedStudent.auth_id}&date=${selectedDate}`);
+                                }
+                            }}
+                        >
                             Полный табель <ArrowUpRight className="w-5 h-5" />
                         </Button>
                     </div>

@@ -214,15 +214,24 @@ export default function StudentProfilePage() {
                             <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 pl-1">Выберите персонажа (пресеты)</Label>
                             <div className="flex flex-wrap gap-3 p-2 bg-slate-50 rounded-2xl border-2 border-slate-100">
                                 {[
-                                    "Felix", "Aneka", "Scooter", "Buddy", "Ginger", "Jasper", "Kiki", "Lulu"
-                                ].map(seed => (
+                                    "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix",
+                                    "https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka",
+                                    "https://api.dicebear.com/7.x/avataaars/svg?seed=Scooter",
+                                    "https://api.dicebear.com/7.x/avataaars/svg?seed=Buddy",
+                                    "https://api.dicebear.com/7.x/avataaars/svg?seed=Ginger",
+                                    // New cartoon avatars
+                                    "https://img.freepik.com/premium-vector/man-avatar-profile-picture-vector-illustration_268834-538.jpg",
+                                    "https://img.freepik.com/premium-vector/woman-avatar-profile-picture-vector-illustration_268834-541.jpg",
+                                    "https://img.freepik.com/premium-vector/man-avatar-profile-picture-vector-illustration_268834-535.jpg",
+                                    "https://img.freepik.com/premium-vector/woman-avatar-profile-picture-vector-illustration_268834-537.jpg"
+                                ].map(url => (
                                     <button
-                                        key={seed}
+                                        key={url}
                                         type="button"
-                                        onClick={() => setAvatarUrl(`https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}`)}
-                                        className={`w-12 h-12 rounded-xl overflow-hidden border-2 transition-all ${avatarUrl.includes(seed) ? 'border-primary ring-2 ring-primary/20 scale-110' : 'border-white hover:border-slate-300'}`}
+                                        onClick={() => setAvatarUrl(url)}
+                                        className={`w-12 h-12 rounded-xl overflow-hidden border-2 transition-all ${avatarUrl === url ? 'border-primary ring-2 ring-primary/20 scale-110' : 'border-white hover:border-slate-300'}`}
                                     >
-                                        <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}`} alt={seed} className="w-full h-full object-cover" />
+                                        <img src={url} alt="avatar" className="w-full h-full object-cover" />
                                     </button>
                                 ))}
                             </div>

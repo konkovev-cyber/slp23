@@ -61,7 +61,10 @@ export default function StudentDiaryPage() {
     const studentId = searchParams.get("studentId") || currentUserId;
 
     const [loading, setLoading] = useState(true);
-    const [selectedDate, setSelectedDate] = useState(new Date());
+    const [selectedDate, setSelectedDate] = useState(() => {
+        const dateParam = searchParams.get("date");
+        return dateParam ? new Date(dateParam) : new Date();
+    });
     const [viewMode, setViewMode] = useState<'day' | 'week' | 'month'>('day');
 
     // Data states
