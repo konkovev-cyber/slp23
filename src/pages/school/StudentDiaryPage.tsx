@@ -98,6 +98,9 @@ export default function StudentDiaryPage() {
                 .maybeSingle();
 
             if (!studentInfo) {
+                // If no class info found, probably admin viewing own profile or unlinked student
+                setWeekSchedule([]);
+                setClassName("Класс не задан");
                 setLoading(false);
                 return;
             }
@@ -310,6 +313,18 @@ export default function StudentDiaryPage() {
                     </div>
                 ) : (
                     <>
+                        {weekSchedule.length === 0 && (
+                            <div className="flex flex-col items-center justify-center py-20 text-center space-y-4 opacity-50">
+                                <CalendarIcon className="w-16 h-16 text-slate-300" />
+                                <h3 className="text-xl font-bold text-slate-900">Данные отсутствуют</h3>
+                                <p className="text-slate-500 max-w-md">
+                                    Ученик не привязан к классу или расписание не заполнено.
+                                    <br />
+                                    Администратор может заполнить тестовые данные в разделе "Все оценки".
+                                </p>
+                            </div>
+                        )}
+
                         {/* DAY VIEW */}
                         {viewMode === 'day' && weekSchedule[0] && (
                             <div className="space-y-6">
@@ -387,7 +402,7 @@ export default function StudentDiaryPage() {
                                     </div>
                                     <div className="grid grid-cols-7 gap-4">
                                         {/* Blank cells for start of month */}
-                                        {Array.from({ length: (weekSchedule[0]?.date.getDay() + 6) % 7 }).map((_, i) => (
+                                        {weekSchedule.length > 0 && Array.from({ length: (weekSchedule[0]?.date?.getDay() + 6) % 7 }).map((_, i) => (
                                             <div key={`blank-${i}`} />
                                         ))}
                                         {weekSchedule.map((day, i) => {
