@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/use-auth";
 import { useRole, AppRole } from "@/hooks/use-role";
 
@@ -14,6 +14,7 @@ export default function SchoolProtectedRoute({
     allowedRoles = ['student', 'teacher', 'admin', 'parent', 'moderator'],
     redirectTo = "/admin"
 }: Props) {
+    const location = useLocation();
     const { isLoading, userId } = useAuth();
     const { isLoading: isRoleLoading, role } = useRole(userId);
 
@@ -25,7 +26,10 @@ export default function SchoolProtectedRoute({
         );
     }
 
-    if (!userId) return <Navigate to="/admin" replace />;
+    if (!userId) {
+        const redirect = encodeURIComponent(`${location.pathname}${location.search}`);
+        return <Navigate to={`/admin?redirect=${redirect}`} replace />;
+    }
 
     // If role is admin, allow everything
     if (role === 'admin') return <>{children}</>;
