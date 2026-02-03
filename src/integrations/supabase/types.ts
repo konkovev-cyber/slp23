@@ -44,6 +44,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "grades_student_id_profiles_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["auth_id"]
+          },
+          {
             foreignKeyName: "grades_teacher_assignment_id_fkey"
             columns: ["teacher_assignment_id"]
             isOneToOne: false
@@ -188,7 +195,22 @@ export type Database = {
           id?: string
           parent_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "parents_children_child_id_profiles_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["auth_id"]
+          },
+          {
+            foreignKeyName: "parents_children_parent_id_profiles_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["auth_id"]
+          },
+        ]
       }
       post_media: {
         Row: {
@@ -349,6 +371,13 @@ export type Database = {
             referencedRelation: "subjects"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "schedule_teacher_id_profiles_fkey"
+            columns: ["teacher_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["auth_id"]
+          },
         ]
       }
       school_classes: {
@@ -447,6 +476,13 @@ export type Database = {
             referencedRelation: "school_classes"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "students_info_student_id_profiles_fkey"
+            columns: ["student_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["auth_id"]
+          },
         ]
       }
       subjects: {
@@ -503,6 +539,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "subjects"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "teacher_assignments_teacher_id_profiles_fkey"
+            columns: ["teacher_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["auth_id"]
           },
         ]
       }
