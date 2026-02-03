@@ -52,7 +52,7 @@ const Navigation = () => {
 
   const handleDiaryClick = () => {
     // School portal is protected; if user isn't signed in, send them to login.
-    navigate(userId ? "/school/diary" : "/admin");
+    navigate(userId ? "/school/diary" : "/admin?redirect=%2Fschool%2Fdiary");
     setIsOpen(false);
   };
 
