@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { Helmet } from "react-helmet-async";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -13,8 +13,17 @@ import { useIsAdmin } from "@/hooks/use-is-admin";
 export default function AdminLogin() {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
   const { userId } = useAuth();
   const { isLoading: isRoleLoading, isAdmin } = useIsAdmin(userId);
+
+  const redirectPath = useMemo(() => {
+    const params = new URLSearchParams(location.search);
+    const raw = params.get("redirect");
+    // Prevent open-redirects: allow only in-app absolute paths.
+    if (!raw || !raw.startsWith("/")) return null;
+    return raw;
+  }, [location.search]);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -34,7 +43,14 @@ export default function AdminLogin() {
     try {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
-      // Route is protected; if role check isn't ready yet, ProtectedRoute will send user back to /admin.
+      // If we came here from a protected area (e.g. diary), continue there.
+      if (redirectPath) {
+        navigate(redirectPath, { replace: true });
+        return;
+      }
+
+      // Default admin login flow.
+      // Route is protected; if role check isn't ready yet, ProtectedRoute may send user back to /admin.
       navigate("/admin/dashboard", { replace: true });
     } catch (err: any) {
       toast({
@@ -64,10 +80,13 @@ export default function AdminLogin() {
           <div className="mt-6 space-y-3">
             <Button
               className="w-full"
-              onClick={() => navigate(isAdmin ? "/admin/dashboard" : "/admin/access")}
+              onClick={() => {
+                if (redirectPath) return navigate(redirectPath, { replace: true });
+                return navigate(isAdmin ? "/admin/dashboard" : "/admin/access", { replace: true });
+              }}
               disabled={isRoleLoading}
             >
-              Перейти в дашборд
+              {redirectPath ? "Продолжить" : "Перейти в дашборд"}
             </Button>
 
             <Button
