@@ -50,6 +50,8 @@ const Navigation = () => {
 
   const navLinkClass = "text-[11px] font-bold uppercase tracking-widest text-foreground/80 hover:text-primary px-4 h-10 flex items-center transition-all hover:bg-transparent focus:bg-transparent data-[state=open]:text-primary cursor-pointer outline-none";
 
+  const diaryLabel = userId ? "Открыть дневник" : "Войти в дневник";
+
   const handleDiaryClick = () => {
     // School portal is protected; if user isn't signed in, send them to login.
     navigate(userId ? "/school/diary" : "/admin?redirect=%2Fschool%2Fdiary");
@@ -142,7 +144,7 @@ const Navigation = () => {
               className="rounded-full font-bold h-9 px-4 text-sm shadow-sm transition-all hidden sm:flex"
               onClick={handleDiaryClick}
             >
-              Дневник
+              {diaryLabel}
             </Button>
             <Button asChild className="rounded-full font-bold h-9 px-5 text-sm shadow-sm transition-all hidden sm:flex bg-primary hover:bg-primary/90 text-white">
               <a href={isHome ? "#contacts" : "/#contacts"}>Записаться</a>
@@ -196,7 +198,7 @@ const Navigation = () => {
                 className="text-2xl font-bold py-2 active:text-primary transition-colors text-left"
                 aria-label="Перейти в дневник"
               >
-                Дневник
+                  {diaryLabel}
               </button>
 
               <div className="space-y-3">
