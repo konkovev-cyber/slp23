@@ -158,19 +158,38 @@ export default function AdminGradesPage() {
             }
 
             // 3. Get Teacher & Student
-            const { data: teacher } = await supabase.from("profiles").select("auth_id").eq("role", "teacher").limit(1).maybeSingle();
-            let teacherId = teacher?.auth_id;
-            // Fallback: use current user if no teacher found, or find ANY user
+            // NOTE: role is stored in public.user_roles (not in profiles). Using user_roles avoids TS deep instantiation issues
+            // and matches the actual schema.
+            const { data: teacherRole } = await supabase
+                .from("user_roles")
+                .select("user_id")
+                .eq("role", "teacher")
+                .limit(1)
+                .maybeSingle();
+            let teacherId = (teacherRole as any)?.user_id as string | undefined;
+
+            // Fallback: find ANY user
             if (!teacherId) {
                 const { data: anyUser } = await supabase.from("profiles").select("auth_id").limit(1).single();
-                teacherId = anyUser?.auth_id;
+                teacherId = (anyUser as any)?.auth_id;
             }
 
-            const { data: student } = await supabase.from("profiles").select("auth_id").eq("role", "student").limit(1).maybeSingle();
-            let studentId = student?.auth_id;
+            const { data: studentRole } = await supabase
+                .from("user_roles")
+                .select("user_id")
+                .eq("role", "student")
+                .limit(1)
+                .maybeSingle();
+            let studentId = (studentRole as any)?.user_id as string | undefined;
+
             if (!studentId) {
-                const { data: anyUser } = await supabase.from("profiles").select("auth_id").order('created_at', { ascending: false }).limit(1).single();
-                studentId = anyUser?.auth_id;
+                const { data: anyUser } = await supabase
+                    .from("profiles")
+                    .select("auth_id")
+                    .order("created_at", { ascending: false })
+                    .limit(1)
+                    .single();
+                studentId = (anyUser as any)?.auth_id;
             }
 
             if (!classId || !teacherId || !studentId) {
