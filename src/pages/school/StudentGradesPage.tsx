@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Helmet } from "react-helmet-async";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -7,6 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { BookOpen, Calendar, Clock, Loader2, Info, GraduationCap, MapPin, User, Award, ClipboardCheck, TrendingUp, Filter } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import SchoolLayout from "@/components/school/SchoolLayout";
@@ -34,6 +35,7 @@ export default function StudentGradesPage() {
 
     const [loading, setLoading] = useState(true);
     const [subjectGrades, setSubjectGrades] = useState<SubjectGrades[]>([]);
+  const [selectedSubject, setSelectedSubject] = useState<string>("all");
 
     useEffect(() => {
         if (studentId) {
@@ -134,6 +136,28 @@ export default function StudentGradesPage() {
         return "bg-slate-500 text-white border-slate-600 shadow-slate-100 hover:bg-slate-600";
     };
 
+    const filteredSubjects = useMemo(() => {
+        if (selectedSubject === "all") return subjectGrades;
+        return subjectGrades.filter((s) => s.subjectName === selectedSubject);
+    }, [subjectGrades, selectedSubject]);
+
+    const totalGradesCount = useMemo(
+        () => filteredSubjects.reduce((acc, curr) => acc + curr.grades.length, 0),
+        [filteredSubjects]
+    );
+
+    const overallAverage = useMemo(() => {
+        const allNumeric = filteredSubjects.flatMap((s) =>
+            s.grades
+                .map((g) => parseInt(g.grade))
+                .filter((v) => !isNaN(v))
+        );
+
+        if (!allNumeric.length) return null;
+        const sum = allNumeric.reduce((a, b) => a + b, 0);
+        return sum / allNumeric.length;
+    }, [filteredSubjects]);
+
     if (loading) {
         return (
             <SchoolLayout title="Успеваемость">
@@ -161,7 +185,7 @@ export default function StudentGradesPage() {
                             <div>
                                 <p className="text-white/80 text-xs font-bold uppercase tracking-wider">Всего оценок</p>
                                 <h3 className="text-3xl font-black">
-                                    {subjectGrades.reduce((acc, curr) => acc + curr.grades.length, 0)}
+                                    {totalGradesCount}
                                 </h3>
                             </div>
                         </div>
@@ -175,9 +199,9 @@ export default function StudentGradesPage() {
                                 < TrendingUp className="w-6 h-6" />
                             </div>
                             <div>
-                                <p className="text-white/80 text-xs font-bold uppercase tracking-wider">Лучший результат</p>
+                                <p className="text-white/80 text-xs font-bold uppercase tracking-wider">Средний балл</p>
                                 <h3 className="text-3xl font-black">
-                                    {Math.max(...subjectGrades.map(s => s.average || 0)).toFixed(1)}
+                                    {overallAverage !== null ? overallAverage.toFixed(2) : "—"}
                                 </h3>
                             </div>
                         </div>
@@ -213,11 +237,33 @@ export default function StudentGradesPage() {
                                 Текущие оценки и показатели среднего балла по предметам
                             </CardDescription>
                         </div>
-                        <div className="flex gap-2">
-                            <Button variant="outline" size="sm" className="rounded-xl font-bold gap-2">
-                                <Filter className="w-4 h-4" /> Семестр
-                            </Button>
-                        </div>
+                                <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
+                                    <Select
+                                        value={selectedSubject}
+                                        onValueChange={setSelectedSubject}
+                                    >
+                                        <SelectTrigger className="h-10 w-full sm:w-48 rounded-xl border-2 font-bold text-xs uppercase tracking-widest">
+                                            <SelectValue placeholder="Все предметы" />
+                                        </SelectTrigger>
+                                        <SelectContent className="rounded-xl">
+                                            <SelectItem value="all" className="text-xs font-bold uppercase tracking-widest">
+                                                Все предметы
+                                            </SelectItem>
+                                            {subjectGrades.map((s) => (
+                                                <SelectItem
+                                                    key={s.subjectName}
+                                                    value={s.subjectName}
+                                                    className="text-xs font-bold uppercase tracking-widest"
+                                                >
+                                                    {s.subjectName}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <Button variant="outline" size="sm" className="rounded-xl font-bold gap-2">
+                                        <Filter className="w-4 h-4" /> Период
+                                    </Button>
+                                </div>
                     </div>
                 </CardHeader>
                 <CardContent className="p-0">
@@ -230,15 +276,15 @@ export default function StudentGradesPage() {
                                     <TableHead className="py-6 px-8 text-center font-black text-[11px] uppercase tracking-[0.2em] text-slate-400 w-32">Средний</TableHead>
                                 </TableRow>
                             </TableHeader>
-                            <TableBody>
-                                {subjectGrades.length === 0 ? (
+                                    <TableBody>
+                                        {filteredSubjects.length === 0 ? (
                                     <TableRow>
                                         <TableCell colSpan={3} className="py-20 text-center">
                                             <p className="text-slate-400 font-bold">Оценки еще не выставлены</p>
                                         </TableCell>
                                     </TableRow>
                                 ) : (
-                                    subjectGrades.map((item) => (
+                                            filteredSubjects.map((item) => (
                                         <TableRow key={item.subjectName} className="hover:bg-primary/[0.02] transition-colors border-b last:border-0 group">
                                             <TableCell className="py-8 px-8 align-middle">
                                                 <span className="font-black text-slate-900 text-lg group-hover:text-primary transition-colors">
