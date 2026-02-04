@@ -273,6 +273,32 @@ export default function StudentDiaryPage() {
         return "bg-slate-400 shadow-slate-100";
     };
 
+    const upcomingHomework = useMemo(() => {
+        const items: {
+            date: Date;
+            subject: string;
+            title: string;
+            description?: string;
+        }[] = [];
+
+        weekSchedule.forEach((day) => {
+            day.entries.forEach((entry) => {
+                if (entry.homework) {
+                    items.push({
+                        date: day.date,
+                        subject: entry.subject_name,
+                        title: entry.homework.title,
+                        description: entry.homework.description,
+                    });
+                }
+            });
+        });
+
+        return items
+            .sort((a, b) => a.date.getTime() - b.date.getTime())
+            .slice(0, 8);
+    }, [weekSchedule]);
+
     return (
         <SchoolLayout title="Электронный дневник">
             <Helmet>
@@ -337,6 +363,91 @@ export default function StudentDiaryPage() {
                                     <br />
                                     Администратор может заполнить тестовые данные в разделе "Все оценки".
                                 </p>
+                            </div>
+                        )}
+
+                        {/* HOMEWORK SUMMARY */}
+                        {(viewMode === 'day' || viewMode === 'week') && upcomingHomework.length > 0 && (
+                            <div className="grid gap-4 md:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] items-start">
+                                <div className="md:col-span-1 md:col-start-2 order-2 md:order-none">
+                                    <Card className="border-2 border-slate-100 rounded-3xl shadow-lg bg-white/90">
+                                        <CardHeader className="pb-2">
+                                            <div className="flex items-center justify-between gap-3">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-9 h-9 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
+                                                        <BookOpen className="w-4 h-4" />
+                                                    </div>
+                                                    <div>
+                                                        <CardTitle className="text-base font-black tracking-tight">
+                                                            Ближайшие домашние задания
+                                                        </CardTitle>
+                                                        <CardDescription className="text-[11px] font-bold uppercase tracking-[0.2em]">
+                                                            {upcomingHomework.length} заданий
+                                                        </CardDescription>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </CardHeader>
+                                        <CardContent className="pt-2 space-y-3 max-h-[260px] overflow-y-auto pr-1">
+                                            {upcomingHomework.map((item, idx) => {
+                                                const today = new Date();
+                                                const isSameDay =
+                                                    item.date.getDate() === today.getDate() &&
+                                                    item.date.getMonth() === today.getMonth() &&
+                                                    item.date.getFullYear() === today.getFullYear();
+                                                const isPast = item.date < new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+                                                const statusLabel = isSameDay
+                                                    ? 'Сегодня'
+                                                    : isPast
+                                                        ? 'Просрочено'
+                                                        : 'Скоро';
+
+                                                const statusClass = isPast
+                                                    ? 'bg-rose-50 text-rose-600 border-rose-100'
+                                                    : isSameDay
+                                                        ? 'bg-amber-50 text-amber-600 border-amber-100'
+                                                        : 'bg-emerald-50 text-emerald-600 border-emerald-100';
+
+                                                return (
+                                                    <div
+                                                        key={idx}
+                                                        className="flex items-start gap-3 rounded-2xl border border-slate-100 bg-slate-50/60 px-3 py-2.5"
+                                                    >
+                                                        <div className="mt-0.5">
+                                                            <Badge
+                                                                variant="outline"
+                                                                className={`text-[9px] font-black uppercase tracking-[0.2em] rounded-full px-2.5 py-0.5 border ${statusClass}`}
+                                                            >
+                                                                {statusLabel}
+                                                            </Badge>
+                                                            <div className="mt-1 text-[11px] font-bold text-slate-400 flex items-center gap-1">
+                                                                <CalendarDays className="w-3 h-3" />
+                                                                {item.date.toLocaleDateString('ru-RU', {
+                                                                    day: '2-digit',
+                                                                    month: 'short',
+                                                                })}
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex-1 min-w-0">
+                                                            <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-400 mb-0.5 line-clamp-1">
+                                                                {item.subject}
+                                                            </p>
+                                                            <p className="text-sm font-semibold text-slate-900 line-clamp-2">
+                                                                {item.title}
+                                                            </p>
+                                                            {item.description && (
+                                                                <p className="mt-1 text-[11px] text-slate-500 line-clamp-2">
+                                                                    {item.description}
+                                                                </p>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </CardContent>
+                                    </Card>
+                                </div>
                             </div>
                         )}
 
