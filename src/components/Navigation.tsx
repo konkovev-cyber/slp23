@@ -20,7 +20,7 @@ const Navigation = () => {
   const [isSvedeniyaMenuOpen, setIsSvedeniyaMenuOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { userId } = useAuth();
+  const { userId, isLoading } = useAuth();
   const isHome = location.pathname === "/";
 
   useEffect(() => {
@@ -50,7 +50,7 @@ const Navigation = () => {
 
   const navLinkClass = "text-[11px] font-bold uppercase tracking-widest text-foreground/80 hover:text-primary px-4 h-10 flex items-center transition-all hover:bg-transparent focus:bg-transparent data-[state=open]:text-primary cursor-pointer outline-none";
 
-  const diaryLabel = userId ? "Открыть дневник" : "Войти в дневник";
+  const diaryLabel = isLoading ? "Загружаем…" : userId ? "Открыть дневник" : "Войти в дневник";
 
   const handleDiaryClick = () => {
     // School portal is protected; if user isn't signed in, send them to login.
@@ -143,6 +143,7 @@ const Navigation = () => {
               variant="outline"
               className="rounded-full font-bold h-9 px-4 text-sm shadow-sm transition-all hidden sm:flex"
               onClick={handleDiaryClick}
+              disabled={isLoading}
             >
               {diaryLabel}
             </Button>
