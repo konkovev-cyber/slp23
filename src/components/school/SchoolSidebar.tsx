@@ -44,6 +44,7 @@ export default function SchoolSidebar() {
             return [
                 ...baseItems,
                 { title: "Дневник", url: "/school/diary", icon: BookOpen },
+                { title: "Домашка", url: "/school/homework-list", icon: ClipboardList },
                 { title: "Расписание", url: "/school/schedule", icon: Calendar },
                 { title: "Оценки и Табель", url: "/school/grades", icon: Award },
             ];
@@ -74,6 +75,7 @@ export default function SchoolSidebar() {
                 { title: "Расписание (ред.)", url: "/school/admin/schedule", icon: Calendar },
                 { title: "Все оценки", url: "/school/admin/grades", icon: Award },
                 { title: "Просмотр дневника", url: "/school/diary", icon: BookOpen },
+                { title: "Домашка (ученик)", url: "/school/homework-list", icon: ClipboardList },
                 // Enable Teacher tools for Admin
                 { title: "Мой Журнал", url: "/school/journal", icon: ClipboardList },
                 { title: "Домашнее задание", url: "/school/homework", icon: BookOpen },

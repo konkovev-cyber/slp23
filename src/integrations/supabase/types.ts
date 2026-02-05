@@ -94,6 +94,38 @@ export type Database = {
           },
         ]
       }
+      homework_completions: {
+        Row: {
+          completed_at: string
+          created_at: string
+          homework_id: number
+          id: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string
+          created_at?: string
+          homework_id: number
+          id?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string
+          created_at?: string
+          homework_id?: number
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "homework_completions_homework_id_fkey"
+            columns: ["homework_id"]
+            isOneToOne: false
+            referencedRelation: "homework"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       homework_files: {
         Row: {
           file_name: string
