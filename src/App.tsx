@@ -35,6 +35,7 @@ const StudentDiary = lazy(() => import("./pages/school/StudentDiaryPage"));
 const StudentGrades = lazy(() => import("./pages/school/StudentGradesPage"));
 const StudentSchedule = lazy(() => import("./pages/school/StudentSchedulePage"));
 const StudentProfile = lazy(() => import("./pages/school/StudentProfilePage"));
+const StudentHomework = lazy(() => import("./pages/school/StudentHomeworkPage"));
 
 // School Admin pages
 const AdminUsers = lazy(() => import("./pages/school/admin/AdminUsersPage"));
@@ -212,6 +213,14 @@ const App = () => (
               element={
                 <SchoolProtectedRoute allowedRoles={['student', 'teacher', 'admin']}>
                   <StudentSchedule />
+                </SchoolProtectedRoute>
+              }
+            />
+            <Route
+              path="/school/homework-list"
+              element={
+                <SchoolProtectedRoute allowedRoles={['student', 'admin']}>
+                  <StudentHomework />
                 </SchoolProtectedRoute>
               }
             />
