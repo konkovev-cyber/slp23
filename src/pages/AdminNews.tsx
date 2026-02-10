@@ -33,6 +33,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import ImageUploader, { ImageValue } from "@/components/admin/ImageUploader";
 import { format } from "date-fns";
+import { detectVideoProvider, isDirectVideoFile } from "@/lib/video-embed";
 import { Plus, Trash2, Edit2, Download, Share2, Globe, Calendar, Search, Wand2 as MagicWand, Image as ImageIcon, Video, X, Type, Film } from "lucide-react";
 
 type Post = {
@@ -45,6 +46,18 @@ type Post = {
   image_url: string | null;
   published_at: string;
 };
+
+type MediaItem = {
+  url: string;
+  type: "image" | "video";
+};
+
+function guessMediaType(url: string): MediaItem["type"] {
+  const provider = detectVideoProvider(url);
+  if (provider) return "video";
+  if (isDirectVideoFile(url)) return "video";
+  return "image";
+}
 
 export default function AdminNews() {
   const { toast } = useToast();
@@ -65,7 +78,7 @@ export default function AdminNews() {
     category: string;
     published_at: string;
     image_value: ImageValue;
-    mediaList?: string[]; // Array of additional image URLs
+    mediaList?: MediaItem[]; // Доп. медиа (картинки + видео)
   }>({
     title: "",
     slug: "",
@@ -149,6 +162,20 @@ export default function AdminNews() {
           ? data.mediaList
           : (data.image ? [data.image] : []);
 
+        const importedMedia: MediaItem[] = importedImages.map((url: string) => ({
+          url,
+          type: "image",
+        }));
+
+        // Если импортируемая ссылка сама является видео-страницей (YouTube/RuTube/VK/Telegram)
+        // — добавляем её как видео-элемент, чтобы можно было смотреть в лайтбоксе.
+        const importedUrlType = guessMediaType(importUrl);
+        if (importedUrlType === "video") {
+          const normalizedUrl = importUrl.trim();
+          const exists = importedMedia.some((m) => m.url === normalizedUrl);
+          if (!exists) importedMedia.push({ url: normalizedUrl, type: "video" });
+        }
+
         // Use content from the response (properly decoded now)
         const importedContent = (data.content || data.description || "").trim();
 
@@ -180,7 +207,7 @@ export default function AdminNews() {
             publicUrl: importedImages[0],
             alt: newTitle
           } : prev.image_value,
-          mediaList: importedImages,
+          mediaList: importedMedia,
         }));
 
         const imageCount = importedImages.length;
@@ -243,13 +270,22 @@ export default function AdminNews() {
         image_url: values.image_value?.publicUrl ?? null,
       };
 
-      const mediaUrls = Array.from(
-        new Set(
-          [values.image_value?.publicUrl, ...(values.mediaList ?? [])]
-            .filter(Boolean)
-            .map((u) => String(u))
-        )
-      );
+      const coverUrl = values.image_value?.publicUrl ?? null;
+
+      const mediaItems: MediaItem[] = [
+        ...(coverUrl ? [{ url: coverUrl, type: "image" as const }] : []),
+        ...((values.mediaList ?? []) as MediaItem[]),
+      ];
+
+      // Dedup while keeping order
+      const seen = new Set<string>();
+      const normalized = mediaItems.filter((m) => {
+        const key = `${m.type}:${m.url}`;
+        if (!m.url) return false;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
 
       const syncPostMedia = async (postId: string) => {
         // Replace media rows atomically-ish (best effort): delete then insert
@@ -259,12 +295,12 @@ export default function AdminNews() {
           .eq("post_id", postId);
         if (delErr) throw delErr;
 
-        if (mediaUrls.length === 0) return;
+        if (normalized.length === 0) return;
 
-        const rows = mediaUrls.map((url, idx) => ({
+        const rows = normalized.map((m, idx) => ({
           post_id: postId,
-          media_url: url,
-          media_type: "image",
+          media_url: m.url,
+          media_type: m.type,
           display_order: idx,
           alt_text: values.title,
         }));
@@ -316,12 +352,17 @@ export default function AdminNews() {
     try {
       const { data: mediaRows, error } = await supabase
         .from("post_media")
-        .select("media_url, display_order")
+        .select("media_url, media_type, display_order")
         .eq("post_id", post.id)
         .order("display_order", { ascending: true });
       if (error) throw error;
 
-      const mediaList = (mediaRows ?? []).map((r) => r.media_url).filter(Boolean);
+      const mediaList: MediaItem[] = (mediaRows ?? [])
+        .filter((r) => Boolean(r.media_url))
+        .map((r: any) => ({
+          url: String(r.media_url),
+          type: r.media_type === "video" ? "video" : "image",
+        }));
 
       setFormData({
         id: post.id,
@@ -338,7 +379,11 @@ export default function AdminNews() {
               publicUrl: post.image_url,
             }
           : null,
-        mediaList: mediaList.length > 0 ? mediaList : post.image_url ? [post.image_url] : [],
+        mediaList: mediaList.length > 0
+          ? mediaList
+          : post.image_url
+            ? [{ url: post.image_url, type: "image" }]
+            : [],
       });
       setIsCreateOpen(true);
     } catch (e: any) {
@@ -567,7 +612,7 @@ export default function AdminNews() {
                       <div className="space-y-3 pt-4">
                         <div className="flex items-center justify-between">
                           <Label className="text-sm font-semibold text-muted-foreground">
-                            📸 Импортированные изображения ({formData.mediaList.length})
+                            🖼️ Медиа ({formData.mediaList.length})
                           </Label>
                           <Button
                             type="button"
@@ -580,37 +625,44 @@ export default function AdminNews() {
                             Очистить все
                           </Button>
                         </div>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                          {formData.mediaList.map((url, idx) => (
-                            <div key={idx} className="relative group">
-                              <div className="aspect-square rounded-lg overflow-hidden bg-muted border border-border">
-                                <img
-                                  src={url}
-                                  alt={`Изображение ${idx + 1}`}
-                                  className="w-full h-full object-cover"
-                                  onError={(e) => {
-                                    (e.target as HTMLImageElement).src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect fill="%23ddd" width="100" height="100"/><text x="50%" y="50%" text-anchor="middle" dy=".3em" fill="%23999">Ошибка</text></svg>';
+                          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                            {formData.mediaList.map((item, idx) => (
+                              <div key={idx} className="relative group">
+                                <div className="aspect-square rounded-lg overflow-hidden bg-muted border border-border flex items-center justify-center">
+                                  {item.type === "image" ? (
+                                    <img
+                                      src={item.url}
+                                      alt={`Изображение ${idx + 1}`}
+                                      className="w-full h-full object-cover"
+                                      onError={(e) => {
+                                        (e.target as HTMLImageElement).src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect fill="%23ddd" width="100" height="100"/><text x="50%" y="50%" text-anchor="middle" dy=".3em" fill="%23999">Ошибка</text></svg>';
+                                      }}
+                                    />
+                                  ) : (
+                                    <div className="w-full h-full p-3 flex flex-col items-center justify-center text-center gap-2">
+                                      <Film className="w-6 h-6 text-muted-foreground" />
+                                      <div className="text-[10px] text-muted-foreground break-all line-clamp-3">{item.url}</div>
+                                    </div>
+                                  )}
+                                </div>
+                                <Button
+                                  type="button"
+                                  variant="destructive"
+                                  size="icon"
+                                  className="absolute -top-2 -right-2 h-6 w-6 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                                  onClick={() => {
+                                    const newList = formData.mediaList?.filter((_, i) => i !== idx) || [];
+                                    setFormData({ ...formData, mediaList: newList });
                                   }}
-                                />
+                                >
+                                  <X className="w-3 h-3" />
+                                </Button>
+                                <div className="absolute bottom-1 left-1 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded">
+                                  #{idx + 1}
+                                </div>
                               </div>
-                              <Button
-                                type="button"
-                                variant="destructive"
-                                size="icon"
-                                className="absolute -top-2 -right-2 h-6 w-6 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
-                                onClick={() => {
-                                  const newList = formData.mediaList?.filter((_, i) => i !== idx) || [];
-                                  setFormData({ ...formData, mediaList: newList });
-                                }}
-                              >
-                                <X className="w-3 h-3" />
-                              </Button>
-                              <div className="absolute bottom-1 left-1 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded">
-                                #{idx + 1}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
+                            ))}
+                          </div>
                         <p className="text-xs text-muted-foreground">
                           💡 Первое изображение используется как обложка. Остальные добавлены в текст новости.
                         </p>

@@ -12,6 +12,7 @@ import { ArrowLeft, Calendar, ChevronLeft, ChevronRight, X } from "lucide-react"
 import { useMemo, useState } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { toEmbedUrl, isDirectVideoFile } from "@/lib/video-embed";
 import { cn } from "@/lib/utils";
 
 type PostMediaRow = {
@@ -285,20 +286,43 @@ export default function NewsPost() {
                       <div className="space-y-4">
                         <h2 className="text-xl font-bold tracking-tight">Видеоматериалы</h2>
                         <div className="grid grid-cols-1 gap-6">
-                          {videos.map((vid, idx) => (
-                            <motion.div
-                              key={idx}
-                              initial={{ opacity: 0, y: 10 }}
-                              whileInView={{ opacity: 1, y: 0 }}
-                              viewport={{ once: true }}
-                              className="aspect-video rounded-xl overflow-hidden bg-muted border border-border/50 shadow-sm cursor-zoom-in"
-                              onClick={() => openLightbox((post?.image_url ? 1 : 0) + images.filter((img) => img !== mainImage).length + idx)}
-                            >
-                              <video src={vid} controls className="w-full h-full" poster={mainImage}>
-                                Ваш браузер не поддерживает видео.
-                              </video>
-                            </motion.div>
-                          ))}
+                          {videos.map((vid, idx) => {
+                            const embed = toEmbedUrl(vid);
+                            const isFile = isDirectVideoFile(vid);
+                            const mediaIndex = mediaItems.findIndex((m) => m.type === "video" && m.src === vid);
+                            return (
+                              <motion.div
+                                key={idx}
+                                initial={{ opacity: 0, y: 10 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                className="aspect-video rounded-xl overflow-hidden bg-muted border border-border/50 shadow-sm cursor-zoom-in"
+                                onClick={() => openLightbox(mediaIndex >= 0 ? mediaIndex : idx)}
+                              >
+                                {embed ? (
+                                  <iframe
+                                    src={embed}
+                                    title={`Видео ${idx + 1}`}
+                                    className="w-full h-full"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                    allowFullScreen
+                                  />
+                                ) : isFile ? (
+                                  <video src={vid} controls className="w-full h-full" poster={mainImage}>
+                                    Ваш браузер не поддерживает видео.
+                                  </video>
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center p-6 text-center">
+                                    <div className="space-y-2">
+                                      <p className="text-sm font-bold">Видео по ссылке</p>
+                                      <p className="text-xs text-muted-foreground break-all">{vid}</p>
+                                      <p className="text-xs text-muted-foreground">Откроется в лайтбоксе как embed, если источник поддерживается.</p>
+                                    </div>
+                                  </div>
+                                )}
+                              </motion.div>
+                            );
+                          })}
                         </div>
                       </div>
                     )}
@@ -360,15 +384,49 @@ export default function NewsPost() {
                     className="max-h-[85vh] md:max-h-[90vh] w-auto max-w-full object-contain rounded-lg shadow-2xl"
                   />
                 ) : (
-                  <video
-                    src={mediaItems[activeIndex].src}
-                    controls
-                    autoPlay
-                    className="max-h-[85vh] w-auto max-w-full rounded-lg shadow-2xl"
-                    poster={mainImage}
-                  >
-                    Ваш браузер не поддерживает видео.
-                  </video>
+                  (() => {
+                    const src = mediaItems[activeIndex].src;
+                    const embed = toEmbedUrl(src);
+                    const isFile = isDirectVideoFile(src);
+
+                    if (embed) {
+                      return (
+                        <iframe
+                          src={embed}
+                          title={post?.title ?? "Видео"}
+                          className="max-h-[85vh] md:max-h-[90vh] w-[90vw] md:w-[70vw] aspect-video rounded-lg shadow-2xl bg-background"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                          allowFullScreen
+                        />
+                      );
+                    }
+
+                    if (isFile) {
+                      return (
+                        <video
+                          src={src}
+                          controls
+                          autoPlay
+                          className="max-h-[85vh] w-auto max-w-full rounded-lg shadow-2xl"
+                          poster={mainImage}
+                        >
+                          Ваш браузер не поддерживает видео.
+                        </video>
+                      );
+                    }
+
+                    return (
+                      <div className="max-w-[90vw] md:max-w-[70vw] rounded-lg shadow-2xl bg-card border border-border p-6">
+                        <p className="font-bold mb-2">Видео по ссылке</p>
+                        <a href={src} target="_blank" rel="noreferrer" className="text-primary underline break-all">
+                          {src}
+                        </a>
+                        <p className="text-sm text-muted-foreground mt-3">
+                          Источник не поддерживает встраивание — откроется в новой вкладке.
+                        </p>
+                      </div>
+                    );
+                  })()
                 )}
               </div>
 
