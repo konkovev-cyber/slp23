@@ -14,6 +14,13 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
+type PostMediaRow = {
+  media_url: string;
+  media_type: string;
+  display_order: number;
+  alt_text: string | null;
+};
+
 type Post = {
   id: string;
   title: string;
@@ -24,6 +31,7 @@ type Post = {
   image_url: string | null;
   published_at: string;
   updated_at: string;
+  post_media?: PostMediaRow[];
 };
 
 function stripText(htmlOrText: string) {
@@ -44,14 +52,16 @@ export default function NewsPost() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("posts")
-        .select("id,title,slug,category,content,excerpt,image_url,published_at,updated_at")
+        .select(
+          "id,title,slug,category,content,excerpt,image_url,published_at,updated_at,post_media(media_url,media_type,display_order,alt_text)"
+        )
         .eq("slug", safeSlug)
+        .order("display_order", { foreignTable: "post_media", ascending: true })
         .maybeSingle();
       if (error) throw error;
       return data as Post | null;
     },
   });
-
   // Media Parsing Logic
   const parseMedia = (content: string) => {
     const images: string[] = [];
@@ -89,32 +99,62 @@ export default function NewsPost() {
 
   const canonical = buildCanonical(`/news/${safeSlug}`);
   const title = post ? `${post.title} — Личность ПЛЮС` : "Новость — Личность ПЛЮС";
-  const { images, videos, cleanContent } = post ? parseMedia(post.content) : { images: [], videos: [], cleanContent: "" };
+
+  const dbMedia = (post?.post_media ?? [])
+    .filter((m) => Boolean(m.media_url))
+    .slice()
+    .sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0));
+
+  const fallbackParsed = post
+    ? parseMedia(post.content)
+    : { images: [] as string[], videos: [] as string[], cleanContent: "" };
+
+  const mediaFromDb = dbMedia.map((m) => ({
+    type: m.media_type === "video" ? ("video" as const) : ("image" as const),
+    src: m.media_url,
+  }));
+
+  const mediaItems = useMemo(() => {
+    const items = mediaFromDb.length
+      ? mediaFromDb
+      : (() => {
+          if (!post) return [] as { type: "image" | "video"; src: string }[];
+          const main = post.image_url ? [{ type: "image" as const, src: post.image_url }] : [];
+          const galleryImages = fallbackParsed.images
+            .filter((img) => img !== post.image_url)
+            .map((src) => ({ type: "image" as const, src }));
+          const galleryVideos = fallbackParsed.videos.map((src) => ({ type: "video" as const, src }));
+          return [...main, ...galleryImages, ...galleryVideos];
+        })();
+
+    // Remove duplicates but keep order
+    const seen = new Set<string>();
+    return items.filter((it) => {
+      const key = `${it.type}:${it.src}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }, [post, fallbackParsed.images, fallbackParsed.videos]);
+
+  const { images, videos, cleanContent } = post
+    ? mediaFromDb.length
+      ? {
+          images: mediaFromDb.filter((m) => m.type === "image").map((m) => m.src),
+          videos: mediaFromDb.filter((m) => m.type === "video").map((m) => m.src),
+          cleanContent: post.content,
+        }
+      : fallbackParsed
+    : { images: [], videos: [], cleanContent: "" };
 
   const description = post
     ? (post.excerpt ?? stripText(post.content).slice(0, 160))
     : "Новость школы «Личность ПЛЮС».";
-  const mainImage = post?.image_url ?? "/placeholder.svg";
+  const mainImage = post?.image_url ?? mediaItems.find((m) => m.type === "image")?.src ?? "/placeholder.svg";
 
   const publishedText = post?.published_at
     ? format(new Date(post.published_at), "d MMMM yyyy", { locale: ru })
     : "";
-
-  // Общий список медиа для работы лайтбокса (изображения + видео)
-  const mediaItems = useMemo(
-    () => {
-      if (!post) return [] as { type: "image" | "video"; src: string }[];
-
-      const main = post.image_url ? [{ type: "image" as const, src: post.image_url }] : [];
-      const galleryImages = images
-        .filter((img) => img !== post.image_url)
-        .map((src) => ({ type: "image" as const, src }));
-      const galleryVideos = videos.map((src) => ({ type: "video" as const, src }));
-
-      return [...main, ...galleryImages, ...galleryVideos];
-    },
-    [post, images, videos]
-  );
 
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const isSingleMedia = mediaItems.length === 1;
