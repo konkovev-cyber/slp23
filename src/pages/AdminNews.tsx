@@ -243,12 +243,48 @@ export default function AdminNews() {
         image_url: values.image_value?.publicUrl ?? null,
       };
 
+      const mediaUrls = Array.from(
+        new Set(
+          [values.image_value?.publicUrl, ...(values.mediaList ?? [])]
+            .filter(Boolean)
+            .map((u) => String(u))
+        )
+      );
+
+      const syncPostMedia = async (postId: string) => {
+        // Replace media rows atomically-ish (best effort): delete then insert
+        const { error: delErr } = await supabase
+          .from("post_media")
+          .delete()
+          .eq("post_id", postId);
+        if (delErr) throw delErr;
+
+        if (mediaUrls.length === 0) return;
+
+        const rows = mediaUrls.map((url, idx) => ({
+          post_id: postId,
+          media_url: url,
+          media_type: "image",
+          display_order: idx,
+          alt_text: values.title,
+        }));
+
+        const { error: insErr } = await supabase.from("post_media").insert(rows);
+        if (insErr) throw insErr;
+      };
+
       if (values.id) {
         const { error } = await supabase.from("posts").update(payload).eq("id", values.id);
         if (error) throw error;
+        await syncPostMedia(values.id);
       } else {
-        const { error } = await supabase.from("posts").insert([payload]);
+        const { data, error } = await supabase
+          .from("posts")
+          .insert([payload])
+          .select("id")
+          .single();
         if (error) throw error;
+        if (data?.id) await syncPostMedia(data.id);
       }
     },
     onSuccess: () => {
@@ -276,23 +312,43 @@ export default function AdminNews() {
     setImportUrl("");
   };
 
-  const handleEdit = (post: Post) => {
-    setFormData({
-      id: post.id,
-      title: post.title,
-      slug: post.slug,
-      excerpt: post.excerpt ?? "",
-      content: post.content ?? "",
-      category: post.category,
-      published_at: new Date(post.published_at).toISOString().slice(0, 16),
-      image_value: post.image_url ? {
-        bucket: "news",
-        path: post.image_url.split('/').pop() ?? "",
-        publicUrl: post.image_url
-      } : null
-    });
-    setIsCreateOpen(true);
-  }
+  const handleEdit = async (post: Post) => {
+    try {
+      const { data: mediaRows, error } = await supabase
+        .from("post_media")
+        .select("media_url, display_order")
+        .eq("post_id", post.id)
+        .order("display_order", { ascending: true });
+      if (error) throw error;
+
+      const mediaList = (mediaRows ?? []).map((r) => r.media_url).filter(Boolean);
+
+      setFormData({
+        id: post.id,
+        title: post.title,
+        slug: post.slug,
+        excerpt: post.excerpt ?? "",
+        content: post.content ?? "",
+        category: post.category,
+        published_at: new Date(post.published_at).toISOString().slice(0, 16),
+        image_value: post.image_url
+          ? {
+              bucket: "news",
+              path: post.image_url.split("/").pop() ?? "",
+              publicUrl: post.image_url,
+            }
+          : null,
+        mediaList: mediaList.length > 0 ? mediaList : post.image_url ? [post.image_url] : [],
+      });
+      setIsCreateOpen(true);
+    } catch (e: any) {
+      toast({
+        title: "Ошибка",
+        description: e.message || "Не удалось загрузить медиа для новости.",
+        variant: "destructive",
+      });
+    }
+  };
 
   /* --- NEW STATES FOR UI --- */
   const [searchTerm, setSearchTerm] = useState("");
