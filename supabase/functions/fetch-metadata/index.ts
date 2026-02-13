@@ -6,6 +6,28 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
+// Patterns for non-content images
+const GARBAGE_PATTERNS = [
+  /emoji/i, /icon/i, /favicon/i, /avatar/i, /logo/i, /pixel/i, /ads/i, /banner/i,
+  /loading/i, /spinner/i, /marker/i, /sprite/i, /placeholder/i
+];
+
+// Patterns for video detection
+const VIDEO_PATTERNS = [
+  /youtube\.com\/watch/i, /youtu\.be\//i, /vimeo\.com\//i,
+  /vk\.com\/video/i, /vk\.com\/clip/i,
+  /t\.me\/[^\/]+\/\d+\?video=1/i, /mp4$/i, /webm$/i
+];
+
+function isGarbageImage(url: string): boolean {
+  return GARBAGE_PATTERNS.some(pattern => pattern.test(url));
+}
+
+function detectType(url: string): "image" | "video" {
+  if (VIDEO_PATTERNS.some(pattern => pattern.test(url))) return "video";
+  return "image";
+}
+
 function decodeHtml(str: string): string {
   if (!str) return "";
   return str
@@ -27,13 +49,12 @@ function stripHtml(html: string): string {
     .trim();
 }
 
-async function getTextWithEncoding(res: Response, _url: string): Promise<string> {
+async function getTextWithEncoding(res: Response): Promise<string> {
   const buffer = await res.arrayBuffer();
-  // Используем fatal: false чтобы не падать на кривой кодировке, а заменять символы
   return new TextDecoder("utf-8", { fatal: false }).decode(buffer);
 }
 
-function extractMetadata(html: string, url: string) {
+function extractMetadata(html: string) {
   const getMeta = (property: string): string => {
     const patterns = [
       new RegExp(`<meta[^>]+(?:property|name)=["']${property}["'][^>]*content=["']([^"']+)["']`, "i"),
@@ -53,32 +74,37 @@ function extractMetadata(html: string, url: string) {
   };
 }
 
-function extractTelegramContent(html: string) {
-  // В эмбеде текст лежит в классе tgme_widget_message_text
-  const textMatch = html.match(/<div[^>]*class="[^"]*tgme_widget_message_text[^"]*"[^>]*>([\s\S]*?)<\/div>/i);
-  const content = textMatch ? stripHtml(decodeHtml(textMatch[1])) : "";
+function extractMedia(html: string) {
+  const urls: string[] = [];
 
-  const images: string[] = [];
+  // 1. OG Image
+  const ogImage = html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i)?.[1];
+  if (ogImage) urls.push(ogImage);
 
-  // 1. Ищем фоновые картинки (в альбомах Telegram они часто так)
+  // 2. Background images (often used in Telegram/VK)
   const bgMatches = html.matchAll(/background-image:url\(['"]?([^'"]+)['"]?\)/gi);
   for (const match of bgMatches) {
-    if (match[1] && !images.includes(match[1])) images.push(match[1]);
+    if (match[1] && !urls.includes(match[1])) urls.push(match[1]);
   }
 
-  // 2. Ищем обычные теги img
+  // 3. Regular img tags
   const imgTags = html.matchAll(/<img[^>]+src=["']([^"']+)["']/gi);
   for (const match of imgTags) {
-    if (match[1].startsWith("http") && !images.includes(match[1])) images.push(match[1]);
+    if (match[1].startsWith("http") && !urls.includes(match[1])) urls.push(match[1]);
   }
 
-  // 3. Ищем атрибуты data-src (ленивая загрузка)
-  const dataSrc = html.matchAll(/data-src=["']([^"']+)["']/gi);
-  for (const match of dataSrc) {
-    if (match[1] && !images.includes(match[1])) images.push(match[1]);
+  // 4. Video links (YouTube, etc)
+  const videoLinks = html.matchAll(/href=["'](https?:\/\/(?:www\.)?(?:youtube\.com|youtu\.be|vimeo\.com|vk\.com\/video)[^"']+)["']/gi);
+  for (const match of videoLinks) {
+    if (match[1] && !urls.includes(match[1])) urls.push(match[1]);
   }
 
-  return { content, images };
+  return urls
+    .filter(url => !isGarbageImage(url))
+    .map(url => ({
+      url,
+      type: detectType(url)
+    }));
 }
 
 serve(async (req) => {
@@ -86,13 +112,17 @@ serve(async (req) => {
 
   try {
     const { url } = await req.json();
-    let normalizedUrl = url.trim();
+    if (!url) throw new Error("URL is required");
 
-    // КЛЮЧЕВОЕ: Превращаем ссылку TG в Embed, чтобы получить весь альбом и текст
+    let normalizedUrl = url.trim();
     let fetchUrl = normalizedUrl;
+
+    // Telegram specific handling
     if (normalizedUrl.includes("t.me/")) {
       fetchUrl = normalizedUrl.replace("?single", "");
-      fetchUrl += (fetchUrl.includes("?") ? "&" : "?") + "embed=1";
+      if (!fetchUrl.includes("embed=1")) {
+        fetchUrl += (fetchUrl.includes("?") ? "&" : "?") + "embed=1";
+      }
     }
 
     const res = await fetch(fetchUrl, {
@@ -103,24 +133,26 @@ serve(async (req) => {
 
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-    const html = await getTextWithEncoding(res, fetchUrl);
-    const metadata = extractMetadata(html, fetchUrl);
-    let content = "";
-    let mediaList: string[] = [];
+    const html = await getTextWithEncoding(res);
+    const metadata = extractMetadata(html);
 
+    let content = "";
     if (normalizedUrl.includes("t.me")) {
-      const telegram = extractTelegramContent(html);
-      content = telegram.content;
-      mediaList = telegram.images;
+      const textMatch = html.match(/<div[^>]*class="[^"]*tgme_widget_message_text[^"]*"[^>]*>([\s\S]*?)<\/div>/i);
+      content = textMatch ? stripHtml(decodeHtml(textMatch[1])) : "";
     } else if (normalizedUrl.includes("vk.com")) {
       const textMatch = html.match(/<div[^>]*class="[^"]*wall_post_text[^"]*"[^>]*>([\s\S]*?)<\/div>/i);
       content = textMatch ? stripHtml(decodeHtml(textMatch[1])) : "";
-      const vkImgs = html.matchAll(/<img[^>]+src=["']([^"']+)["'][^>]*class="[^"]*wall_photo[^"]*"/gi);
-      for (const m of vkImgs) if (m[1]) mediaList.push(m[1]);
+    } else {
+      content = metadata.description;
     }
 
-    if (mediaList.length === 0) {
-      if (metadata.image) mediaList.push(metadata.image);
+    const mediaList = extractMedia(html);
+
+    // Ensure main image is included if not garbage
+    const mainImage = metadata.image;
+    if (mainImage && !isGarbageImage(mainImage) && !mediaList.find(m => m.url === mainImage)) {
+      mediaList.unshift({ url: mainImage, type: "image" });
     }
 
     return new Response(
@@ -128,9 +160,9 @@ serve(async (req) => {
         title: metadata.title || "Новости",
         description: metadata.description,
         content: content || metadata.description,
-        image: mediaList[0] || "",
+        image: mediaList.find(m => m.type === "image")?.url || "",
         mediaList: mediaList.slice(0, 15),
-        source: normalizedUrl.includes("t.me") ? "telegram" : "web",
+        source: normalizedUrl.includes("t.me") ? "telegram" : normalizedUrl.includes("vk.com") ? "vk" : "web",
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json; charset=utf-8" } }
     );

@@ -9,7 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
-    Search,
+    Check,
+    Key,
     UserPlus,
     Filter,
     ShieldCheck,
@@ -20,7 +21,7 @@ import {
     GraduationCap,
     Users,
     Shield,
-    Check,
+    Search,
     LinkIcon,
     Baby,
     BookOpen,
@@ -82,6 +83,14 @@ export default function AdminUsersPage() {
     const [isChildLinkOpen, setIsChildLinkOpen] = useState(false);
     const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
     const [selectedId, setSelectedId] = useState<string>("");
+
+    // Add User states
+    const [isAddUserOpen, setIsAddUserOpen] = useState(false);
+    const [newUserName, setNewUserName] = useState("");
+    const [newUserEmail, setNewUserEmail] = useState("");
+    const [newUserPassword, setNewUserPassword] = useState("");
+    const [newUserRole, setNewUserRole] = useState("student");
+    const [addingUser, setAddingUser] = useState(false);
 
     useEffect(() => {
         fetchUsers();
@@ -172,6 +181,40 @@ export default function AdminUsersPage() {
         }
     };
 
+    const handleAddUser = async () => {
+        if (!newUserName.trim() || !newUserEmail.trim()) {
+            toast.error("Заполните имя и email");
+            return;
+        }
+
+        try {
+            setAddingUser(true);
+
+            const { data, error } = await supabase.functions.invoke('manage-users', {
+                body: {
+                    email: newUserEmail,
+                    password: newUserPassword || "Temp123456!",
+                    full_name: newUserName,
+                    role: newUserRole
+                }
+            });
+
+            if (error) throw error;
+            if (data?.error) throw new Error(data.error);
+
+            toast.success("Пользователь успешно создан");
+            setIsAddUserOpen(false);
+            setNewUserName("");
+            setNewUserEmail("");
+            setNewUserPassword("");
+            fetchUsers();
+        } catch (error: any) {
+            toast.error("Ошибка: " + error.message);
+        } finally {
+            setAddingUser(false);
+        }
+    };
+
     const filteredUsers = users.filter(u =>
         u.full_name?.toLowerCase().includes(searchQuery.toLowerCase())
     );
@@ -215,7 +258,10 @@ export default function AdminUsersPage() {
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
                     </div>
-                    <Button className="h-10 rounded-xl gap-2 font-bold px-6 shadow-md bg-slate-900 hover:bg-slate-800 transition-all text-sm">
+                    <Button
+                        onClick={() => setIsAddUserOpen(true)}
+                        className="h-10 rounded-xl gap-2 font-bold px-6 shadow-md bg-slate-900 hover:bg-slate-800 transition-all text-sm active:scale-95"
+                    >
                         <UserPlus className="w-4 h-4" /> Добавить
                     </Button>
                 </div>
@@ -364,6 +410,76 @@ export default function AdminUsersPage() {
                         </Select>
                     </div>
                     <DialogFooter><Button onClick={handleLinkChild} className="w-full h-11 rounded-xl bg-blue-600 text-white font-bold text-base shadow-lg shadow-blue-200">Привязать</Button></DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={isAddUserOpen} onOpenChange={setIsAddUserOpen}>
+                <DialogContent className="rounded-[32px] p-0 max-w-md bg-white shadow-2xl border-none overflow-hidden">
+                    <div className="bg-slate-900 p-8 text-white">
+                        <DialogTitle className="text-2xl font-black">Новый пользователь</DialogTitle>
+                        <p className="text-slate-400 text-xs font-bold mt-1 uppercase tracking-wider">Добавление в систему</p>
+                    </div>
+
+                    <div className="p-8 space-y-6">
+                        <div className="space-y-2">
+                            <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 pl-1">ФИО Пользователя</Label>
+                            <Input
+                                placeholder="Иванов Иван"
+                                value={newUserName}
+                                onChange={e => setNewUserName(e.target.value)}
+                                className="h-12 rounded-xl border-2 font-bold focus:ring-primary/20"
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 pl-1">Электронная почта</Label>
+                            <Input
+                                type="email"
+                                placeholder="user@example.com"
+                                value={newUserEmail}
+                                onChange={e => setNewUserEmail(e.target.value)}
+                                className="h-12 rounded-xl border-2 font-bold focus:ring-primary/20"
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 pl-1">Пароль (мин. 6 симв.)</Label>
+                            <div className="relative">
+                                <Key className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                <Input
+                                    type="password"
+                                    placeholder="Оставьте пустым для Temp123456!"
+                                    value={newUserPassword}
+                                    onChange={e => setNewUserPassword(e.target.value)}
+                                    className="h-12 pl-10 rounded-xl border-2 font-bold focus:ring-primary/20"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 pl-1">Роль доступа</Label>
+                            <Select value={newUserRole} onValueChange={setNewUserRole}>
+                                <SelectTrigger className="h-12 rounded-xl border-2 font-bold">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent className="rounded-xl">
+                                    {ROLES.map(r => (
+                                        <SelectItem key={r.value} value={r.value} className="font-bold rounded-lg">{r.label}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </div>
+
+                    <DialogFooter className="p-8 pt-0">
+                        <Button
+                            onClick={handleAddUser}
+                            disabled={addingUser}
+                            className="w-full h-14 rounded-2xl bg-primary text-white font-black text-lg shadow-xl shadow-primary/20 hover:translate-y-[-2px] transition-all"
+                        >
+                            {addingUser ? <Loader2 className="w-5 h-5 animate-spin" /> : "Создать аккаунт"}
+                        </Button>
+                    </DialogFooter>
                 </DialogContent>
             </Dialog>
         </SchoolLayout>

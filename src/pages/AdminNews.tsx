@@ -158,62 +158,49 @@ export default function AdminNews() {
           return out + (plain.length > cut ? "..." : "");
         };
 
-        const importedImages = Array.isArray(data.mediaList) && data.mediaList.length > 0
-          ? data.mediaList
-          : (data.image ? [data.image] : []);
+        const importedMedia: MediaItem[] = Array.isArray(data.mediaList) ? data.mediaList : [];
 
-        const importedMedia: MediaItem[] = importedImages.map((url: string) => ({
-          url,
-          type: "image",
-        }));
-
-        // Если импортируемая ссылка сама является видео-страницей (YouTube/RuTube/VK/Telegram)
-        // — добавляем её как видео-элемент, чтобы можно было смотреть в лайтбоксе.
+        // If the imported URL itself is a video page that wasn't in the list
         const importedUrlType = guessMediaType(importUrl);
-        if (importedUrlType === "video") {
-          const normalizedUrl = importUrl.trim();
-          const exists = importedMedia.some((m) => m.url === normalizedUrl);
-          if (!exists) importedMedia.push({ url: normalizedUrl, type: "video" });
+        if (importedUrlType === "video" && !importedMedia.some(m => m.url === importUrl.trim())) {
+          importedMedia.push({ url: importUrl.trim(), type: "video" });
         }
 
-        // Use content from the response (properly decoded now)
         const importedContent = (data.content || data.description || "").trim();
+        const newTitle = data.title || buildTitleFromText(importedContent) || formData.title;
+        const newExcerpt = data.description || buildExcerptFromText(importedContent) || formData.excerpt;
 
-        // Title priority: beginning of the news text → metadata title → existing form title
-        const titleFromText = buildTitleFromText(importedContent);
-        const newTitle = titleFromText || data.title || formData.title;
+        // Find cover image from imported media or metadata
+        const coverImage = data.image || importedMedia.find(m => m.type === "image")?.url;
 
-        // Excerpt priority: derived from imported text → metadata description → existing excerpt
-        const excerptFromText = buildExcerptFromText(importedContent);
-        const newExcerpt = excerptFromText || data.description || formData.excerpt;
-
-        // Build media gallery text for additional images/videos
+        // Build media gallery text (links for the bottom of content)
+        const additionalMedia = importedMedia.filter(m => m.url !== coverImage);
         let mediaGalleryText = "";
-        if (importedImages.length > 1) {
-          mediaGalleryText = "\n\nИзображения:\n" +
-            importedImages.slice(1).map((url: string) => url).join("\n");
+        if (additionalMedia.length > 0) {
+          mediaGalleryText = "\n\nМедиа-файлы:\n" +
+            additionalMedia.map(m => `${m.type === 'video' ? '🎥' : '🖼️'} ${m.url}`).join("\n");
         }
 
         setFormData(prev => ({
           ...prev,
           title: newTitle,
           slug: generateUniqueSlug(newTitle),
-          category: "Новости",
+          category: data.source === "telegram" ? "Новости" : prev.category,
           excerpt: newExcerpt,
           content: (importedContent || newExcerpt) + mediaGalleryText,
-          image_value: importedImages[0] ? {
+          image_value: coverImage ? {
             bucket: "news",
-            path: "external_link_no_delete",
-            publicUrl: importedImages[0],
+            path: "external",
+            publicUrl: coverImage,
             alt: newTitle
           } : prev.image_value,
           mediaList: importedMedia,
         }));
 
-        const imageCount = importedImages.length;
+        const mediaCount = importedMedia.length;
         toast({
-          title: "✅ Данные загружены",
-          description: `Импортировано: ${imageCount} ${imageCount === 1 ? 'изображение' : imageCount < 5 ? 'изображения' : 'изображений'}`
+          title: "✅ Данные импортированы",
+          description: `Найдено ${mediaCount} медиа-файлов. Текст и заголовок заполнены.`
         });
       }
     } catch (e: any) {
@@ -374,10 +361,10 @@ export default function AdminNews() {
         published_at: new Date(post.published_at).toISOString().slice(0, 16),
         image_value: post.image_url
           ? {
-              bucket: "news",
-              path: post.image_url.split("/").pop() ?? "",
-              publicUrl: post.image_url,
-            }
+            bucket: "news",
+            path: post.image_url.split("/").pop() ?? "",
+            publicUrl: post.image_url,
+          }
           : null,
         mediaList: mediaList.length > 0
           ? mediaList
@@ -625,44 +612,44 @@ export default function AdminNews() {
                             Очистить все
                           </Button>
                         </div>
-                          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                            {formData.mediaList.map((item, idx) => (
-                              <div key={idx} className="relative group">
-                                <div className="aspect-square rounded-lg overflow-hidden bg-muted border border-border flex items-center justify-center">
-                                  {item.type === "image" ? (
-                                    <img
-                                      src={item.url}
-                                      alt={`Изображение ${idx + 1}`}
-                                      className="w-full h-full object-cover"
-                                      onError={(e) => {
-                                        (e.target as HTMLImageElement).src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect fill="%23ddd" width="100" height="100"/><text x="50%" y="50%" text-anchor="middle" dy=".3em" fill="%23999">Ошибка</text></svg>';
-                                      }}
-                                    />
-                                  ) : (
-                                    <div className="w-full h-full p-3 flex flex-col items-center justify-center text-center gap-2">
-                                      <Film className="w-6 h-6 text-muted-foreground" />
-                                      <div className="text-[10px] text-muted-foreground break-all line-clamp-3">{item.url}</div>
-                                    </div>
-                                  )}
-                                </div>
-                                <Button
-                                  type="button"
-                                  variant="destructive"
-                                  size="icon"
-                                  className="absolute -top-2 -right-2 h-6 w-6 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
-                                  onClick={() => {
-                                    const newList = formData.mediaList?.filter((_, i) => i !== idx) || [];
-                                    setFormData({ ...formData, mediaList: newList });
-                                  }}
-                                >
-                                  <X className="w-3 h-3" />
-                                </Button>
-                                <div className="absolute bottom-1 left-1 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded">
-                                  #{idx + 1}
-                                </div>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                          {formData.mediaList.map((item, idx) => (
+                            <div key={idx} className="relative group">
+                              <div className="aspect-square rounded-lg overflow-hidden bg-muted border border-border flex items-center justify-center">
+                                {item.type === "image" ? (
+                                  <img
+                                    src={item.url}
+                                    alt={`Изображение ${idx + 1}`}
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                      (e.target as HTMLImageElement).src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect fill="%23ddd" width="100" height="100"/><text x="50%" y="50%" text-anchor="middle" dy=".3em" fill="%23999">Ошибка</text></svg>';
+                                    }}
+                                  />
+                                ) : (
+                                  <div className="w-full h-full p-3 flex flex-col items-center justify-center text-center gap-2">
+                                    <Film className="w-6 h-6 text-muted-foreground" />
+                                    <div className="text-[10px] text-muted-foreground break-all line-clamp-3">{item.url}</div>
+                                  </div>
+                                )}
                               </div>
-                            ))}
-                          </div>
+                              <Button
+                                type="button"
+                                variant="destructive"
+                                size="icon"
+                                className="absolute -top-2 -right-2 h-6 w-6 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                                onClick={() => {
+                                  const newList = formData.mediaList?.filter((_, i) => i !== idx) || [];
+                                  setFormData({ ...formData, mediaList: newList });
+                                }}
+                              >
+                                <X className="w-3 h-3" />
+                              </Button>
+                              <div className="absolute bottom-1 left-1 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded">
+                                #{idx + 1}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
                         <p className="text-xs text-muted-foreground">
                           💡 Первое изображение используется как обложка. Остальные добавлены в текст новости.
                         </p>
