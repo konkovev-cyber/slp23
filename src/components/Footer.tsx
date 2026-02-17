@@ -1,5 +1,7 @@
-import { SiInstagram, SiTelegram, SiVk } from "react-icons/si";
+import { SiInstagram, SiTelegram, SiVk, SiGithub } from "react-icons/si";
 import { Link } from "react-router-dom";
+import { APP_VERSION } from "@/config/app-info";
+import { Download } from "lucide-react";
 
 const Footer = () => {
   return (
@@ -114,6 +116,32 @@ const Footer = () => {
                 </a>
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* APK Download Section */}
+        <div className="mb-12 p-6 bg-primary/5 rounded-[32px] border-2 border-primary/20">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-2xl bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/30">
+                <Download className="w-8 h-8" />
+              </div>
+              <div>
+                <h3 className="text-lg font-black text-foreground mb-1">Мобильное приложение</h3>
+                <p className="text-sm text-muted-foreground font-medium">
+                  Версия <span className="font-bold text-primary">v{APP_VERSION}</span> • Всегда актуальная
+                </p>
+              </div>
+            </div>
+            <a
+              href="https://github.com/konkovev-cyber/slp23/releases/latest"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-3 px-8 py-4 bg-primary text-white rounded-2xl font-black text-sm shadow-xl shadow-primary/30 hover:shadow-primary/40 hover:translate-y-[-2px] transition-all active:scale-[0.98]"
+            >
+              <SiGithub className="w-5 h-5" />
+              Скачать APK
+            </a>
           </div>
         </div>
 
