@@ -149,9 +149,23 @@ const Footer = () => {
           <p className="text-muted-foreground text-[10px] font-medium uppercase tracking-widest text-center md:text-left">
             © 2026 ЧОУ «Личность ПЛЮС». Все права защищены.
           </p>
-          <div className="flex gap-8">
-            <Link to="/privacy" className="text-muted-foreground text-[10px] font-medium uppercase tracking-widest hover:text-foreground transition-colors">Конфиденциальность</Link>
-            <Link to="/terms" className="text-muted-foreground text-[10px] font-medium uppercase tracking-widest hover:text-foreground transition-colors">Условия</Link>
+          <div className="flex items-center gap-6">
+            {/* Desktop APK Download Button */}
+            <a
+              href="https://github.com/konkovev-cyber/slp23/releases/latest"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden md:inline-flex items-center gap-2 px-5 py-2.5 bg-primary/10 hover:bg-primary/20 text-primary rounded-xl font-bold text-xs transition-all hover:scale-105 border-2 border-primary/20"
+              title="Скачать приложение для Android"
+            >
+              <Download className="w-4 h-4" />
+              Приложение
+              <span className="px-1.5 py-0.5 bg-primary text-white rounded-md text-[9px] font-black">v{APP_VERSION}</span>
+            </a>
+            <div className="flex gap-8">
+              <Link to="/privacy" className="text-muted-foreground text-[10px] font-medium uppercase tracking-widest hover:text-foreground transition-colors">Конфиденциальность</Link>
+              <Link to="/terms" className="text-muted-foreground text-[10px] font-medium uppercase tracking-widest hover:text-foreground transition-colors">Условия</Link>
+            </div>
           </div>
         </div>
       </div>
