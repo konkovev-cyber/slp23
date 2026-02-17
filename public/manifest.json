@@ -2,7 +2,7 @@
   "name": "Личность ПЛЮС - Электронный дневник",
   "short_name": "Личность ПЛЮС",
   "description": "Школьный дневник для учеников, учителей и родителей",
-  "start_url": "/school/diary",
+  "start_url": "/school/login",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#FAFBFF",

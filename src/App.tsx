@@ -51,6 +51,7 @@ const TeacherHomework = lazy(() => import("./pages/school/TeacherHomeworkPage"))
 const ParentChildren = lazy(() => import("./pages/school/ParentChildrenPage"));
 
 // School Auth pages
+const SchoolLogin = lazy(() => import("./pages/school/SchoolLoginPage"));
 const SignupPage = lazy(() => import("./pages/school/SignupPage"));
 const PendingApprovalPage = lazy(() => import("./pages/school/PendingApprovalPage"));
 
@@ -323,8 +324,10 @@ const App = () => (
 
               <Route path="/school/signup" element={<SignupPage />} />
               <Route path="/school/pending" element={<PendingApprovalPage />} />
+              <Route path="/school/login" element={<SchoolLogin />} />
 
-              <Route path="/school" element={<Navigate to="/school/diary" replace />} />
+              {/* APK: При заходе на /school сразу показываем вход, а не редирект на дневник */}
+              <Route path="/school" element={<Navigate to="/school/login" replace />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

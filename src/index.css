@@ -39,10 +39,20 @@
   html {
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
+    overscroll-behavior-x: none;
   }
   
   body {
     overscroll-behavior-y: none;
+    overscroll-behavior-x: none;
+    touch-action: pan-y;
+  }
+  
+  /* Запрет горизонтальной прокрутки для мобильного приложения */
+  #root {
+    overflow-x: hidden;
+    width: 100%;
+    max-width: 100vw;
   }
 }
 
