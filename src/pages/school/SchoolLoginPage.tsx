@@ -66,25 +66,25 @@ export default function SchoolLoginPage() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-accent/10 p-4">
+        <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-primary/10 via-background to-accent/10 p-4">
             <Helmet>
                 <title>Вход | Личность ПЛЮС</title>
             </Helmet>
 
             <Card className="w-full max-w-md border-2 border-border rounded-[32px] shadow-2xl bg-background">
                 <CardHeader className="pb-6 text-center">
-                    <div className="mx-auto mb-4 w-20 h-20 rounded-[24px] bg-primary/10 flex items-center justify-center">
+                    <div className="mx-auto mb-4 w-20 h-20 rounded-[24px] bg-primary/10 flex items-center justify-center shadow-lg shadow-primary/20">
                         <GraduationCap className="w-10 h-10 text-primary" />
                     </div>
-                    <CardTitle className="text-3xl font-black text-foreground">
+                    <CardTitle className="text-3xl font-black text-foreground text-center">
                         Электронный дневник
                     </CardTitle>
-                    <CardDescription className="text-muted-foreground font-bold">
+                    <CardDescription className="text-muted-foreground font-bold text-center">
                         Личность ПЛЮС • v{APP_VERSION}
                     </CardDescription>
                 </CardHeader>
 
-                <CardContent className="space-y-6">
+                <CardContent className="space-y-5">
                     <form onSubmit={handleLogin} className="space-y-5">
                         <div className="space-y-2">
                             <Label htmlFor="email" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground pl-1">
