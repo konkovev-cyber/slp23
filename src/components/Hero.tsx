@@ -11,11 +11,11 @@ type HeroContent = {
   lead?: string;
 };
 
-const SLIDER_IMAGES = [
-  "https://slp23.ru/wp-content/gallery/d188d0bad0bed0bbd0b0/photo_2023-05-12_15-59-09.jpg",
-  "https://slp23.ru/wp-content/gallery/d188d0bad0bed0bbd0b0/DSC_0212.JPG",
-  "https://slp23.ru/wp-content/gallery/d188d0bad0bed0bbd0b0/NIK_1973.jpg"
-];
+import img1 from "@/assets/hero-main.jpg";
+import img2 from "@/assets/hero-children.jpg";
+import img3 from "@/assets/activities.jpg";
+
+const SLIDER_IMAGES = [img1, img2, img3];
 
 const Hero = () => {
   const { data } = useContent<HeroContent>("hero");
