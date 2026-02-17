@@ -15,6 +15,37 @@ import { Button } from "@/components/ui/button";
 import { toEmbedUrl, isDirectVideoFile } from "@/lib/video-embed";
 import { cn } from "@/lib/utils";
 
+// Regex to find links in text
+const URL_REGEX = /(https?:\/\/[^\s]+)/g;
+
+function FormattedText({ text }: { text: string }) {
+  if (!text) return null;
+
+  // Split text by URLs and map parts to either text or <a> tags
+  const parts = text.split(URL_REGEX);
+
+  return (
+    <div className="whitespace-pre-wrap pt-1 leading-relaxed">
+      {parts.map((part, i) => {
+        if (part.match(URL_REGEX)) {
+          return (
+            <a
+              key={i}
+              href={part}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary hover:underline break-all"
+            >
+              {part}
+            </a>
+          );
+        }
+        return part;
+      })}
+    </div>
+  );
+}
+
 type PostMediaRow = {
   media_url: string;
   media_type: string;
@@ -32,6 +63,7 @@ type Post = {
   image_url: string | null;
   published_at: string;
   updated_at: string;
+  source?: string;
   post_media?: PostMediaRow[];
 };
 
@@ -54,7 +86,7 @@ export default function NewsPost() {
       const { data, error } = await supabase
         .from("posts")
         .select(
-          "id,title,slug,category,content,excerpt,image_url,published_at,updated_at,post_media(media_url,media_type,display_order,alt_text)"
+          "id,title,slug,category,content,excerpt,image_url,published_at,updated_at,source,post_media(media_url,media_type,display_order,alt_text)"
         )
         .eq("slug", safeSlug)
         .order("display_order", { foreignTable: "post_media", ascending: true })
@@ -119,14 +151,14 @@ export default function NewsPost() {
     const items = mediaFromDb.length
       ? mediaFromDb
       : (() => {
-          if (!post) return [] as { type: "image" | "video"; src: string }[];
-          const main = post.image_url ? [{ type: "image" as const, src: post.image_url }] : [];
-          const galleryImages = fallbackParsed.images
-            .filter((img) => img !== post.image_url)
-            .map((src) => ({ type: "image" as const, src }));
-          const galleryVideos = fallbackParsed.videos.map((src) => ({ type: "video" as const, src }));
-          return [...main, ...galleryImages, ...galleryVideos];
-        })();
+        if (!post) return [] as { type: "image" | "video"; src: string }[];
+        const main = post.image_url ? [{ type: "image" as const, src: post.image_url }] : [];
+        const galleryImages = fallbackParsed.images
+          .filter((img) => img !== post.image_url)
+          .map((src) => ({ type: "image" as const, src }));
+        const galleryVideos = fallbackParsed.videos.map((src) => ({ type: "video" as const, src }));
+        return [...main, ...galleryImages, ...galleryVideos];
+      })();
 
     // Remove duplicates but keep order
     const seen = new Set<string>();
@@ -141,10 +173,10 @@ export default function NewsPost() {
   const { images, videos, cleanContent } = post
     ? mediaFromDb.length
       ? {
-          images: mediaFromDb.filter((m) => m.type === "image").map((m) => m.src),
-          videos: mediaFromDb.filter((m) => m.type === "video").map((m) => m.src),
-          cleanContent: post.content,
-        }
+        images: mediaFromDb.filter((m) => m.type === "image").map((m) => m.src),
+        videos: mediaFromDb.filter((m) => m.type === "video").map((m) => m.src),
+        cleanContent: post.content,
+      }
       : fallbackParsed
     : { images: [], videos: [], cleanContent: "" };
 
@@ -228,6 +260,20 @@ export default function NewsPost() {
                 <h1 className="text-3xl md:text-5xl font-black text-foreground tracking-tighter leading-tight">
                   {post.title}
                 </h1>
+
+                {post.source && post.source.startsWith('http') && (
+                  <div className="pt-2">
+                    <a
+                      href={post.source}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 text-xs font-bold text-primary hover:text-primary/80 transition-colors bg-primary/5 px-3 py-1.5 rounded-full"
+                    >
+                      <span>Посмотреть в источнике</span>
+                      <ArrowLeft className="w-3 h-3 rotate-180" />
+                    </a>
+                  </div>
+                )}
               </header>
 
               {/* Main Image - Only shown as full-width if multiple items exist, otherwise it floats below */}
@@ -258,23 +304,21 @@ export default function NewsPost() {
                   animate={{ opacity: 1, y: 0 }}
                   className="prose prose-neutral dark:prose-invert max-w-none"
                 >
-                  <div className="text-foreground/90 text-base md:text-lg leading-relaxed font-medium min-h-[300px] md:min-h-[400px]">
+                  <div className="text-foreground/90 text-base md:text-lg font-medium min-h-[300px]">
                     {/* Floating image for single media variant */}
                     {isSingleMedia && mediaItems[0].type === "image" && (
                       <div
-                        className="float-none md:float-left mb-6 md:mr-8 w-fit max-w-full md:max-w-[280px] lg:max-w-[320px] rounded-xl overflow-hidden cursor-zoom-in group"
+                        className="float-none md:float-left mb-6 md:mr-8 w-full md:max-w-[400px] rounded-2xl overflow-hidden cursor-zoom-in group shadow-md"
                         onClick={() => openLightbox(0)}
                       >
                         <img
                           src={mediaItems[0].src}
                           alt={post.title}
-                          className="max-w-full h-auto object-contain transition-transform duration-500 group-hover:scale-105 m-0 block"
+                          className="w-full h-auto object-contain transition-transform duration-500 group-hover:scale-105 m-0 block"
                         />
                       </div>
                     )}
-                    <div className="whitespace-pre-wrap pt-1">
-                      {cleanContent}
-                    </div>
+                    <FormattedText text={cleanContent} />
                     {/* Clearfix for short texts */}
                     <div className="clear-both" />
                   </div>

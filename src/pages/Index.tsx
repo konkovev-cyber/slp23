@@ -2,6 +2,7 @@ import { Suspense, lazy } from "react";
 import Navigation from "@/components/Navigation";
 import Hero from "@/components/Hero";
 import { useContent } from "@/hooks/use-content";
+import { Helmet } from "react-helmet-async";
 
 // Lazy-loaded sections
 const Features = lazy(() => import("@/components/Features"));
@@ -44,6 +45,11 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background transition-colors duration-300">
+      <Helmet>
+        <title>Личность ПЛЮС — Частная школа в Горячем Ключе</title>
+        <meta name="description" content="Частная школа «Личность ПЛЮС» в Горячем Ключе. Индивидуальный подход, малые классы, углубленное обучение и творческое развитие детей." />
+        <link rel="canonical" href="https://slp23.ru/" />
+      </Helmet>
       <Navigation />
       <main id="main-content">
         <Hero />

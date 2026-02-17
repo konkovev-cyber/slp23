@@ -12,6 +12,10 @@ const GARBAGE_PATTERNS = [
   /loading/i, /spinner/i, /marker/i, /sprite/i, /placeholder/i
 ];
 
+const GENERIC_TITLES = [
+  /telegram\s*widget/i, /telegram\s*:\s*contact/i, /vkontakte/i, /вконтакте/i, /wall\s*post/i, /запись\s*на\s*стене/i
+];
+
 // Patterns for video detection
 const VIDEO_PATTERNS = [
   /youtube\.com\/watch/i, /youtu\.be\//i, /vimeo\.com\//i,
@@ -67,8 +71,11 @@ function extractMetadata(html: string) {
     return "";
   };
 
+  const title = decodeHtml(getMeta("og:title") || (html.match(/<title[^>]*>([^<]+)<\/title>/i)?.[1] || "").trim());
+  const isGeneric = GENERIC_TITLES.some(p => p.test(title));
+
   return {
-    title: decodeHtml(getMeta("og:title") || (html.match(/<title[^>]*>([^<]+)<\/title>/i)?.[1] || "").trim()),
+    title: isGeneric ? "" : title,
     description: decodeHtml(getMeta("og:description") || getMeta("description") || ""),
     image: getMeta("og:image") || getMeta("twitter:image") || "",
   };
@@ -149,6 +156,16 @@ serve(async (req) => {
 
     const mediaList = extractMedia(html);
 
+    // If it's Telegram and we have a very short title, try to use first line of content
+    let finalTitle = metadata.title;
+    if (!finalTitle && content) {
+      const lines = content.split('\n').filter(l => l.trim().length > 0);
+      if (lines.length > 0) {
+        finalTitle = lines[0].slice(0, 100).trim();
+        if (finalTitle.length < lines[0].length) finalTitle += "...";
+      }
+    }
+
     // Ensure main image is included if not garbage
     const mainImage = metadata.image;
     if (mainImage && !isGarbageImage(mainImage) && !mediaList.find(m => m.url === mainImage)) {
@@ -157,7 +174,7 @@ serve(async (req) => {
 
     return new Response(
       JSON.stringify({
-        title: metadata.title || "Новости",
+        title: finalTitle || "Новости",
         description: metadata.description,
         content: content || metadata.description,
         image: mediaList.find(m => m.type === "image")?.url || "",

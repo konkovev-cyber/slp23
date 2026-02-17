@@ -70,12 +70,16 @@ const Navigation = () => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between">
 
-          <Link to="/" className="flex items-center space-x-2 group outline-none">
-            <div className="w-9 h-9 bg-primary rounded-full flex items-center justify-center shadow-sm transform group-hover:scale-105 transition-transform">
-              <span className="text-white font-bold text-base">Л+</span>
+          <Link to="/" className="flex items-center space-x-3 group outline-none">
+            <div className="w-10 h-10 overflow-hidden transform group-hover:scale-105 transition-transform">
+              <img
+                src="/logo.png"
+                alt="Личность ПЛЮС"
+                className="w-full h-full object-contain dark:drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]"
+              />
             </div>
             <div className="hidden sm:block">
-              <div className="font-bold text-base text-foreground tracking-tight leading-none">Личность ПЛЮС</div>
+              <div className="font-bold text-base text-foreground tracking-tight leading-none uppercase">Личность ПЛЮС</div>
               <div className="text-[9px] uppercase font-bold tracking-tight text-muted-foreground mt-0.5">частная школа</div>
             </div>
           </Link>
@@ -199,7 +203,7 @@ const Navigation = () => {
                 className="text-2xl font-bold py-2 active:text-primary transition-colors text-left"
                 aria-label="Перейти в дневник"
               >
-                  {diaryLabel}
+                {diaryLabel}
               </button>
 
               <div className="space-y-3">

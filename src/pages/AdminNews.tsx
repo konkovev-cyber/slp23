@@ -78,6 +78,8 @@ export default function AdminNews() {
     category: string;
     published_at: string;
     image_value: ImageValue;
+    source?: string;
+    source_id?: string;
     mediaList?: MediaItem[]; // Доп. медиа (картинки + видео)
   }>({
     title: "",
@@ -87,6 +89,8 @@ export default function AdminNews() {
     category: "Новости",
     published_at: new Date().toISOString().slice(0, 16),
     image_value: null,
+    source: "",
+    source_id: "",
     mediaList: [],
   });
 
@@ -175,11 +179,8 @@ export default function AdminNews() {
 
         // Build media gallery text (links for the bottom of content)
         const additionalMedia = importedMedia.filter(m => m.url !== coverImage);
+        // We no longer need textual gallery as it's handled by post_media sync
         let mediaGalleryText = "";
-        if (additionalMedia.length > 0) {
-          mediaGalleryText = "\n\nМедиа-файлы:\n" +
-            additionalMedia.map(m => `${m.type === 'video' ? '🎥' : '🖼️'} ${m.url}`).join("\n");
-        }
 
         setFormData(prev => ({
           ...prev,
@@ -194,6 +195,8 @@ export default function AdminNews() {
             publicUrl: coverImage,
             alt: newTitle
           } : prev.image_value,
+          source: importUrl,
+          source_id: data.source_id || "",
           mediaList: importedMedia,
         }));
 
@@ -255,6 +258,8 @@ export default function AdminNews() {
         category: values.category,
         published_at: new Date(values.published_at).toISOString(),
         image_url: values.image_value?.publicUrl ?? null,
+        source: values.source ?? null,
+        source_id: values.source_id ?? null,
       };
 
       const coverUrl = values.image_value?.publicUrl ?? null;
