@@ -1,48 +1,22 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Helmet } from "react-helmet-async";
-import { useNavigate, Link } from "react-router-dom";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
-    Check,
-    Key,
-    UserPlus,
-    Filter,
-    ShieldCheck,
-    Mail,
-    Loader2,
-    MoreHorizontal,
-    UserCog,
-    GraduationCap,
-    Users,
-    Shield,
-    Search,
-    LinkIcon,
-    Baby,
-    BookOpen,
-    User as UserIcon
-} from "lucide-react";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogFooter,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow
+} from "@/components/ui/table";
+import { toast } from "sonner";
+import { CheckCircle, XCircle, Clock, User, Mail, Shield, Loader2, RefreshCw } from "lucide-react";
+import SchoolLayout from "@/components/school/SchoolLayout";
 import {
     Select,
     SelectContent,
@@ -50,326 +24,260 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import SchoolLayout from "@/components/school/SchoolLayout";
-import { toast } from "sonner";
 
-type UserProfile = {
-    id: string;
-    auth_id: string | null;
+type Profile = {
+    auth_id: string;
     full_name: string;
-    avatar_url: string | null;
-    email?: string;
     role: string;
-    class_name?: string;
+    is_approved: boolean;
+    created_at: string;
+    avatar_url: string | null;
 };
 
-const ROLES = [
-    { value: "admin", label: "Администратор", icon: Shield },
-    { value: "teacher", label: "Учитель", icon: GraduationCap },
-    { value: "student", label: "Ученик", icon: Users },
-    { value: "parent", label: "Родитель", icon: Users },
-    { value: "user", label: "Пользователь", icon: UserCog },
-];
-
 export default function AdminUsersPage() {
-    const [loading, setLoading] = useState(true);
-    const [users, setUsers] = useState<UserProfile[]>([]);
-    const [classes, setClasses] = useState<any[]>([]);
-    const [searchQuery, setSearchQuery] = useState("");
-    const [updatingId, setUpdatingId] = useState<string | null>(null);
+    const qc = useQueryClient();
+    const [filter, setFilter] = useState<"all" | "pending" | "approved">("pending");
 
-    // Link states
-    const [isClassLinkOpen, setIsClassLinkOpen] = useState(false);
-    const [isChildLinkOpen, setIsChildLinkOpen] = useState(false);
-    const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
-    const [selectedId, setSelectedId] = useState<string>("");
+    const { data: users = [], isLoading, refetch } = useQuery({
+        queryKey: ["admin_users", filter],
+        queryFn: async () => {
+            let query = supabase
+                .from("profiles")
+                .select("*")
+                .order("created_at", { ascending: false });
 
-    // Add User states
-    const [isAddUserOpen, setIsAddUserOpen] = useState(false);
-    const [newUserName, setNewUserName] = useState("");
-    const [newUserEmail, setNewUserEmail] = useState("");
-    const [newUserPassword, setNewUserPassword] = useState("");
-    const [newUserRole, setNewUserRole] = useState("student");
-    const [addingUser, setAddingUser] = useState(false);
+            if (filter === "pending") {
+                query = query.eq("is_approved", false);
+            } else if (filter === "approved") {
+                query = query.eq("is_approved", true);
+            }
 
-    useEffect(() => {
-        fetchUsers();
-        fetchMetadata();
-    }, []);
+            const { data, error } = await query;
+            if (error) throw error;
+            return (data || []) as Profile[];
+        },
+    });
 
-    const fetchMetadata = async () => {
-        const { data } = await supabase.from("school_classes").select("*").order("name");
-        setClasses(data || []);
-    };
-
-    const fetchUsers = async () => {
-        try {
-            setLoading(true);
-            const { data: profiles, error: profileError } = await supabase.from("profiles").select("*");
-            if (profileError) throw profileError;
-
-            const { data: roles, error: rolesError } = await supabase.from("user_roles").select("user_id, role");
-            if (rolesError) throw rolesError;
-
-            const { data: students, error: studentError } = await supabase
-                .from("students_info")
-                .select("student_id, school_classes(name)");
-            if (studentError) throw studentError;
-
-            const combined: UserProfile[] = (profiles || []).map(p => {
-                const userRole = roles?.find(r => r.user_id === p.auth_id)?.role || "user";
-                const studentInfo = students?.find(s => s.student_id === p.auth_id);
-                return {
-                    ...p,
-                    role: userRole,
-                    class_name: (studentInfo?.school_classes as any)?.name
-                };
-            });
-
-            setUsers(combined);
-        } catch (error: any) {
-            toast.error("Ошибка загрузки пользователей: " + error.message);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleUpdateRole = async (authId: string | null, newRole: string) => {
-        if (!authId) return;
-        try {
-            setUpdatingId(authId);
+    const approveMutation = useMutation({
+        mutationFn: async (userId: string) => {
             const { error } = await supabase
-                .from("user_roles")
-                .upsert({ user_id: authId, role: newRole as any }, { onConflict: 'user_id' });
+                .from("profiles")
+                .update({ is_approved: true })
+                .eq("auth_id", userId);
             if (error) throw error;
-            toast.success("Роль успешно обновлена");
-            fetchUsers();
-        } catch (error: any) {
-            toast.error(error.message);
-        } finally {
-            setUpdatingId(null);
-        }
-    };
-
-    const handleLinkToClass = async () => {
-        if (!selectedUser?.auth_id || !selectedId) return;
-        try {
-            const { error } = await supabase
-                .from("students_info")
-                .upsert({ student_id: selectedUser.auth_id, class_id: parseInt(selectedId) }, { onConflict: 'student_id' });
-            if (error) throw error;
-            toast.success(`Ученик ${selectedUser.full_name} прикреплен к классу`);
-            setIsClassLinkOpen(false);
-            fetchUsers();
-        } catch (error: any) {
-            toast.error(error.message);
-        }
-    };
-
-    const handleLinkChild = async () => {
-        if (!selectedUser?.auth_id || !selectedId) return;
-        try {
-            const { error } = await supabase
-                .from("parents_children")
-                .insert({ parent_id: selectedUser.auth_id, child_id: selectedId });
-            if (error) throw error;
-            toast.success("Связь Родитель-Ребенок создана");
-            setIsChildLinkOpen(false);
-            fetchUsers();
-        } catch (error: any) {
-            toast.error(error.message);
-        }
-    };
-
-    const handleAddUser = async () => {
-        if (!newUserName.trim() || !newUserEmail.trim()) {
-            toast.error("Заполните имя и email");
-            return;
-        }
-
-        try {
-            setAddingUser(true);
-
-            const { data, error } = await supabase.functions.invoke('manage-users', {
-                body: {
-                    email: newUserEmail,
-                    password: newUserPassword || "Temp123456!",
-                    full_name: newUserName,
-                    role: newUserRole
-                }
-            });
-
-            if (error) throw error;
-            if (data?.error) throw new Error(data.error);
-
-            toast.success("Пользователь успешно создан");
-            setIsAddUserOpen(false);
-            setNewUserName("");
-            setNewUserEmail("");
-            setNewUserPassword("");
-            fetchUsers();
-        } catch (error: any) {
+        },
+        onSuccess: () => {
+            toast.success("Пользователь одобрен");
+            qc.invalidateQueries({ queryKey: ["admin_users"] });
+        },
+        onError: (error: any) => {
             toast.error("Ошибка: " + error.message);
-        } finally {
-            setAddingUser(false);
-        }
-    };
+        },
+    });
 
-    const filteredUsers = users.filter(u =>
-        u.full_name?.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const rejectMutation = useMutation({
+        mutationFn: async (userId: string) => {
+            // Delete user from auth and profile will cascade
+            const { error } = await supabase.auth.admin.deleteUser(userId);
+            if (error) throw error;
+        },
+        onSuccess: () => {
+            toast.success("Пользователь отклонен и удален");
+            qc.invalidateQueries({ queryKey: ["admin_users"] });
+        },
+        onError: (error: any) => {
+            toast.error("Ошибка: " + error.message);
+        },
+    });
+
+    const changeRoleMutation = useMutation({
+        mutationFn: async ({ userId, newRole }: { userId: string; newRole: string }) => {
+            const { error } = await supabase
+                .from("profiles")
+                .update({ role: newRole })
+                .eq("auth_id", userId);
+            if (error) throw error;
+        },
+        onSuccess: () => {
+            toast.success("Роль изменена");
+            qc.invalidateQueries({ queryKey: ["admin_users"] });
+        },
+        onError: (error: any) => {
+            toast.error("Ошибка: " + error.message);
+        },
+    });
 
     const getRoleBadge = (role: string) => {
-        const variants: Record<string, string> = {
-            admin: "bg-rose-100/50 text-rose-700 border-rose-200",
-            teacher: "bg-blue-100/50 text-blue-700 border-blue-200",
-            student: "bg-emerald-100/50 text-emerald-700 border-emerald-200",
-            parent: "bg-amber-100/50 text-amber-700 border-amber-200",
-            user: "bg-slate-100/50 text-slate-600 border-slate-200"
+        const colors: Record<string, string> = {
+            admin: "bg-rose-500 text-white",
+            teacher: "bg-blue-500 text-white",
+            student: "bg-emerald-500 text-white",
+            parent: "bg-amber-500 text-white",
         };
-        return variants[role] || variants.user;
+        return colors[role] || "bg-slate-500 text-white";
     };
 
-    const getRoleName = (role: string) => {
-        const names: Record<string, string> = {
+    const getRoleLabel = (role: string) => {
+        const labels: Record<string, string> = {
             admin: "Администратор",
             teacher: "Учитель",
             student: "Ученик",
             parent: "Родитель",
-            user: "Пользователь"
         };
-        return names[role] || role;
+        return labels[role] || role;
     };
 
     return (
-        <SchoolLayout title="База пользователей">
+        <SchoolLayout title="Управление пользователями">
             <Helmet>
                 <title>Пользователи | Админ-панель</title>
             </Helmet>
 
             <div className="space-y-6">
-                <div className="flex flex-col md:flex-row gap-4 justify-between items-start md:items-center">
-                    <div className="relative w-full md:w-80 group">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-primary transition-colors" />
-                        <Input
-                            placeholder="Поиск..."
-                            className="pl-10 h-10 rounded-xl border border-slate-100 shadow-sm font-medium text-sm"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                        />
-                    </div>
-                    <Button
-                        onClick={() => setIsAddUserOpen(true)}
-                        className="h-10 rounded-xl gap-2 font-bold px-6 shadow-md bg-slate-900 hover:bg-slate-800 transition-all text-sm active:scale-95"
-                    >
-                        <UserPlus className="w-4 h-4" /> Добавить
-                    </Button>
-                </div>
-
-                <Card className="border border-slate-100 rounded-[24px] overflow-hidden shadow-sm bg-white hover:shadow-md transition-all">
-                    <CardHeader className="p-6 border-b bg-slate-50/30">
-                        <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-slate-900 shadow-sm">
-                                <ShieldCheck className="w-6 h-6" />
-                            </div>
+                <Card className="border-2 border-slate-100 rounded-[32px] shadow-lg">
+                    <CardHeader className="pb-4">
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                             <div>
-                                <CardTitle className="text-xl font-black">Управление доступом</CardTitle>
-                                <CardDescription className="text-xs font-medium text-slate-500">Права и роли пользователей</CardDescription>
+                                <CardTitle className="text-2xl font-black flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center">
+                                        <Shield className="w-5 h-5 text-primary" />
+                                    </div>
+                                    Управление пользователями
+                                </CardTitle>
+                                <CardDescription className="mt-2 font-bold">
+                                    Одобрение регистраций и управление ролями
+                                </CardDescription>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <Select value={filter} onValueChange={(v: any) => setFilter(v)}>
+                                    <SelectTrigger className="w-[180px] h-12 rounded-2xl border-2 font-bold">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">Все пользователи</SelectItem>
+                                        <SelectItem value="pending">Ожидают одобрения</SelectItem>
+                                        <SelectItem value="approved">Одобренные</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    onClick={() => refetch()}
+                                    className="h-12 w-12 rounded-2xl border-2"
+                                >
+                                    <RefreshCw className={`w-5 h-5 ${isLoading ? "animate-spin" : ""}`} />
+                                </Button>
                             </div>
                         </div>
                     </CardHeader>
-                    <CardContent className="p-0">
-                        {loading ? (
-                            <div className="py-24 flex flex-col items-center justify-center gap-4 text-slate-300">
-                                <Loader2 className="animate-spin w-12 h-12 text-primary" />
-                                <span className="font-black uppercase tracking-[0.2em] text-[10px]">Подключение к базе...</span>
+                    <CardContent>
+                        {isLoading ? (
+                            <div className="py-20 flex justify-center">
+                                <Loader2 className="w-10 h-10 animate-spin text-primary" />
+                            </div>
+                        ) : users.length === 0 ? (
+                            <div className="py-20 text-center">
+                                <Clock className="w-16 h-16 mx-auto text-slate-200 mb-4" />
+                                <h3 className="text-lg font-black text-slate-900 mb-2">Пользователей нет</h3>
+                                <p className="text-slate-400 font-bold text-sm">
+                                    {filter === "pending" && "Нет пользователей, ожидающих одобрения"}
+                                    {filter === "approved" && "Нет одобренных пользователей"}
+                                    {filter === "all" && "В системе пока нет пользователей"}
+                                </p>
                             </div>
                         ) : (
-                            <div className="overflow-x-auto">
+                            <div className="rounded-2xl border-2 border-slate-100 overflow-hidden">
                                 <Table>
                                     <TableHeader>
-                                        <TableRow className="bg-slate-50/30">
-                                            <TableHead className="py-4 px-6 font-bold text-[10px] uppercase tracking-wider text-slate-400">Пользователь</TableHead>
-                                            <TableHead className="py-4 px-6 font-bold text-[10px] uppercase tracking-wider text-slate-400">Роль</TableHead>
-                                            <TableHead className="py-4 px-6 font-bold text-[10px] uppercase tracking-wider text-slate-400">Класс</TableHead>
-                                            <TableHead className="py-4 px-6 text-right font-bold text-[10px] uppercase tracking-wider text-slate-400">Меню</TableHead>
+                                        <TableRow className="bg-slate-50/50 hover:bg-slate-50/50">
+                                            <TableHead className="font-black uppercase text-[10px] tracking-widest">Пользователь</TableHead>
+                                            <TableHead className="font-black uppercase text-[10px] tracking-widest">Роль</TableHead>
+                                            <TableHead className="font-black uppercase text-[10px] tracking-widest">Статус</TableHead>
+                                            <TableHead className="font-black uppercase text-[10px] tracking-widest">Дата</TableHead>
+                                            <TableHead className="font-black uppercase text-[10px] tracking-widest text-right">Действия</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {filteredUsers.map((user) => (
-                                            <TableRow key={user.id} className="group hover:bg-slate-50/50 border-b border-slate-100 last:border-0 transition-colors">
-                                                <TableCell className="py-4 px-6">
+                                        {users.map((user) => (
+                                            <TableRow key={user.auth_id} className="hover:bg-slate-50/50">
+                                                <TableCell>
                                                     <div className="flex items-center gap-3">
-                                                        <Avatar className="w-10 h-10 border shadow-sm rounded-lg">
-                                                            <AvatarImage src={user.avatar_url || ""} />
-                                                            <AvatarFallback className="font-bold bg-slate-50 text-slate-400 text-xs">
-                                                                {user.full_name?.[0]}
+                                                        <Avatar className="w-10 h-10 rounded-2xl border-2 border-white shadow-sm">
+                                                            <AvatarImage src={user.avatar_url || undefined} />
+                                                            <AvatarFallback className="rounded-2xl bg-slate-100 text-slate-400 font-black">
+                                                                {user.full_name?.[0] || "?"}
                                                             </AvatarFallback>
                                                         </Avatar>
-                                                        <div className="flex flex-col">
-                                                            <Link
-                                                                to={`/school/profile?id=${user.auth_id}`}
-                                                                className="font-bold text-slate-900 text-sm hover:text-primary transition-colors cursor-pointer"
-                                                            >
-                                                                {user.full_name}
-                                                            </Link>
-                                                            <span className="text-[10px] font-medium text-slate-400 flex items-center gap-1 mt-0.5">
-                                                                <Mail className="w-3 h-3" /> {user.auth_id ? `ID: ${user.auth_id.slice(0, 4)}` : 'Inactive'}
-                                                            </span>
+                                                        <div>
+                                                            <p className="font-bold text-slate-900">{user.full_name || "Без имени"}</p>
+                                                            <p className="text-xs text-slate-400 font-mono">{user.auth_id.slice(0, 8)}...</p>
                                                         </div>
                                                     </div>
                                                 </TableCell>
-                                                <TableCell className="py-4 px-6">
-                                                    <Badge variant="outline" className={`px-3 py-1 rounded-lg font-bold text-[10px] uppercase tracking-wider border shadow-none ${getRoleBadge(user.role)}`}>
-                                                        {getRoleName(user.role)}
-                                                    </Badge>
+                                                <TableCell>
+                                                    {user.is_approved ? (
+                                                        <Select
+                                                            value={user.role}
+                                                            onValueChange={(newRole) =>
+                                                                changeRoleMutation.mutate({ userId: user.auth_id, newRole })
+                                                            }
+                                                        >
+                                                            <SelectTrigger className="w-[140px] h-9 rounded-xl border-2 font-bold text-xs">
+                                                                <SelectValue />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                <SelectItem value="student">Ученик</SelectItem>
+                                                                <SelectItem value="teacher">Учитель</SelectItem>
+                                                                <SelectItem value="parent">Родитель</SelectItem>
+                                                                <SelectItem value="admin">Администратор</SelectItem>
+                                                            </SelectContent>
+                                                        </Select>
+                                                    ) : (
+                                                        <Badge className={`${getRoleBadge(user.role)} rounded-xl px-3 py-1 font-black text-[10px] uppercase tracking-wider`}>
+                                                            {getRoleLabel(user.role)}
+                                                        </Badge>
+                                                    )}
                                                 </TableCell>
-                                                <TableCell className="py-4 px-6">
-                                                    {user.role === 'student' ? (
-                                                        user.class_name ? <Badge variant="outline" className="bg-emerald-50 text-emerald-600 border-emerald-100 font-bold rounded-lg px-3 py-1 text-[10px]">{user.class_name}</Badge> : <span className="text-[10px] font-bold uppercase text-rose-400">Не прикреплен</span>
-                                                    ) : <span className="text-slate-200">—</span>}
+                                                <TableCell>
+                                                    {user.is_approved ? (
+                                                        <Badge className="bg-emerald-50 text-emerald-600 border-2 border-emerald-100 rounded-xl px-3 py-1 font-black text-[10px] uppercase tracking-wider">
+                                                            <CheckCircle className="w-3 h-3 mr-1" /> Одобрен
+                                                        </Badge>
+                                                    ) : (
+                                                        <Badge className="bg-amber-50 text-amber-600 border-2 border-amber-100 rounded-xl px-3 py-1 font-black text-[10px] uppercase tracking-wider">
+                                                            <Clock className="w-3 h-3 mr-1" /> Ожидает
+                                                        </Badge>
+                                                    )}
                                                 </TableCell>
-                                                <TableCell className="py-4 px-6 text-right">
-                                                    <DropdownMenu>
-                                                        <DropdownMenuTrigger asChild>
-                                                            <Button variant="ghost" className="h-8 w-8 p-0 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-900 transition-all">
-                                                                <MoreHorizontal className="w-5 h-5" />
-                                                            </Button>
-                                                        </DropdownMenuTrigger>
-                                                        <DropdownMenuContent align="end" className="w-56 rounded-xl border p-1 bg-white shadow-xl">
-                                                            <DropdownMenuItem asChild className="flex items-center gap-2 px-3 py-2 rounded-lg font-medium text-slate-600 hover:text-primary hover:bg-primary/5 cursor-pointer text-sm">
-                                                                <Link to={`/school/profile?id=${user.auth_id}`}>
-                                                                    <UserIcon className="w-4 h-4" /> Профиль
-                                                                </Link>
-                                                            </DropdownMenuItem>
-                                                            {user.role === 'student' && (
-                                                                <DropdownMenuItem asChild className="flex items-center gap-2 px-3 py-2 rounded-lg font-medium text-slate-600 hover:text-emerald-500 hover:bg-emerald-50 cursor-pointer text-sm">
-                                                                    <Link to={`/school/diary?studentId=${user.auth_id}`}>
-                                                                        <BookOpen className="w-4 h-4" /> Дневник
-                                                                    </Link>
-                                                                </DropdownMenuItem>
-                                                            )}
-                                                            <DropdownMenuSeparator className="my-1" />
-                                                            {user.role === 'student' && (
-                                                                <DropdownMenuItem className="flex items-center gap-2 px-3 py-2 rounded-lg font-medium text-slate-600 hover:text-primary hover:bg-primary/5 cursor-pointer text-sm" onClick={() => { setSelectedUser(user); setIsClassLinkOpen(true); setSelectedId(""); }}>
-                                                                    <LinkIcon className="w-4 h-4" /> К классу
-                                                                </DropdownMenuItem>
-                                                            )}
-                                                            {user.role === 'parent' && (
-                                                                <DropdownMenuItem className="flex items-center gap-2 px-3 py-2 rounded-lg font-medium text-slate-600 hover:text-blue-500 hover:bg-blue-50 cursor-pointer text-sm" onClick={() => { setSelectedUser(user); setIsChildLinkOpen(true); setSelectedId(""); }}>
-                                                                    <Baby className="w-4 h-4" /> Привязать ребенка
-                                                                </DropdownMenuItem>
-                                                            )}
-                                                            <DropdownMenuSeparator className="my-1" />
-                                                            <DropdownMenuLabel className="px-3 py-1 text-[9px] font-bold uppercase tracking-wider text-slate-400">Роль</DropdownMenuLabel>
-                                                            {ROLES.map(r => (
-                                                                <DropdownMenuItem key={r.value} className="flex items-center justify-between px-3 py-2 rounded-lg font-medium text-slate-700 hover:bg-slate-50 cursor-pointer text-sm" onClick={() => handleUpdateRole(user.auth_id, r.value)}>
-                                                                    <div className="flex items-center gap-2"><r.icon className="w-4 h-4" /> {r.label}</div>
-                                                                    {user.role === r.value && <Check className="w-4 h-4 text-emerald-500" />}
-                                                                </DropdownMenuItem>
-                                                            ))}
-                                                        </DropdownMenuContent>
-                                                    </DropdownMenu>
+                                                <TableCell>
+                                                    <p className="text-xs font-bold text-slate-400">
+                                                        {new Date(user.created_at).toLocaleDateString("ru-RU")}
+                                                    </p>
+                                                </TableCell>
+                                                <TableCell className="text-right">
+                                                    <div className="flex items-center justify-end gap-2">
+                                                        {!user.is_approved && (
+                                                            <>
+                                                                <Button
+                                                                    size="sm"
+                                                                    onClick={() => approveMutation.mutate(user.auth_id)}
+                                                                    disabled={approveMutation.isPending}
+                                                                    className="h-9 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold gap-2"
+                                                                >
+                                                                    <CheckCircle className="w-4 h-4" /> Одобрить
+                                                                </Button>
+                                                                <Button
+                                                                    size="sm"
+                                                                    variant="outline"
+                                                                    onClick={() => rejectMutation.mutate(user.auth_id)}
+                                                                    disabled={rejectMutation.isPending}
+                                                                    className="h-9 rounded-xl border-2 border-rose-200 text-rose-600 hover:bg-rose-50 font-bold gap-2"
+                                                                >
+                                                                    <XCircle className="w-4 h-4" /> Отклонить
+                                                                </Button>
+                                                            </>
+                                                        )}
+                                                    </div>
                                                 </TableCell>
                                             </TableRow>
                                         ))}
@@ -379,109 +287,52 @@ export default function AdminUsersPage() {
                         )}
                     </CardContent>
                 </Card>
-            </div>
 
-            {/* Dialogs */}
-            <Dialog open={isClassLinkOpen} onOpenChange={setIsClassLinkOpen}>
-                <DialogContent className="rounded-[24px] p-6 max-w-sm bg-white shadow-xl border">
-                    <DialogHeader><DialogTitle className="text-xl font-black">Класс</DialogTitle></DialogHeader>
-                    <div className="py-4">
-                        <Select value={selectedId} onValueChange={setSelectedId}>
-                            <SelectTrigger className="h-10 rounded-xl border font-bold text-sm"><SelectValue placeholder="Выберите класс..." /></SelectTrigger>
-                            <SelectContent className="rounded-xl">
-                                {classes.map(c => <SelectItem key={c.id} value={c.id.toString()} className="h-10 font-bold rounded-lg text-sm">{c.name}</SelectItem>)}
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    <DialogFooter><Button onClick={handleLinkToClass} className="w-full h-11 rounded-xl bg-slate-900 text-white font-bold text-base shadow-lg">Подтвердить</Button></DialogFooter>
-                </DialogContent>
-            </Dialog>
-
-            <Dialog open={isChildLinkOpen} onOpenChange={setIsChildLinkOpen}>
-                <DialogContent className="rounded-[24px] p-6 max-w-sm bg-white shadow-xl border">
-                    <DialogHeader><DialogTitle className="text-xl font-black">Связь</DialogTitle></DialogHeader>
-                    <div className="py-4 space-y-2">
-                        <Label className="font-bold text-[10px] uppercase tracking-wider text-slate-400 pl-1">Выберите своего ребенка</Label>
-                        <Select value={selectedId} onValueChange={setSelectedId}>
-                            <SelectTrigger className="h-10 rounded-xl border font-bold text-sm"><SelectValue placeholder="Ученик..." /></SelectTrigger>
-                            <SelectContent className="rounded-xl">
-                                {users.filter(u => u.role === 'student').map(u => <SelectItem key={u.auth_id} value={u.auth_id || ""} className="h-10 font-bold rounded-lg text-sm">{u.full_name}</SelectItem>)}
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    <DialogFooter><Button onClick={handleLinkChild} className="w-full h-11 rounded-xl bg-blue-600 text-white font-bold text-base shadow-lg shadow-blue-200">Привязать</Button></DialogFooter>
-                </DialogContent>
-            </Dialog>
-
-            <Dialog open={isAddUserOpen} onOpenChange={setIsAddUserOpen}>
-                <DialogContent className="rounded-[32px] p-0 max-w-md bg-white shadow-2xl border-none overflow-hidden">
-                    <div className="bg-slate-900 p-8 text-white">
-                        <DialogTitle className="text-2xl font-black">Новый пользователь</DialogTitle>
-                        <p className="text-slate-400 text-xs font-bold mt-1 uppercase tracking-wider">Добавление в систему</p>
-                    </div>
-
-                    <div className="p-8 space-y-6">
-                        <div className="space-y-2">
-                            <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 pl-1">ФИО Пользователя</Label>
-                            <Input
-                                placeholder="Иванов Иван"
-                                value={newUserName}
-                                onChange={e => setNewUserName(e.target.value)}
-                                className="h-12 rounded-xl border-2 font-bold focus:ring-primary/20"
-                            />
-                        </div>
-
-                        <div className="space-y-2">
-                            <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 pl-1">Электронная почта</Label>
-                            <Input
-                                type="email"
-                                placeholder="user@example.com"
-                                value={newUserEmail}
-                                onChange={e => setNewUserEmail(e.target.value)}
-                                className="h-12 rounded-xl border-2 font-bold focus:ring-primary/20"
-                            />
-                        </div>
-
-                        <div className="space-y-2">
-                            <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 pl-1">Пароль (мин. 6 симв.)</Label>
-                            <div className="relative">
-                                <Key className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                                <Input
-                                    type="password"
-                                    placeholder="Оставьте пустым для Temp123456!"
-                                    value={newUserPassword}
-                                    onChange={e => setNewUserPassword(e.target.value)}
-                                    className="h-12 pl-10 rounded-xl border-2 font-bold focus:ring-primary/20"
-                                />
+                {/* Stats Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <Card className="border-2 border-slate-100 rounded-3xl p-6 bg-gradient-to-br from-emerald-50 to-white">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Одобренные</p>
+                                <p className="text-3xl font-black text-slate-900">
+                                    {users.filter(u => u.is_approved).length}
+                                </p>
+                            </div>
+                            <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 flex items-center justify-center">
+                                <CheckCircle className="w-7 h-7 text-emerald-500" />
                             </div>
                         </div>
+                    </Card>
 
-                        <div className="space-y-2">
-                            <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 pl-1">Роль доступа</Label>
-                            <Select value={newUserRole} onValueChange={setNewUserRole}>
-                                <SelectTrigger className="h-12 rounded-xl border-2 font-bold">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent className="rounded-xl">
-                                    {ROLES.map(r => (
-                                        <SelectItem key={r.value} value={r.value} className="font-bold rounded-lg">{r.label}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                    <Card className="border-2 border-slate-100 rounded-3xl p-6 bg-gradient-to-br from-amber-50 to-white">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Ожидают</p>
+                                <p className="text-3xl font-black text-slate-900">
+                                    {users.filter(u => !u.is_approved).length}
+                                </p>
+                            </div>
+                            <div className="w-14 h-14 rounded-2xl bg-amber-500/10 flex items-center justify-center">
+                                <Clock className="w-7 h-7 text-amber-500" />
+                            </div>
                         </div>
-                    </div>
+                    </Card>
 
-                    <DialogFooter className="p-8 pt-0">
-                        <Button
-                            onClick={handleAddUser}
-                            disabled={addingUser}
-                            className="w-full h-14 rounded-2xl bg-primary text-white font-black text-lg shadow-xl shadow-primary/20 hover:translate-y-[-2px] transition-all"
-                        >
-                            {addingUser ? <Loader2 className="w-5 h-5 animate-spin" /> : "Создать аккаунт"}
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
+                    <Card className="border-2 border-slate-100 rounded-3xl p-6 bg-gradient-to-br from-blue-50 to-white">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Всего</p>
+                                <p className="text-3xl font-black text-slate-900">
+                                    {users.length}
+                                </p>
+                            </div>
+                            <div className="w-14 h-14 rounded-2xl bg-blue-500/10 flex items-center justify-center">
+                                <User className="w-7 h-7 text-blue-500" />
+                            </div>
+                        </div>
+                    </Card>
+                </div>
+            </div>
         </SchoolLayout>
     );
 }

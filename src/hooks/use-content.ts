@@ -26,6 +26,6 @@ export function useContent<TContent = Record<string, unknown>>(id: string) {
       if (error) throw error;
       return (data ?? null) as SiteContentRow<TContent> | null;
     },
-    staleTime: 60_000,
+    staleTime: 5_000,
   });
 }

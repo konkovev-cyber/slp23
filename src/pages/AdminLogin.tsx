@@ -133,53 +133,65 @@ export default function AdminLogin() {
           </div>
         ) : (
 
-        <form onSubmit={onSubmit} className="mt-6 space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              autoComplete="email"
-            />
-          </div>
+          <form onSubmit={onSubmit} className="mt-6 space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                autoComplete="email"
+              />
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="password">Пароль</Label>
-            <Input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              autoComplete="current-password"
-            />
-          </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">Пароль</Label>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                autoComplete="current-password"
+              />
+            </div>
 
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? "Входим…" : "Войти"}
-          </Button>
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
+              {isSubmitting ? "Входим…" : "Войти"}
+            </Button>
 
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full"
-            onClick={() => navigate("/", { replace: true })}
-          >
-            На сайт
-          </Button>
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              onClick={() => navigate("/", { replace: true })}
+            >
+              На сайт
+            </Button>
 
-          <Button
-            type="button"
-            variant="ghost"
-            className="w-full"
-            onClick={() => navigate("/admin/access")}
-          >
-            Проверить доступ / получить роль
-          </Button>
-        </form>
+            <Button
+              type="button"
+              variant="ghost"
+              className="w-full"
+              onClick={() => navigate("/admin/access")}
+            >
+              Проверить доступ / получить роль
+            </Button>
+
+            <div className="text-center pt-4 border-t">
+              <p className="text-xs text-muted-foreground mb-2">Нет аккаунта?</p>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={() => navigate("/school/signup")}
+              >
+                Зарегистрироваться
+              </Button>
+            </div>
+          </form>
         )}
       </Card>
     </div>

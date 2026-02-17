@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">ичность С</string>
-    <string name="title_activity_main">ичность С</string>
+    <string name="app_name">Личность ПЛЮС</string>
+    <string name="title_activity_main">Личность ПЛЮС</string>
     <string name="package_name">ru.slp23.app</string>
     <string name="custom_url_scheme">ru.slp23.app</string>
 </resources>

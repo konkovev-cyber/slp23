@@ -65,7 +65,9 @@ export default function AdminGradesPage() {
     const fetchGrades = async () => {
         try {
             setLoading(true);
-            const { data, error } = await supabase
+
+            // Fetch grades with basic assignment info
+            const { data: gradesData, error: gradesError } = await supabase
                 .from("grades")
                 .select(`
                     id,
@@ -74,25 +76,53 @@ export default function AdminGradesPage() {
                     date,
                     created_at,
                     student_id,
-                    assignment:teacher_assignments(
-                        teacher_id,
-                        subject:subjects(name),
-                        teacher:profiles(full_name, avatar_url)
-                    )
+                    teacher_assignment_id
                 `)
                 .order("created_at", { ascending: false });
 
-            if (error) throw error;
+            if (gradesError) throw gradesError;
 
-            // Fetch profiles separately to avoid join errors if FK is missing
+            // Fetch all assignments with subject info
+            const { data: assignments } = await supabase
+                .from("teacher_assignments")
+                .select(`
+                    id,
+                    teacher_id,
+                    subject:subjects(name)
+                `);
+
+            // Fetch all profiles (students and teachers)
             const { data: profiles } = await supabase
                 .from("profiles")
-                .select("auth_id, full_name, avatar_url, students_info(school_classes(name))");
+                .select("auth_id, full_name, avatar_url");
 
-            const enriched = (data || []).map(g => ({
-                ...g,
-                student: profiles?.find(p => p.auth_id === g.student_id)
-            }));
+            // Fetch student class info
+            const { data: studentInfo } = await supabase
+                .from("students_info")
+                .select("student_id, school_classes(id, name)");
+
+            // Enrich grades with all related data
+            const enriched = (gradesData || []).map(g => {
+                const assignment = assignments?.find(a => a.id === g.teacher_assignment_id);
+                const student = profiles?.find(p => p.auth_id === g.student_id);
+                const teacher = profiles?.find(p => p.auth_id === assignment?.teacher_id);
+                const info = studentInfo?.filter(si => si.student_id === g.student_id);
+
+                return {
+                    ...g,
+                    assignment: assignment ? {
+                        ...assignment,
+                        teacher: teacher ? {
+                            full_name: teacher.full_name,
+                            avatar_url: teacher.avatar_url
+                        } : null
+                    } : null,
+                    student: student ? {
+                        ...student,
+                        info: info
+                    } : null
+                };
+            });
 
             setGrades(enriched);
         } catch (error: any) {

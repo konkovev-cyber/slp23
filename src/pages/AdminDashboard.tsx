@@ -12,7 +12,8 @@ import {
   PlusCircle,
   Activity,
   UserPlus,
-  BookOpen
+  BookOpen,
+  Trophy
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -24,9 +25,11 @@ export default function AdminDashboard() {
     queryFn: async () => {
       const { count: postsCount } = await supabase.from("posts" as any).select("*", { count: 'exact', head: true });
       const { count: teachersCount } = await supabase.from("teachers" as any).select("*", { count: 'exact', head: true });
+      const { count: honorCount } = await supabase.from("honor_board" as any).select("*", { count: 'exact', head: true });
       return {
         posts: postsCount || 0,
         teachers: teachersCount || 0,
+        honor: honorCount || 0,
       };
     },
   });
@@ -43,7 +46,7 @@ export default function AdminDashboard() {
       color: "blue",
     },
     {
-      title: "Преподаватели",
+      title: "Педагоги",
       description: "Список сотрудников, их должности и фотографии.",
       count: stats?.teachers,
       icon: Users,
@@ -51,6 +54,16 @@ export default function AdminDashboard() {
       addIcon: UserPlus,
       addHref: "/admin/teachers",
       color: "green",
+    },
+    {
+      title: "Доска почета",
+      description: "Список выдающихся учеников и их достижений.",
+      count: stats?.honor,
+      icon: Trophy,
+      href: "/admin/honor",
+      addIcon: PlusCircle,
+      addHref: "/admin/honor",
+      color: "yellow",
     },
     {
       title: "Медиа-библиотека",
@@ -160,9 +173,10 @@ export default function AdminDashboard() {
           </h3>
           <div className="space-y-2">
             {[
+              { label: "👥 Одобрить пользователей", href: "/school/admin/users" },
               { label: "Редактор Hero", href: "/admin/sections/hero" },
+              { label: "Вернуться на сайт", href: "/" },
               { label: "Настройка доступа", href: "/admin/access" },
-              { label: "Управление ролями", href: "/admin/roles" },
               { label: "Выйти", href: "/", isDanger: true }
             ].map((item) => (
               <Button key={item.label} variant="ghost" asChild className={`w-full justify-start text-sm h-9 ${item.isDanger ? 'text-destructive hover:text-destructive hover:bg-destructive/5' : ''}`}>

@@ -11,6 +11,8 @@ const Programs = lazy(() => import("@/components/Programs"));
 const Clubs = lazy(() => import("@/components/Clubs"));
 const Testimonials = lazy(() => import("@/components/Testimonials"));
 const News = lazy(() => import("@/components/News"));
+const TeachingStaff = lazy(() => import("@/components/TeachingStaff"));
+const HonorBoard = lazy(() => import("@/components/HonorBoard"));
 const GalleryPreview = lazy(() => import("@/components/GalleryPreview"));
 const Contact = lazy(() => import("@/components/Contact"));
 const Footer = lazy(() => import("@/components/Footer"));
@@ -29,19 +31,23 @@ const Index = () => {
   const { data: clubsRow } = useContent("clubs");
   const { data: testimonialsRow } = useContent("testimonials");
   const { data: newsRow } = useContent("news");
+  const { data: teachersRow } = useContent("teachers");
+  const { data: honorRow } = useContent("honor");
   const { data: galleryRow } = useContent("gallery");
   const { data: contactRow } = useContent("contact");
   const { data: footerRow } = useContent("footer");
 
-  const showFeatures = featuresRow?.is_visible ?? true;
-  const showAbout = aboutRow?.is_visible ?? true;
-  const showPrograms = programsRow?.is_visible ?? true;
-  const showClubs = clubsRow?.is_visible ?? true;
-  const showTestimonials = testimonialsRow?.is_visible ?? true;
-  const showNews = newsRow?.is_visible ?? true;
-  const showGallery = galleryRow?.is_visible ?? true;
-  const showContact = contactRow?.is_visible ?? true;
-  const showFooter = footerRow?.is_visible ?? true;
+  const showFeatures = featuresRow?.is_visible === true;
+  const showAbout = aboutRow?.is_visible === true;
+  const showPrograms = programsRow?.is_visible === true;
+  const showClubs = clubsRow?.is_visible === true;
+  const showTestimonials = testimonialsRow?.is_visible === true;
+  const showNews = newsRow?.is_visible === true;
+  const showTeachers = teachersRow?.is_visible === true;
+  const showHonor = honorRow?.is_visible === true;
+  const showGallery = galleryRow?.is_visible === true;
+  const showContact = contactRow?.is_visible === true;
+  const showFooter = footerRow?.is_visible !== false; // Footer usually stays
 
   return (
     <div className="min-h-screen bg-background transition-colors duration-300">
@@ -60,6 +66,8 @@ const Index = () => {
           {showClubs ? <Suspense fallback={<SectionSkeleton />}><Clubs /></Suspense> : null}
           {showTestimonials ? <Suspense fallback={<SectionSkeleton />}><Testimonials /></Suspense> : null}
           {showNews ? <Suspense fallback={<SectionSkeleton />}><News /></Suspense> : null}
+          {showTeachers ? <Suspense fallback={<SectionSkeleton />}><TeachingStaff /></Suspense> : null}
+          {showHonor ? <Suspense fallback={<SectionSkeleton />}><HonorBoard /></Suspense> : null}
           {showGallery ? <Suspense fallback={<SectionSkeleton />}><GalleryPreview /></Suspense> : null}
           {showContact ? <Suspense fallback={<SectionSkeleton />}><Contact /></Suspense> : null}
           {showFooter ? <Suspense fallback={<SectionSkeleton />}><Footer /></Suspense> : null}

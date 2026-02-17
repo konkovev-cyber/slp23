@@ -32,6 +32,7 @@ type Teacher = {
     title: string;
     description: string | null;
     image_url: string | null;
+    video_url: string | null;
     sort_order: number;
 };
 
@@ -44,6 +45,7 @@ export default function AdminTeachers() {
         title: "",
         description: "",
         image_url: null,
+        video_url: "",
     });
 
     const { data: teachers = [], isLoading } = useQuery({
@@ -67,15 +69,15 @@ export default function AdminTeachers() {
             } else {
                 // Get max order
                 const { data: max } = await supabase
-                  .from("teachers" as any)
-                  .select("sort_order")
-                  .order("sort_order", { ascending: false })
-                  .limit(1)
-                  .maybeSingle();
+                    .from("teachers" as any)
+                    .select("sort_order")
+                    .order("sort_order", { ascending: false })
+                    .limit(1)
+                    .maybeSingle();
                 const nextOrder = ((max as any)?.sort_order ?? 0) + 1;
                 const { error } = await supabase
-                  .from("teachers" as any)
-                  .insert([{ ...payload, sort_order: nextOrder }]);
+                    .from("teachers" as any)
+                    .insert([{ ...payload, sort_order: nextOrder }]);
                 if (error) throw error;
             }
         },
@@ -132,6 +134,10 @@ export default function AdminTeachers() {
                             <div className="grid gap-2">
                                 <Label>Описание</Label>
                                 <Textarea value={formData.description || ""} onChange={e => setFormData({ ...formData, description: e.target.value })} placeholder="Опыт 10 лет..." />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label>Видео-визитка (YouTube URL)</Label>
+                                <Input value={formData.video_url || ""} onChange={e => setFormData({ ...formData, video_url: e.target.value })} placeholder="https://youtube.com/watch?v=..." />
                             </div>
                             <div className="grid gap-2">
                                 <Label>Фото</Label>

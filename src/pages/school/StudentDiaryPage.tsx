@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { Helmet } from "react-helmet-async";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -29,31 +29,43 @@ import SchoolLayout from "@/components/school/SchoolLayout";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar } from "@/components/ui/calendar"; // Assuming shadcn Calendar exists
+import { Calendar } from "@/components/ui/calendar";
 import { ru } from "date-fns/locale";
-
-type DiaryEntry = {
-    lesson_number: number;
-    subject_name: string;
-    teacher_name: string;
-    room: string | null;
-    homework?: {
-        title: string;
-        description: string;
-    };
-    grade?: {
-        grade: string;
-        comment: string | null;
-    };
-};
-
-type DaySchedule = {
-    date: Date;
-    entries: DiaryEntry[];
-};
+import type { DiaryEntry, DaySchedule, UpcomingHomeworkItem } from "@/types/diary";
 
 const DAYS_RU = ["Воскресенье", "Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота"];
 const MONTHS_RU = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
+
+interface StudentInfoData {
+  class_id: number;
+  school_classes?: { name: string };
+}
+
+interface TeacherData {
+  auth_id: string;
+  full_name: string;
+}
+
+interface ScheduleTemplate {
+  day_of_week: number;
+  lesson_number: number;
+  teacher_id: string;
+  subjects?: { name: string };
+}
+
+interface GradeData {
+  grade: string;
+  comment: string | null;
+  date: string;
+  assignment?: { subjects?: { name: string } };
+}
+
+interface HomeworkData {
+  title: string;
+  description: string;
+  due_date: string;
+  assignment?: { subjects?: { name: string } };
+}
 
 export default function StudentDiaryPage() {
     const { userId: currentUserId } = useAuth();
@@ -69,7 +81,6 @@ export default function StudentDiaryPage() {
 
     // Data states
     const [weekSchedule, setWeekSchedule] = useState<DaySchedule[]>([]);
-    const [monthGrades, setMonthGrades] = useState<any[]>([]);
     const [className, setClassName] = useState("");
 
     // Helpers to get start/end of week (Monday to Sunday)
@@ -107,8 +118,8 @@ export default function StudentDiaryPage() {
                 setLoading(false);
                 return;
             }
-            setClassName(((studentInfo as any).school_classes as any)?.name || "");
-            const classId = (studentInfo as any).class_id;
+            setClassName((studentInfo as StudentInfoData).school_classes?.name || "");
+            const classId = (studentInfo as StudentInfoData).class_id;
 
             // Define fetch range based on ViewMode
             let startDate = new Date(selectedDate);
@@ -135,16 +146,15 @@ export default function StudentDiaryPage() {
                 await fetchDetailedSchedule(classId, startDate, endDate); // Reusing logic for now
             }
 
-        } catch (error: any) {
-            toast.error("Ошибка при загрузке данных: " + error.message);
+        } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : 'Неизвестная ошибка';
+            toast.error("Ошибка при загрузке данных: " + message);
         } finally {
             setLoading(false);
         }
     };
 
     const fetchDetailedSchedule = async (classId: number, start: Date, end: Date) => {
-        // 1. Fetch Static Schedule for all days in range (or just all possible days 0-6 generic)
-        // Actually, better to fetch generics and map them to dates.
         const { data: scheduleTemplates } = await supabase
             .from("schedule")
             .select(`
@@ -156,14 +166,12 @@ export default function StudentDiaryPage() {
             .eq("class_id", classId)
             .order("lesson_number");
 
-        // Fetch teachers
-        const teacherIds = [...new Set((scheduleTemplates || []).map(s => s.teacher_id))];
+        const teacherIds = [...new Set((scheduleTemplates || []).map(s => s.teacher_id).filter(Boolean))];
         const { data: teachers } = await supabase
             .from("profiles")
             .select("auth_id, full_name")
             .in("auth_id", teacherIds);
 
-        // 2. Fetch Grades & Homework for the specific date range
         const startStr = start.toISOString().slice(0, 10);
         const endStr = end.toISOString().slice(0, 10);
 
@@ -186,28 +194,23 @@ export default function StudentDiaryPage() {
             .gte("due_date", startStr)
             .lte("due_date", endStr);
 
-        // 3. Assemble Days
         const days: DaySchedule[] = [];
         const current = new Date(start);
         while (current <= end) {
             const dateStr = current.toISOString().slice(0, 10);
-            const dayOfWeek = current.getDay(); // 0-6
+            const dayOfWeek = current.getDay();
 
-            // Filter schedule for this day
             const dailyLessons = (scheduleTemplates || []).filter(s => s.day_of_week === dayOfWeek);
 
             const entries: DiaryEntry[] = dailyLessons.map(lesson => {
                 const subjectName = lesson.subjects?.name || "Предмет";
-                const teacherObj = teachers?.find(t => t.auth_id === lesson.teacher_id);
+                const teacherObj = teachers?.find(t => t?.auth_id === lesson.teacher_id);
 
-                // Find homework due this date
                 const hw = homework?.find(h =>
                     h.due_date === dateStr &&
                     h.assignment?.subjects?.name === subjectName
                 );
 
-                // Find grade for this date
-                // Note: Grades are usually for a date. The simpler logic matches subject + date.
                 const grade = grades?.find(g =>
                     g.date === dateStr &&
                     g.assignment?.subjects?.name === subjectName
@@ -217,13 +220,12 @@ export default function StudentDiaryPage() {
                     lesson_number: lesson.lesson_number,
                     subject_name: subjectName,
                     teacher_name: teacherObj?.full_name || "Преподаватель",
-                    room: null, // room removed from query earlier
+                    room: null,
                     homework: hw ? { title: hw.title, description: hw.description } : undefined,
                     grade: grade ? { grade: grade.grade, comment: grade.comment } : undefined
                 };
             });
 
-            // Even if no lessons, we push the day so we can show "Day Off"
             days.push({
                 date: new Date(current),
                 entries: entries.sort((a, b) => a.lesson_number - b.lesson_number)
@@ -274,12 +276,7 @@ export default function StudentDiaryPage() {
     };
 
     const upcomingHomework = useMemo(() => {
-        const items: {
-            date: Date;
-            subject: string;
-            title: string;
-            description?: string;
-        }[] = [];
+        const items: UpcomingHomeworkItem[] = [];
 
         weekSchedule.forEach((day) => {
             day.entries.forEach((entry) => {
@@ -308,7 +305,7 @@ export default function StudentDiaryPage() {
             <div className="max-w-4xl mx-auto space-y-4 pb-20">
                 {/* Controls */}
                 <div className="flex flex-col md:flex-row items-center justify-between gap-4 bg-white p-4 rounded-[32px] border-2 border-slate-100 shadow-xl shadow-slate-100/50">
-                    <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as any)} className="w-full md:w-auto">
+                    <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as 'day' | 'week' | 'month')} className="w-full md:w-auto">
                         <TabsList className="bg-slate-100/50 p-1 rounded-2xl h-12 w-full md:w-auto">
                             <TabsTrigger value="day" className="rounded-xl h-10 px-6 font-bold data-[state=active]:bg-white data-[state=active]:shadow-md">День</TabsTrigger>
                             <TabsTrigger value="week" className="rounded-xl h-10 px-6 font-bold data-[state=active]:bg-white data-[state=active]:shadow-md">Неделя</TabsTrigger>

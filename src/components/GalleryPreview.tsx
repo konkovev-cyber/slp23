@@ -1,11 +1,41 @@
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { galleryImages } from "@/components/Gallery";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { localGalleryImages } from "@/components/Gallery";
 import { ArrowRight } from "lucide-react";
 
 export default function GalleryPreview() {
-  const preview = galleryImages.slice(0, 4);
+  const { data: dbImages = [] } = useQuery({
+    queryKey: ["gallery"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("gallery" as any)
+        .select("*")
+        .order("sort_order", { ascending: true })
+        .order("created_at", { ascending: false })
+        .limit(4);
+      if (error) return [];
+      return (data ?? []).map((img: any) => ({
+        id: img.id,
+        src: img.url,
+        title: img.title
+      }));
+    },
+    staleTime: 0
+  });
+
+  const [preview, setPreview] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (dbImages.length > 0 || localGalleryImages.length > 0) {
+      const all = dbImages.length > 0 ? [...dbImages] : [...localGalleryImages.slice(0, 16)];
+      const shuffled = all.sort(() => Math.random() - 0.5).slice(0, 4);
+      setPreview(shuffled);
+    }
+  }, [dbImages]);
 
   return (
     <section className="py-20 bg-muted/20" aria-labelledby="gallery-preview-title">

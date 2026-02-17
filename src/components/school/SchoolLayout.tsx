@@ -67,6 +67,11 @@ export default function SchoolLayout({ title, children }: Props) {
                         <div className="max-w-[1400px] mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700">
                             {children}
                         </div>
+                        <footer className="mt-20 pb-6 text-center">
+                            <p className="text-[10px] font-bold text-slate-300 uppercase tracking-[0.3em]">
+                                Личность ПЛЮС • Версия 1.0.1
+                            </p>
+                        </footer>
                     </main>
                 </SidebarInset>
             </div>

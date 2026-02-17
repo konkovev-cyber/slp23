@@ -261,8 +261,8 @@ export default function StudentProfilePage() {
 
             {/* Edit Dialog */}
             <Dialog open={isEditing} onOpenChange={setIsEditing}>
-                <DialogContent className="rounded-[40px] border-2 p-0 max-w-lg bg-white overflow-hidden shadow-2xl">
-                    <div className="p-10 pb-6 bg-slate-50/50 border-b-2 border-slate-100">
+                <DialogContent className="rounded-[40px] border-2 p-0 max-w-lg w-[95vw] max-h-[95vh] bg-white overflow-hidden shadow-2xl flex flex-col">
+                    <div className="p-6 md:p-10 pb-4 md:pb-6 bg-slate-50/50 border-b-2 border-slate-100 shrink-0">
                         <DialogHeader>
                             <DialogTitle className="text-3xl font-black mb-1">Настройки профиля</DialogTitle>
                             <DialogDescription className="font-bold text-slate-500">
@@ -271,7 +271,7 @@ export default function StudentProfilePage() {
                         </DialogHeader>
                     </div>
 
-                    <div className="p-10 space-y-8 max-h-[70vh] overflow-y-auto custom-scrollbar">
+                    <div className="p-6 md:p-10 space-y-6 md:space-y-8 overflow-y-auto flex-1 custom-scrollbar">
                         {/* Live Preview Area */}
                         <div className="flex flex-col items-center justify-center p-6 bg-slate-50/50 rounded-[32px] border-2 border-dashed border-slate-200">
                             <Avatar className="w-24 h-24 border-4 border-white shadow-xl rounded-3xl mb-3">
@@ -401,7 +401,7 @@ export default function StudentProfilePage() {
                         </div>
                     </div>
 
-                    <DialogFooter className="p-10 pt-0 flex flex-col gap-3 sm:flex-col mt-4">
+                    <DialogFooter className="p-6 md:p-10 pt-0 flex flex-col gap-3 sm:flex-col shrink-0">
                         <Button
                             onClick={handleSave}
                             disabled={saving}

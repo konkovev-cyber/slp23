@@ -35,14 +35,17 @@ import gallery30 from "@/assets/gallery/30.jpg";
 import gallery31 from "@/assets/gallery/31.jpg";
 import gallery32 from "@/assets/gallery/32.jpg";
 
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+
 export type GalleryImage = {
-  id: number;
+  id: string | number;
   src: string;
   title: string;
   category: string;
 };
 
-export const galleryImages: GalleryImage[] = [
+export const localGalleryImages: GalleryImage[] = [
   { id: 1, src: gallery1, title: "Урок и командная работа", category: "Обучение" },
   { id: 2, src: gallery2, title: "Занятие в классе", category: "Обучение" },
   { id: 3, src: gallery3, title: "Эмоции и вовлечённость", category: "Школьная жизнь" },
@@ -78,15 +81,43 @@ export const galleryImages: GalleryImage[] = [
 ];
 
 const Gallery = () => {
-  const [selectedImage, setSelectedImage] = useState<number | null>(null);
+  const [selectedImage, setSelectedImage] = useState<string | number | null>(null);
   const [filter, setFilter] = useState<string>("Все");
   const [page, setPage] = useState(1);
 
-  const categories = ["Все", ...Array.from(new Set(galleryImages.map(img => img.category)))];
+  const { data: dbImages = [] } = useQuery({
+    queryKey: ["gallery"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("gallery" as any)
+        .select("*")
+        .order("sort_order", { ascending: true })
+        .order("created_at", { ascending: false });
+      if (error) {
+        console.error("Gallery Fetch Error:", error);
+        return [];
+      }
+      console.log("DB Gallery Images:", data);
+      return (data ?? []).map((img: any) => ({
+        id: img.id,
+        src: img.url,
+        title: img.title,
+        category: img.category
+      }));
+    }
+  });
+
+  const galleryImages = useMemo(() => {
+    // Merge: DB images (dynamic) + initial static local images
+    console.log("Merging Gallery: DB(", dbImages.length, ") + Local(", localGalleryImages.length, ")");
+    return [...dbImages, ...localGalleryImages];
+  }, [dbImages]);
+
+  const categories = useMemo(() => ["Все", ...Array.from(new Set(galleryImages.map(img => img.category)))], [galleryImages]);
 
   const filteredImages = useMemo(
     () => filter === "Все" ? galleryImages : galleryImages.filter((img) => img.category === filter),
-    [filter]
+    [filter, galleryImages]
   );
 
   const pageSize = 12;
@@ -101,7 +132,7 @@ const Gallery = () => {
     setPage(1);
   }, [filter]);
 
-  const openLightbox = (id: number) => {
+  const openLightbox = (id: string | number) => {
     setSelectedImage(id);
     document.body.style.overflow = 'hidden';
   };

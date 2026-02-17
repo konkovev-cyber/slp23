@@ -7,7 +7,8 @@ import {
     GraduationCap,
     ClipboardList,
     Home,
-    Settings
+    Settings,
+    UserCheck
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import {
@@ -70,7 +71,7 @@ export default function SchoolSidebar() {
         if (role === 'admin') {
             return [
                 ...baseItems,
-                { title: "Все пользователи", url: "/school/admin/users", icon: Users },
+                { title: "👥 Одобрение пользователей", url: "/school/admin/users", icon: UserCheck },
                 { title: "Классы и Предметы", url: "/school/admin/classes", icon: GraduationCap },
                 { title: "Расписание (ред.)", url: "/school/admin/schedule", icon: Calendar },
                 { title: "Все оценки", url: "/school/admin/grades", icon: Award },
