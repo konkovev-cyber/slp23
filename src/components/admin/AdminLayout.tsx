@@ -15,8 +15,20 @@ export default function AdminLayout({ title, children }: Props) {
   const navigate = useNavigate();
 
   const signOut = async () => {
-    await supabase.auth.signOut();
-    navigate("/", { replace: true });
+    try {
+      console.log("Logging out...");
+      await supabase.auth.signOut();
+      console.log("Logged out successfully");
+      // Clear any local storage
+      localStorage.clear();
+      sessionStorage.clear();
+      // Navigate to home
+      navigate("/", { replace: true });
+    } catch (error) {
+      console.error("Logout error:", error);
+      // Force navigate anyway
+      navigate("/", { replace: true });
+    }
   };
 
   return (
