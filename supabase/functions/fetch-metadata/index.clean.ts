@@ -1,4 +1,4 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+﻿import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -6,6 +6,7 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
+// Patterns for non-content images
 const GARBAGE_PATTERNS = [
   /emoji/i, /icon/i, /favicon/i, /avatar/i, /logo/i, /pixel/i, /ads/i, /banner/i,
   /loading/i, /spinner/i, /marker/i, /sprite/i, /placeholder/i
@@ -15,6 +16,7 @@ const GENERIC_TITLES = [
   /telegram\s*widget/i, /telegram\s*:\s*contact/i, /vkontakte/i, /вконтакте/i, /wall\s*post/i, /запись\s*на\s*стене/i
 ];
 
+// Patterns for video detection
 const VIDEO_PATTERNS = [
   /youtube\.com\/watch/i, /youtu\.be\//i, /vimeo\.com\//i,
   /vk\.com\/video/i, /vk\.com\/clip/i,
@@ -51,17 +53,45 @@ function stripHtml(html: string): string {
     .trim();
 }
 
-async function getTextWithEncoding(res: Response): Promise<string> {
-  const contentEncoding = res.headers.get("content-encoding") || "";
+async function getTextWithEncoding(res: Response, forceCharset?: string): Promise<string> {
+  const buffer = await res.arrayBuffer();
+  
+  // If charset is forced, use it directly
+  if (forceCharset) {
+    try {
+      return new TextDecoder(forceCharset, { fatal: false }).decode(buffer);
+    } catch (e) {
+      console.log("DEBUG: Failed to decode with forced charset:", forceCharset);
+    }
+  }
+  
+  // Try to detect charset from Content-Type header
   const contentType = res.headers.get("content-type") || "";
+  const charsetMatch = contentType.match(/charset=([a-zA-Z0-9_-]+)/i);
   
-  const text = await res.text();
+  if (charsetMatch) {
+    const charset = charsetMatch[1].toLowerCase();
+    try {
+      // Try the specified charset first
+      return new TextDecoder(charset, { fatal: false }).decode(buffer);
+    } catch (e) {
+      console.log("DEBUG: Failed to decode with charset:", charset, "falling back to utf-8");
+    }
+  }
   
-  console.log("DEBUG: Content-Type:", contentType);
-  console.log("DEBUG: Content-Encoding:", contentEncoding);
-  console.log("DEBUG: Text length:", text.length);
-  
-  return text;
+  // Try UTF-8 first (most common)
+  try {
+    const decoder = new TextDecoder("utf-8", { fatal: true });
+    return decoder.decode(buffer);
+  } catch (e) {
+    // If UTF-8 fails, try windows-1251 (common for Russian sites)
+    try {
+      return new TextDecoder("windows-1251", { fatal: false }).decode(buffer);
+    } catch (e2) {
+      // Fallback to UTF-8 with error replacement
+      return new TextDecoder("utf-8", { fatal: false }).decode(buffer);
+    }
+  }
 }
 
 function extractMetadata(html: string) {
@@ -90,29 +120,35 @@ function extractMetadata(html: string) {
 function extractMedia(html: string) {
   const urls: string[] = [];
 
+  // 1. OG Image
   const ogImage = html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i)?.[1];
   if (ogImage) urls.push(ogImage);
 
+  // 2. Background images (often used in Telegram/VK)
   const bgMatches = html.matchAll(/background-image:url\(['"]?([^'"]+)['"]?\)/gi);
   for (const match of bgMatches) {
     if (match[1] && !urls.includes(match[1])) urls.push(match[1]);
   }
 
+  // 3. Regular img tags
   const imgTags = html.matchAll(/<img[^>]+src=["']([^"']+)["']/gi);
   for (const match of imgTags) {
     if (match[1].startsWith("http") && !urls.includes(match[1])) urls.push(match[1]);
   }
 
+  // 4. Video links (YouTube, etc)
   const videoLinks = html.matchAll(/href=["'](https?:\/\/(?:www\.)?(?:youtube\.com|youtu\.be|vimeo\.com|vk\.com\/video)[^"']+)["']/gi);
   for (const match of videoLinks) {
     if (match[1] && !urls.includes(match[1])) urls.push(match[1]);
   }
 
+  // 5. VK specific: data-src attributes (lazy loading)
   const dataSrcMatches = html.matchAll(/data-src=["']([^"']+)["']/gi);
   for (const match of dataSrcMatches) {
     if (match[1] && match[1].startsWith("http") && !urls.includes(match[1])) urls.push(match[1]);
   }
 
+  // 6. VK specific: srcset attributes
   const srcsetMatches = html.matchAll(/srcset=["']([^"']+)["']/gi);
   for (const match of srcsetMatches) {
     const urlsFromSrcset = match[1].split(",").map(u => u.trim().split(/\s+/)[0]);
@@ -121,11 +157,13 @@ function extractMedia(html: string) {
     }
   }
 
+  // 7. Telegram specific: data-webp attributes
   const dataWebpMatches = html.matchAll(/data-webp=["']([^"']+)["']/gi);
   for (const match of dataWebpMatches) {
     if (match[1] && match[1].startsWith("http") && !urls.includes(match[1])) urls.push(match[1]);
   }
 
+  // 8. Telegram specific: data-srcset attributes
   const dataSrcsetMatches = html.matchAll(/data-srcset=["']([^"']+)["']/gi);
   for (const match of dataSrcsetMatches) {
     const urlsFromSrcset = match[1].split(",").map(u => u.trim().split(/\s+/)[0]);
@@ -134,9 +172,10 @@ function extractMedia(html: string) {
     }
   }
 
+  // 9. Telegram: telegra.ph images
   const telegraMatches = html.matchAll(/https:\/\/telegra\.ph\/file\/[^\s"'<>]+/gi);
   for (const match of telegraMatches) {
-    const url = match[0].replace(/["')]$/, "");
+    const url = match[0].replace(/["')]$/, ""); // Clean trailing quotes/parens
     if (url && !urls.includes(url)) urls.push(url);
   }
 
@@ -156,21 +195,26 @@ serve(async (req) => {
     if (!url) throw new Error("URL is required");
 
     let normalizedUrl = url.trim();
-
-    // Telegram
     let fetchUrl = normalizedUrl;
+
+    // Telegram specific handling
     if (normalizedUrl.includes("t.me/")) {
       fetchUrl = normalizedUrl.replace("?single", "");
+      // Always use embed mode for better parsing
       if (!fetchUrl.includes("/s/") && !fetchUrl.includes("/embed/")) {
+        // Convert regular URL to embed format
         const parts = fetchUrl.split("/");
         const channelOrPost = parts[parts.length - 1];
         if (/^\d+$/.test(channelOrPost)) {
+          // It's a post URL like t.me/channel/123
           const channel = parts[parts.length - 2];
           fetchUrl = `https://t.me/${channel}/${channelOrPost}?embed=1`;
         } else {
+          // It's a channel URL like t.me/channel
           fetchUrl = `${fetchUrl}?embed=1`;
         }
       }
+      console.log("DEBUG: Telegram URL:", fetchUrl);
     }
 
     const res = await fetch(fetchUrl, {
@@ -190,37 +234,142 @@ serve(async (req) => {
 
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-    const html = await getTextWithEncoding(res);
+    // For VK, force windows-1251 charset detection
+    const html = normalizedUrl.includes("vk.com")
+      ? await getTextWithEncoding(res, "windows-1251")
+      : await getTextWithEncoding(res);
+    const contentType = res.headers.get("content-type");
+    console.log("DEBUG: Content-Type:", contentType);
+    console.log("DEBUG: HTML length:", html.length);
+    console.log("DEBUG: First 200 chars:", html.slice(0, 200).replace(/\s+/g, ' '));
+
     const metadata = extractMetadata(html);
+    console.log("DEBUG: Extracted metadata:", metadata);
 
     let content = "";
     if (normalizedUrl.includes("t.me")) {
+      // Telegram: try multiple selectors for different embed formats
       const telegramSelectors = [
         /<div[^>]*class="[^"]*tgme_widget_message_text[^"]*"[^>]*>([\s\S]*?)<\/div>/i,
         /<div[^>]*class="[^"]*tgme_widget_message_bubble[^"]*"[^>]*>([\s\S]*?)<\/div>/i,
         /<div[^>]*class="[^"]*message-text[^"]*"[^>]*>([\s\S]*?)<\/div>/i,
+        /<div[^>]*itemprop="articleBody"[^>]*>([\s\S]*?)<\/div>/i,
       ];
+      console.log("DEBUG: Trying Telegram selectors...");
       for (const selector of telegramSelectors) {
         const match = html.match(selector);
+        console.log("DEBUG: TG Selector:", selector.source, "Match:", match ? "YES" : "NO");
         if (match && match[1].trim().length > 20) {
           content = stripHtml(decodeHtml(match[1]));
+          console.log("DEBUG: Found Telegram content, length:", content.length);
           break;
         }
       }
+      // Fallback: try to extract from paragraph tags if no selector worked
+      if (!content) {
+        const paragraphMatch = html.match(/<p[^>]*>([\s\S]*?)<\/p>/i);
+        if (paragraphMatch) {
+          content = stripHtml(decodeHtml(paragraphMatch[1]));
+          console.log("DEBUG: Using paragraph fallback, length:", content.length);
+        }
+      }
+      console.log("DEBUG: Telegram content length:", content.length);
+    } else if (normalizedUrl.includes("vk.com")) {
+      // VK: try multiple selectors (new and old layouts, articles)
+      const selectors = [
+        // Articles (vk.com/@...)
+        /<div[^>]*class="[^"]*ArticleView__content[^"]*"[^>]*>([\s\S]*?)<\/div>/i,
+        /<article[^>]*class="[^"]*article[^"]*"[^>]*>([\s\S]*?)<\/article>/i,
+        /<div[^>]*data-field="post"[^>]*>([\s\S]*?)<\/div>/i,
+        // Regular posts
+        /<div[^>]*class="[^"]*wall_post_text[^"]*"[^>]*>([\s\S]*?)<\/div>/i,
+        /<div[^>]*class="[^"]*WallPostText[^"]*"[^>]*>([\s\S]*?)<\/div>/i,
+        /<div[^>]*class="[^"]*post__text[^"]*"[^>]*>([\s\S]*?)<\/div>/i,
+        /<div[^>]*class="[^"]*page_post_content[^"]*"[^>]*>([\s\S]*?)<\/div>/i,
+      ];
+      console.log("DEBUG: Trying VK selectors...");
+      for (const selector of selectors) {
+        const match = html.match(selector);
+        console.log("DEBUG: Selector:", selector.source.substring(0, 50), "Match:", match ? "YES" : "NO");
+        if (match && match[1].trim().length > 20) {
+          content = stripHtml(decodeHtml(match[1]));
+          console.log("DEBUG: Found VK content, length:", content.length);
+          break;
+        }
+      }
+      // If still no content, try to extract from meta description
+      if (!content) {
+        const metaDesc = html.match(/<meta[^>]+name=["']description["'][^>]*content=["']([^"']+)["']/i);
+        if (metaDesc) {
+          content = decodeHtml(metaDesc[1]);
+          console.log("DEBUG: Using meta description, length:", content.length);
+        } else {
+          console.log("DEBUG: No VK content found");
+        }
+      }
     } else {
+      // Other websites: use Open Graph metadata
       content = metadata.description || "";
+      
+      // Try to extract article content from common CMS patterns
+      const articleContentSelectors = [
+        /<article[^>]*>([\s\S]*?)<\/article>/i,
+        /<div[^>]*class="[^"]*article-content[^"]*"[^>]*>([\s\S]*?)<\/div>/i,
+        /<div[^>]*class="[^"]*post-content[^"]*"[^>]*>([\s\S]*?)<\/div>/i,
+        /<div[^>]*class="[^"]*entry-content[^"]*"[^>]*>([\s\S]*?)<\/div>/i,
+        /<div[^>]*itemprop="articleBody"[^>]*>([\s\S]*?)<\/div>/i,
+      ];
+      
+      for (const selector of articleContentSelectors) {
+        const match = html.match(selector);
+        if (match && match[1].trim().length > 50) {
+          const extracted = stripHtml(decodeHtml(match[1]));
+          if (extracted.length > content.length) {
+            content = extracted;
+            console.log("DEBUG: Found article content, length:", content.length);
+            break;
+          }
+        }
+      }
     }
 
     const mediaList = extractMedia(html);
+    console.log("DEBUG: Media list count:", mediaList.length);
 
+    // If it's Telegram and we have a very short title, try to use first line of content
     let finalTitle = metadata.title;
+
+    // For Telegram, if title is generic or too short, use first line of content
+    if (normalizedUrl.includes("t.me") && (!finalTitle || GENERIC_TITLES.some(p => p.test(finalTitle)) || finalTitle.length < 10)) {
+      if (content) {
+        const lines = content.split('\n').filter(l => l.trim().length > 0);
+        if (lines.length > 0) {
+          finalTitle = lines[0].slice(0, 100).trim();
+          if (finalTitle.length < lines[0].length) finalTitle += "...";
+        }
+      }
+    }
+
+    // For VK, if title is generic or empty, use first line of content
+    if (normalizedUrl.includes("vk.com") && (!finalTitle || GENERIC_TITLES.some(p => p.test(finalTitle)))) {
+      if (content) {
+        const lines = content.split('\n').filter(l => l.trim().length > 0);
+        if (lines.length > 0) {
+          finalTitle = lines[0].slice(0, 100).trim();
+          if (finalTitle.length < lines[0].length) finalTitle += "...";
+        }
+      }
+    }
+
     if (!finalTitle && content) {
       const lines = content.split('\n').filter(l => l.trim().length > 0);
       if (lines.length > 0) {
         finalTitle = lines[0].slice(0, 100).trim();
+        if (finalTitle.length < lines[0].length) finalTitle += "...";
       }
     }
 
+    // Ensure main image is included if not garbage
     const mainImage = metadata.image;
     if (mainImage && !isGarbageImage(mainImage) && !mediaList.find(m => m.url === mainImage)) {
       mediaList.unshift({ url: mainImage, type: "image" });
@@ -233,7 +382,8 @@ serve(async (req) => {
         content: content || metadata.description,
         image: mediaList.find(m => m.type === "image")?.url || "",
         mediaList: mediaList.slice(0, 15),
-        source: normalizedUrl.includes("t.me") ? "telegram"
+        source: normalizedUrl.includes("t.me") ? "telegram" 
+                : normalizedUrl.includes("vk.com") ? "vk" 
                 : normalizedUrl.includes("youtube.com") || normalizedUrl.includes("youtu.be") ? "youtube"
                 : normalizedUrl.includes("zen.yandex.ru") || normalizedUrl.includes("dzen.ru") ? "zen"
                 : "web",

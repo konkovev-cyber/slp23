@@ -1,3 +1,46 @@
+# 🚀 Инструкция по обновлению fetch-metadata с VK API
+
+## Шаг 1: Добавьте секрет в Supabase
+
+1. Откройте: https://supabase.com/dashboard/project/qwuicyhadpesklhkjxpn/settings/functions
+2. Раздел **"Secrets"**
+3. Нажмите **"Add new secret"**
+4. **Name:** `VK_ACCESS_TOKEN`
+5. **Value:** `91d8f93791d8f93791d8f937de92e60fb2991d891d8f937f84ec2edfc5a35e50a11b1ce`
+6. Нажмите **Save**
+
+## Шаг 2: Обновите код функции
+
+1. Откройте файл: `d:\1_sites\slp23\supabase\functions\fetch-metadata\index.ts`
+2. **Полностью замените** содержимое на код ниже
+3. Сохраните
+4. В Supabase Dashboard → Edge Functions → `fetch-metadata` вставьте новый код
+5. Нажмите **Deploy**
+
+## Шаг 3: Тестирование
+
+```bash
+# VK пост
+curl -X POST https://qwuicyhadpesklhkjxpn.supabase.co/functions/v1/fetch-metadata \
+  -H "Content-Type: application/json" \
+  -d "{\"url\": \"https://vk.com/wall-226860244_205\"}"
+
+# Telegram
+curl -X POST https://qwuicyhadpesklhkjxpn.supabase.co/functions/v1/fetch-metadata \
+  -H "Content-Type: application/json" \
+  -d "{\"url\": \"https://t.me/slp23/1619\"}"
+
+# YouTube
+curl -X POST https://qwuicyhadpesklhkjxpn.supabase.co/functions/v1/fetch-metadata \
+  -H "Content-Type: application/json" \
+  -d "{\"url\": \"https://www.youtube.com/watch?v=dQw4w9WgXcQ\"}"
+```
+
+---
+
+## 📄 Полный код функции (скопируйте и вставьте)
+
+```typescript
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const corsHeaders = {
@@ -157,6 +200,86 @@ serve(async (req) => {
 
     let normalizedUrl = url.trim();
 
+    // ============================================================
+    // VK API - используем официальный API для надёжности
+    // ============================================================
+    if (normalizedUrl.includes("vk.com")) {
+      const vkToken = Deno.env.get("VK_ACCESS_TOKEN");
+      
+      if (vkToken) {
+        try {
+          let wallRequest = "";
+          
+          const wallMatch = normalizedUrl.match(/wall(-?\d+)_(\d+)/);
+          const videoMatch = normalizedUrl.match(/video(-?\d+)_(\d+)/);
+          const clipMatch = normalizedUrl.match(/clip(-?\d+)_(\d+)/);
+          
+          if (wallMatch) {
+            wallRequest = `${wallMatch[1]}_${wallMatch[2]}`;
+          } else if (videoMatch) {
+            wallRequest = `${videoMatch[1]}_${videoMatch[2]}`;
+          } else if (clipMatch) {
+            wallRequest = `${clipMatch[1]}_${clipMatch[2]}`;
+          }
+          
+          if (wallRequest) {
+            const apiUrl = `https://api.vk.com/method/wall.getById?posts=${wallRequest}&extended=1&v=5.131&access_token=${vkToken}`;
+            console.log("DEBUG: VK API call");
+            
+            const apiRes = await fetch(apiUrl);
+            const apiData = await apiRes.json();
+            
+            if (apiData.response && apiData.response.items && apiData.response.items.length > 0) {
+              const item = apiData.response.items[0];
+              const content = item.text || "";
+              let title = content.split("\n")[0]?.slice(0, 100) || "Новости";
+              
+              const mediaList: Array<{ url: string; type: "image" | "video" }> = [];
+              
+              if (item.attachments) {
+                for (const att of item.attachments) {
+                  if (att.type === "photo" && att.photo) {
+                    const photoUrl = att.photo.sizes?.find((s: any) => s.type === "z")?.url || 
+                                    att.photo.sizes?.find((s: any) => s.type === "max")?.url ||
+                                    att.photo.sizes?.[0]?.url;
+                    if (photoUrl) mediaList.push({ url: photoUrl, type: "image" });
+                  }
+                  if (att.type === "video" && att.video) {
+                    const videoUrl = att.video.player || `https://vk.com/video${att.video.owner_id}_${att.video.id}`;
+                    mediaList.push({ url: videoUrl, type: "video" });
+                  }
+                }
+              }
+              
+              // Get cover image from OG
+              const ogRes = await fetch(normalizedUrl, { headers: { "User-Agent": "Mozilla/5.0" } });
+              const ogHtml = await ogRes.text();
+              const ogImageMatch = ogHtml.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i);
+              const ogImage = ogImageMatch?.[1];
+              
+              if (ogImage && !mediaList.find(m => m.url === ogImage)) {
+                mediaList.unshift({ url: ogImage, type: "image" });
+              }
+              
+              return new Response(
+                JSON.stringify({
+                  title: title,
+                  description: content.slice(0, 200) + (content.length > 200 ? "..." : ""),
+                  content: content,
+                  image: mediaList.find(m => m.type === "image")?.url || "",
+                  mediaList: mediaList.slice(0, 15),
+                  source: "vk",
+                }),
+                { headers: { ...corsHeaders, "Content-Type": "application/json; charset=utf-8" } }
+              );
+            }
+          }
+        } catch (e) {
+          console.log("DEBUG: VK API error:", e);
+        }
+      }
+    }
+
     // Telegram
     let fetchUrl = normalizedUrl;
     if (normalizedUrl.includes("t.me/")) {
@@ -234,6 +357,7 @@ serve(async (req) => {
         image: mediaList.find(m => m.type === "image")?.url || "",
         mediaList: mediaList.slice(0, 15),
         source: normalizedUrl.includes("t.me") ? "telegram"
+                : normalizedUrl.includes("vk.com") ? "vk"
                 : normalizedUrl.includes("youtube.com") || normalizedUrl.includes("youtu.be") ? "youtube"
                 : normalizedUrl.includes("zen.yandex.ru") || normalizedUrl.includes("dzen.ru") ? "zen"
                 : "web",
@@ -244,3 +368,4 @@ serve(async (req) => {
     return new Response(JSON.stringify({ error: String(e) }), { status: 500, headers: corsHeaders });
   }
 });
+```
