@@ -21,7 +21,7 @@ export default function SchoolLayout({ title, children }: Props) {
 
     const signOut = async () => {
         await supabase.auth.signOut();
-        navigate("/", { replace: true });
+        navigate("/school/login", { replace: true });
     };
 
     return (
@@ -70,7 +70,7 @@ export default function SchoolLayout({ title, children }: Props) {
                         </div>
                         <footer className="mt-10 md:mt-20 pb-6 text-center hidden md:block">
                             <p className="text-[10px] font-bold text-slate-300 uppercase tracking-[0.3em]">
-                                Личность ПЛЮС • Версия 1.0.1
+                                Личность ПЛЮС • Электронный дневник
                             </p>
                         </footer>
                     </main>

@@ -1,22 +1,21 @@
-import { SiInstagram, SiTelegram, SiVk, SiGithub } from "react-icons/si";
+﻿import { SiInstagram, SiTelegram, SiVk, SiGithub } from "react-icons/si";
 import { Link } from "react-router-dom";
-import { APP_VERSION } from "@/config/app-info";
 import { Download } from "lucide-react";
 
 const Footer = () => {
   return (
     <footer className="bg-background border-t border-border pt-16 pb-12">
       <div className="container mx-auto px-4">
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
           <div className="space-y-6">
             <div className="flex items-center space-x-2.5 group">
               <div className="w-9 h-9 bg-primary rounded-xl flex items-center justify-center shadow-sm transition-transform group-hover:scale-105">
-                <span className="text-white font-bold text-lg">Л+</span>
+                <span className="text-white font-bold text-lg">Р›+</span>
               </div>
-              <span className="font-bold text-xl text-foreground tracking-tight">Личность ПЛЮС</span>
+              <span className="font-bold text-xl text-foreground tracking-tight">Р›РёС‡РЅРѕСЃС‚СЊ РџР›Р®РЎ</span>
             </div>
             <p className="text-muted-foreground text-[13px] font-medium leading-relaxed max-w-xs">
-              Частная общеобразовательная школа нового поколения. Создаем условия для развития лидеров будущего.
+              Р§Р°СЃС‚РЅР°СЏ РѕР±С‰РµРѕР±СЂР°Р·РѕРІР°С‚РµР»СЊРЅР°СЏ С€РєРѕР»Р° РЅРѕРІРѕРіРѕ РїРѕРєРѕР»РµРЅРёСЏ. РЎРѕР·РґР°РµРј СѓСЃР»РѕРІРёСЏ РґР»СЏ СЂР°Р·РІРёС‚РёСЏ Р»РёРґРµСЂРѕРІ Р±СѓРґСѓС‰РµРіРѕ.
             </p>
             <div className="flex space-x-3 pt-2">
               {[
@@ -38,74 +37,74 @@ const Footer = () => {
             </div>
           </div>
 
-          <nav role="navigation" aria-label="Навигация в подвале">
-            <h4 className="text-foreground font-bold mb-6 uppercase tracking-wider text-[10px]">Навигация</h4>
+          <nav role="navigation" aria-label="РќР°РІРёРіР°С†РёСЏ РІ РїРѕРґРІР°Р»Рµ">
+            <h4 className="text-foreground font-bold mb-6 uppercase tracking-wider text-[10px]">РќР°РІРёРіР°С†РёСЏ</h4>
             <ul className="space-y-3.5">
               <li>
                 <Link to="/" className="text-muted-foreground hover:text-primary transition-colors text-[13px] font-medium">
-                  Главная страница
+                  Р“Р»Р°РІРЅР°СЏ СЃС‚СЂР°РЅРёС†Р°
                 </Link>
               </li>
               <li>
                 <Link to="/#about" className="text-muted-foreground hover:text-primary transition-colors text-[13px] font-medium">
-                  О нашей школе
+                  Рћ РЅР°С€РµР№ С€РєРѕР»Рµ
                 </Link>
               </li>
               <li>
                 <Link to="/#programs" className="text-muted-foreground hover:text-primary transition-colors text-[13px] font-medium">
-                  Программы обучения
+                  РџСЂРѕРіСЂР°РјРјС‹ РѕР±СѓС‡РµРЅРёСЏ
                 </Link>
               </li>
               <li>
                 <Link to="/#clubs" className="text-muted-foreground hover:text-primary transition-colors text-[13px] font-medium">
-                  Кружки и секции
+                  РљСЂСѓР¶РєРё Рё СЃРµРєС†РёРё
                 </Link>
               </li>
               <li>
                 <Link to="/news" className="text-muted-foreground hover:text-primary transition-colors text-[13px] font-medium">
-                  Новости школы
+                  РќРѕРІРѕСЃС‚Рё С€РєРѕР»С‹
                 </Link>
               </li>
               <li>
                 <Link to="/#gallery" className="text-muted-foreground hover:text-primary transition-colors text-[13px] font-medium">
-                  Фотогалерея
+                  Р¤РѕС‚РѕРіР°Р»РµСЂРµСЏ
                 </Link>
               </li>
             </ul>
           </nav>
 
-          <nav role="navigation" aria-label="Информационное меню подвала">
-            <h4 className="text-foreground font-bold mb-6 uppercase tracking-wider text-[10px]">Информация</h4>
+          <nav role="navigation" aria-label="РРЅС„РѕСЂРјР°С†РёРѕРЅРЅРѕРµ РјРµРЅСЋ РїРѕРґРІР°Р»Р°">
+            <h4 className="text-foreground font-bold mb-6 uppercase tracking-wider text-[10px]">РРЅС„РѕСЂРјР°С†РёСЏ</h4>
             <ul className="space-y-3.5">
               <li>
                 <Link to="/svedeniya" className="text-muted-foreground hover:text-primary transition-colors text-[13px] font-medium">
-                  Сведения об организации
+                  РЎРІРµРґРµРЅРёСЏ РѕР± РѕСЂРіР°РЅРёР·Р°С†РёРё
                 </Link>
               </li>
               <li>
                 <Link to="/svedeniya#documents" className="text-muted-foreground hover:text-primary transition-colors text-[13px] font-medium">
-                  Документы и лицензия
+                  Р”РѕРєСѓРјРµРЅС‚С‹ Рё Р»РёС†РµРЅР·РёСЏ
                 </Link>
               </li>
               <li>
                 <Link to="/contact" className="text-muted-foreground hover:text-primary transition-colors text-[13px] font-medium">
-                  Контакты и адрес
+                  РљРѕРЅС‚Р°РєС‚С‹ Рё Р°РґСЂРµСЃ
                 </Link>
               </li>
               <li>
                 <Link to="/privacy" className="text-muted-foreground hover:text-primary transition-colors text-[13px] font-medium">
-                  Политика конфиденциальности
+                  РџРѕР»РёС‚РёРєР° РєРѕРЅС„РёРґРµРЅС†РёР°Р»СЊРЅРѕСЃС‚Рё
                 </Link>
               </li>
             </ul>
           </nav>
 
           <div>
-            <h4 className="text-foreground font-bold mb-6 uppercase tracking-wider text-[10px]">Контакты</h4>
+            <h4 className="text-foreground font-bold mb-6 uppercase tracking-wider text-[10px]">РљРѕРЅС‚Р°РєС‚С‹</h4>
             <div className="space-y-4">
               <p className="text-muted-foreground text-[13px] font-medium leading-relaxed">
-                Краснодарский край,<br />
-                г. Горячий Ключ, пер. Школьный, 27
+                РљСЂР°СЃРЅРѕРґР°СЂСЃРєРёР№ РєСЂР°Р№,<br />
+                Рі. Р“РѕСЂСЏС‡РёР№ РљР»СЋС‡, РїРµСЂ. РЁРєРѕР»СЊРЅС‹Р№, 27
               </p>
               <div className="space-y-1.5 pt-2">
                 <a href="tel:+79282619928" className="block text-lg font-bold text-foreground hover:text-primary transition-colors tracking-tight">
@@ -119,52 +118,26 @@ const Footer = () => {
           </div>
         </div>
 
-        {/* APK Download Section */}
-        <div className="mb-12 p-6 bg-primary/5 rounded-[32px] border-2 border-primary/20">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-2xl bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/30">
-                <Download className="w-8 h-8" />
-              </div>
-              <div>
-                <h3 className="text-lg font-black text-foreground mb-1">Мобильное приложение</h3>
-                <p className="text-sm text-muted-foreground font-medium">
-                  Версия <span className="font-bold text-primary">v{APP_VERSION}</span> • Всегда актуальная
-                </p>
-              </div>
-            </div>
-            <a
-              href="https://github.com/konkovev-cyber/slp23/releases/latest"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-3 px-8 py-4 bg-primary text-white rounded-2xl font-black text-sm shadow-xl shadow-primary/30 hover:shadow-primary/40 hover:translate-y-[-2px] transition-all active:scale-[0.98]"
-            >
-              <SiGithub className="w-5 h-5" />
-              Скачать APK
-            </a>
-          </div>
-        </div>
-
         <div className="border-t border-border pt-8 flex flex-col md:flex-row justify-between items-center gap-6">
           <p className="text-muted-foreground text-[10px] font-medium uppercase tracking-widest text-center md:text-left">
-            © 2026 ЧОУ «Личность ПЛЮС». Все права защищены.
+            В© 2026 Р§РћРЈ В«Р›РёС‡РЅРѕСЃС‚СЊ РџР›Р®РЎВ». Р’СЃРµ РїСЂР°РІР° Р·Р°С‰РёС‰РµРЅС‹.
           </p>
+          
           <div className="flex items-center gap-6">
-            {/* Desktop APK Download Button */}
+            {/* APK Download Icon - Small */}
             <a
               href="https://github.com/konkovev-cyber/slp23/releases/latest"
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden md:inline-flex items-center gap-2 px-5 py-2.5 bg-primary/10 hover:bg-primary/20 text-primary rounded-xl font-bold text-xs transition-all hover:scale-105 border-2 border-primary/20"
-              title="Скачать приложение для Android"
+              className="inline-flex items-center justify-center w-9 h-9 bg-primary/10 hover:bg-primary/20 text-primary rounded-lg transition-all hover:scale-110 border-2 border-primary/20"
+              title="РЎРєР°С‡Р°С‚СЊ РїСЂРёР»РѕР¶РµРЅРёРµ РґР»СЏ Android"
             >
               <Download className="w-4 h-4" />
-              Приложение
-              <span className="px-1.5 py-0.5 bg-primary text-white rounded-md text-[9px] font-black">v{APP_VERSION}</span>
             </a>
+            
             <div className="flex gap-8">
-              <Link to="/privacy" className="text-muted-foreground text-[10px] font-medium uppercase tracking-widest hover:text-foreground transition-colors">Конфиденциальность</Link>
-              <Link to="/terms" className="text-muted-foreground text-[10px] font-medium uppercase tracking-widest hover:text-foreground transition-colors">Условия</Link>
+              <Link to="/privacy" className="text-muted-foreground text-[10px] font-medium uppercase tracking-widest hover:text-foreground transition-colors">РљРѕРЅС„РёРґРµРЅС†РёР°Р»СЊРЅРѕСЃС‚СЊ</Link>
+              <Link to="/terms" className="text-muted-foreground text-[10px] font-medium uppercase tracking-widest hover:text-foreground transition-colors">РЈСЃР»РѕРІРёСЏ</Link>
             </div>
           </div>
         </div>
