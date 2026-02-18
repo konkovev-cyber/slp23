@@ -9,16 +9,18 @@ import { Label } from "@/components/ui/label";
 import { Loader2, LogIn, User, Mail, BookOpen, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import { Browser } from "@capacitor/browser";
-import { useCapacitorPlatform } from "@/hooks/use-capacitor-platform";
+import { Capacitor } from "@capacitor/core";
 
 const SITE_URL = "https://slp23.ru";
 
 export default function SchoolLoginPage() {
     const navigate = useNavigate();
-    const isCapacitor = useCapacitorPlatform();
     const [loading, setLoading] = useState(false);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+
+    // Синхронная проверка - работает сразу при рендере
+    const isCapacitor = Capacitor.isNativePlatform();
 
     useEffect(() => {
         const checkAuth = async () => {

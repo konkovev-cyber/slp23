@@ -137,7 +137,6 @@ const Footer = () => {
             
             <div className="flex gap-8">
               <Link to="/privacy" className="text-muted-foreground text-[10px] font-medium uppercase tracking-widest hover:text-foreground transition-colors">Конфиденциальность</Link>
-              <Link to="/terms" className="text-muted-foreground text-[10px] font-medium uppercase tracking-widest hover:text-foreground transition-colors">Условия</Link>
             </div>
           </div>
         </div>
