@@ -36,7 +36,7 @@ export default function SchoolSidebar() {
 
     const getMenuItems = () => {
         const baseItems = [
-            { title: "На главную", url: "/", icon: Home },
+            { title: "Вход", url: "/school/login", icon: Home },
         ];
 
         if (isLoading) return baseItems;
@@ -89,7 +89,7 @@ export default function SchoolSidebar() {
     const menuItems = getMenuItems();
 
     return (
-        <Sidebar collapsible="icon" variant="sidebar" className="border-r border-sidebar-border/50">
+        <Sidebar collapsible="icon" variant="sidebar" className="border-r border-border/50">
             <SidebarContent>
                 <SidebarGroup>
                     <SidebarGroupLabel className="px-4 py-2 text-xs font-bold uppercase tracking-widest text-sidebar-foreground/50">
@@ -105,7 +105,7 @@ export default function SchoolSidebar() {
                                             className="w-full flex items-center gap-3 px-3 rounded-lg transition-all"
                                             activeClassName="bg-primary/10 text-primary font-semibold shadow-sm shadow-primary/5"
                                         >
-                                            <item.icon className={`h-5 w-5 ${isActive(item.url) ? 'text-primary' : 'text-sidebar-foreground/70'}`} />
+                                            <item.icon className={`h-5 w-5 ${isActive(item.url) ? 'text-primary' : 'text-muted-foreground'}`} />
                                             {!collapsed ? <span>{item.title}</span> : null}
                                         </NavLink>
                                     </SidebarMenuButton>

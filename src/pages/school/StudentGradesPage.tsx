@@ -130,10 +130,10 @@ export default function StudentGradesPage() {
     const getGradeStyle = (grade: string) => {
         const val = parseInt(grade);
         if (val === 5) return "bg-emerald-500 text-white border-emerald-600 shadow-emerald-100 hover:bg-emerald-600";
-        if (val === 4) return "bg-blue-500 text-white border-blue-600 shadow-blue-100 hover:bg-blue-600";
+        if (val === 4) return "bg-primary/50 text-white border-blue-600 shadow-primary/10 hover:bg-blue-600";
         if (val === 3) return "bg-amber-500 text-white border-amber-600 shadow-amber-100 hover:bg-amber-600";
         if (val === 2) return "bg-rose-500 text-white border-rose-600 shadow-rose-100 hover:bg-rose-600";
-        return "bg-slate-500 text-white border-slate-600 shadow-slate-100 hover:bg-slate-600";
+        return "bg-muted0 text-white border-slate-600 shadow-muted/10 hover:bg-slate-600";
     };
 
     const filteredSubjects = useMemo(() => {
@@ -163,7 +163,7 @@ export default function StudentGradesPage() {
             <SchoolLayout title="Успеваемость">
                 <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-4">
                     <Loader2 className="w-10 h-10 animate-spin text-primary" />
-                    <p className="text-slate-500 font-medium">Загружаем ваш табель...</p>
+                    <p className="text-muted-foreground font-medium">Загружаем ваш табель...</p>
                 </div>
             </SchoolLayout>
         );
@@ -179,7 +179,7 @@ export default function StudentGradesPage() {
                 <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white border-none shadow-lg shadow-blue-200">
                     <CardContent className="pt-6">
                         <div className="flex items-center gap-4">
-                            <div className="p-3 bg-white/20 rounded-2xl">
+                            <div className="p-3 bg-background/20 rounded-2xl">
                                 < Award className="w-6 h-6" />
                             </div>
                             <div>
@@ -195,7 +195,7 @@ export default function StudentGradesPage() {
                 <Card className="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white border-none shadow-lg shadow-emerald-200">
                     <CardContent className="pt-6">
                         <div className="flex items-center gap-4">
-                            <div className="p-3 bg-white/20 rounded-2xl">
+                            <div className="p-3 bg-background/20 rounded-2xl">
                                 < TrendingUp className="w-6 h-6" />
                             </div>
                             <div>
@@ -208,14 +208,14 @@ export default function StudentGradesPage() {
                     </CardContent>
                 </Card>
 
-                <Card className="bg-white border-2 border-slate-100 shadow-sm">
+                <Card className="bg-background border-2 border-border shadow-sm">
                     <CardContent className="pt-6">
-                        <div className="flex items-center gap-4 text-slate-900">
-                            <div className="p-3 bg-slate-100 rounded-2xl">
+                        <div className="flex items-center gap-4 text-foreground">
+                            <div className="p-3 bg-muted rounded-2xl">
                                 < ClipboardCheck className="w-6 h-6" />
                             </div>
                             <div>
-                                <p className="text-slate-500 text-xs font-bold uppercase tracking-wider">Предметов</p>
+                                <p className="text-muted-foreground text-xs font-bold uppercase tracking-wider">Предметов</p>
                                 <h3 className="text-3xl font-black">{subjectGrades.length}</h3>
                             </div>
                         </div>
@@ -223,17 +223,17 @@ export default function StudentGradesPage() {
                 </Card>
             </div>
 
-            <Card className="border-2 border-slate-100 shadow-2xl overflow-hidden rounded-[32px] bg-white">
-                <CardHeader className="border-b bg-slate-50/50 p-8">
+            <Card className="border-2 border-border shadow-2xl overflow-hidden rounded-[32px] bg-background">
+                <CardHeader className="border-b bg-muted/50 p-8">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div>
-                            <CardTitle className="text-2xl font-black text-slate-900 flex items-center gap-3">
+                            <CardTitle className="text-2xl font-black text-foreground flex items-center gap-3">
                                 <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
                                     <ClipboardCheck className="w-6 h-6" />
                                 </div>
                                 Электронный табель
                             </CardTitle>
-                            <CardDescription className="mt-1 font-bold text-slate-500">
+                            <CardDescription className="mt-1 font-bold text-muted-foreground">
                                 Текущие оценки и показатели среднего балла по предметам
                             </CardDescription>
                         </div>
@@ -270,24 +270,24 @@ export default function StudentGradesPage() {
                     <div className="overflow-x-auto">
                         <Table>
                             <TableHeader>
-                                <TableRow className="bg-slate-50/30 hover:bg-slate-50/30 border-b-2">
-                                    <TableHead className="py-6 px-8 font-black text-[11px] uppercase tracking-[0.2em] text-slate-400 w-1/4">Предмет</TableHead>
-                                    <TableHead className="py-6 px-8 font-black text-[11px] uppercase tracking-[0.2em] text-slate-400">Оценки</TableHead>
-                                    <TableHead className="py-6 px-8 text-center font-black text-[11px] uppercase tracking-[0.2em] text-slate-400 w-32">Средний</TableHead>
+                                <TableRow className="bg-muted/30 hover:bg-muted/30 border-b-2">
+                                    <TableHead className="py-6 px-8 font-black text-[11px] uppercase tracking-[0.2em] text-muted-foreground w-1/4">Предмет</TableHead>
+                                    <TableHead className="py-6 px-8 font-black text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Оценки</TableHead>
+                                    <TableHead className="py-6 px-8 text-center font-black text-[11px] uppercase tracking-[0.2em] text-muted-foreground w-32">Средний</TableHead>
                                 </TableRow>
                             </TableHeader>
                                     <TableBody>
                                         {filteredSubjects.length === 0 ? (
                                     <TableRow>
                                         <TableCell colSpan={3} className="py-20 text-center">
-                                            <p className="text-slate-400 font-bold">Оценки еще не выставлены</p>
+                                            <p className="text-muted-foreground font-bold">Оценки еще не выставлены</p>
                                         </TableCell>
                                     </TableRow>
                                 ) : (
                                             filteredSubjects.map((item) => (
                                         <TableRow key={item.subjectName} className="hover:bg-primary/[0.02] transition-colors border-b last:border-0 group">
                                             <TableCell className="py-8 px-8 align-middle">
-                                                <span className="font-black text-slate-900 text-lg group-hover:text-primary transition-colors">
+                                                <span className="font-black text-foreground text-lg group-hover:text-primary transition-colors">
                                                     {item.subjectName}
                                                 </span>
                                             </TableCell>
@@ -304,7 +304,7 @@ export default function StudentGradesPage() {
                                                             </div>
                                                         ))
                                                     ) : (
-                                                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 bg-slate-50 px-4 py-2 rounded-xl border-2 border-dashed">
+                                                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground bg-muted px-4 py-2 rounded-xl border-2 border-dashed">
                                                             Нет оценок
                                                         </span>
                                                     )}
@@ -314,7 +314,7 @@ export default function StudentGradesPage() {
                                                 {item.average !== null ? (
                                                     <div className={`inline-flex items-center justify-center min-w-[60px] h-12 rounded-[20px] font-black text-lg shadow-md border-2 
                             ${item.average >= 4.5 ? 'bg-emerald-50 border-emerald-100 text-emerald-600 shadow-emerald-50' :
-                                                            item.average >= 3.5 ? 'bg-blue-50 border-blue-100 text-blue-600 shadow-blue-50' :
+                                                            item.average >= 3.5 ? 'bg-primary/5 border-blue-100 text-primary shadow-blue-50' :
                                                                 'bg-rose-50 border-rose-100 text-rose-600 shadow-rose-50'}`}>
                                                         {item.average.toFixed(2)}
                                                     </div>

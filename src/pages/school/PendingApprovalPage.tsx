@@ -18,7 +18,7 @@ export default function PendingApprovalPage() {
 
     const handleSignOut = async () => {
         await supabase.auth.signOut();
-        navigate("/");
+        navigate("/school/login");
     };
 
     return (
@@ -27,21 +27,21 @@ export default function PendingApprovalPage() {
                 <div className="w-20 h-20 bg-amber-500 rounded-[32px] shadow-2xl shadow-amber-500/30 flex items-center justify-center text-white mb-4 animate-pulse">
                     <Clock className="w-10 h-10" />
                 </div>
-                <h1 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Доступ ограничен</h1>
-                <p className="text-slate-400 font-bold text-[10px] uppercase tracking-[0.3em] mt-1">Ожидание подтверждения</p>
+                <h1 className="text-2xl font-black text-foreground uppercase tracking-tight">Доступ ограничен</h1>
+                <p className="text-muted-foreground font-bold text-[10px] uppercase tracking-[0.3em] mt-1">Ожидание подтверждения</p>
             </div>
 
-            <Card className="w-full max-w-lg rounded-[40px] border-2 border-slate-100 shadow-2xl overflow-hidden bg-white px-10 py-12">
+            <Card className="w-full max-w-lg rounded-[40px] border-2 border-border shadow-2xl overflow-hidden bg-background px-10 py-12">
                 <CardHeader className="p-0 mb-8">
                     <CardTitle className="text-2xl font-black">Ваш аккаунт на проверке</CardTitle>
-                    <CardDescription className="text-slate-500 font-bold mt-3">
+                    <CardDescription className="text-muted-foreground font-bold mt-3">
                         Администратор проверяет ваши данные. Как только доступ будет разрешен, вы сможете войти в дневник.
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="p-0 space-y-6">
-                    <div className="p-6 bg-slate-50 rounded-3xl border-2 border-slate-100 text-left">
-                        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Что делать?</p>
-                        <ul className="text-sm font-semibold text-slate-600 space-y-2 list-disc pl-4">
+                    <div className="p-6 bg-muted rounded-3xl border-2 border-border text-left">
+                        <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-2">Что делать?</p>
+                        <ul className="text-sm font-semibold text-muted-foreground space-y-2 list-disc pl-4">
                             <li>Сообщите классному руководителю о регистрации</li>
                             <li>Дождитесь уведомления (или просто обновите страницу)</li>
                             <li>Обычно проверка занимает не более 24 часов</li>
@@ -58,7 +58,7 @@ export default function PendingApprovalPage() {
                         <Button
                             variant="ghost"
                             onClick={handleSignOut}
-                            className="h-12 rounded-xl text-slate-400 font-bold hover:bg-slate-50 gap-2"
+                            className="h-12 rounded-xl text-muted-foreground font-bold hover:bg-muted gap-2"
                         >
                             <LogOut className="w-4 h-4" /> Выйти
                         </Button>
@@ -66,7 +66,7 @@ export default function PendingApprovalPage() {
                 </CardContent>
             </Card>
 
-            <div className="mt-10 flex items-center gap-3 text-slate-300 font-bold text-xs uppercase tracking-widest">
+            <div className="mt-10 flex items-center gap-3 text-muted-foreground font-bold text-xs uppercase tracking-widest">
                 <GraduationCap className="w-4 h-4" /> Личность ПЛЮС
             </div>
         </div>

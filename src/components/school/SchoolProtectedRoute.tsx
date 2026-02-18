@@ -12,7 +12,7 @@ type Props = {
 export default function SchoolProtectedRoute({
     children,
     allowedRoles = ['student', 'teacher', 'admin', 'parent', 'moderator'],
-    redirectTo = "/admin"
+    redirectTo = "/school/login"
 }: Props) {
     const location = useLocation();
     const { isLoading, userId } = useAuth();
@@ -28,7 +28,7 @@ export default function SchoolProtectedRoute({
 
     if (!userId) {
         const redirect = encodeURIComponent(`${location.pathname}${location.search}`);
-        return <Navigate to={`/admin?redirect=${redirect}`} replace />;
+        return <Navigate to={`/school/login?redirect=${redirect}`} replace />;
     }
 
     // If role is admin, allow everything

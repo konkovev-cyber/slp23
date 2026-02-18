@@ -110,11 +110,11 @@ export default function AdminUsersPage() {
     const getRoleBadge = (role: string) => {
         const colors: Record<string, string> = {
             admin: "bg-rose-500 text-white",
-            teacher: "bg-blue-500 text-white",
+            teacher: "bg-primary/50 text-white",
             student: "bg-emerald-500 text-white",
             parent: "bg-amber-500 text-white",
         };
-        return colors[role] || "bg-slate-500 text-white";
+        return colors[role] || "bg-muted0 text-white";
     };
 
     const getRoleLabel = (role: string) => {
@@ -134,7 +134,7 @@ export default function AdminUsersPage() {
             </Helmet>
 
             <div className="space-y-6">
-                <Card className="border-2 border-slate-100 rounded-[32px] shadow-lg">
+                <Card className="border-2 border-border rounded-[32px] shadow-lg">
                     <CardHeader className="pb-4">
                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                             <div>
@@ -178,18 +178,18 @@ export default function AdminUsersPage() {
                         ) : users.length === 0 ? (
                             <div className="py-20 text-center">
                                 <Clock className="w-16 h-16 mx-auto text-slate-200 mb-4" />
-                                <h3 className="text-lg font-black text-slate-900 mb-2">Пользователей нет</h3>
-                                <p className="text-slate-400 font-bold text-sm">
+                                <h3 className="text-lg font-black text-foreground mb-2">Пользователей нет</h3>
+                                <p className="text-muted-foreground font-bold text-sm">
                                     {filter === "pending" && "Нет пользователей, ожидающих одобрения"}
                                     {filter === "approved" && "Нет одобренных пользователей"}
                                     {filter === "all" && "В системе пока нет пользователей"}
                                 </p>
                             </div>
                         ) : (
-                            <div className="rounded-2xl border-2 border-slate-100 overflow-hidden">
+                            <div className="rounded-2xl border-2 border-border overflow-hidden">
                                 <Table>
                                     <TableHeader>
-                                        <TableRow className="bg-slate-50/50 hover:bg-slate-50/50">
+                                        <TableRow className="bg-muted/50 hover:bg-muted/50">
                                             <TableHead className="font-black uppercase text-[10px] tracking-widest">Пользователь</TableHead>
                                             <TableHead className="font-black uppercase text-[10px] tracking-widest">Роль</TableHead>
                                             <TableHead className="font-black uppercase text-[10px] tracking-widest">Статус</TableHead>
@@ -199,18 +199,18 @@ export default function AdminUsersPage() {
                                     </TableHeader>
                                     <TableBody>
                                         {users.map((user) => (
-                                            <TableRow key={user.auth_id} className="hover:bg-slate-50/50">
+                                            <TableRow key={user.auth_id} className="hover:bg-muted/50">
                                                 <TableCell>
                                                     <div className="flex items-center gap-3">
                                                         <Avatar className="w-10 h-10 rounded-2xl border-2 border-white shadow-sm">
                                                             <AvatarImage src={user.avatar_url || undefined} />
-                                                            <AvatarFallback className="rounded-2xl bg-slate-100 text-slate-400 font-black">
+                                                            <AvatarFallback className="rounded-2xl bg-muted text-muted-foreground font-black">
                                                                 {user.full_name?.[0] || "?"}
                                                             </AvatarFallback>
                                                         </Avatar>
                                                         <div>
-                                                            <p className="font-bold text-slate-900">{user.full_name || "Без имени"}</p>
-                                                            <p className="text-xs text-slate-400 font-mono">{user.auth_id.slice(0, 8)}...</p>
+                                                            <p className="font-bold text-foreground">{user.full_name || "Без имени"}</p>
+                                                            <p className="text-xs text-muted-foreground font-mono">{user.auth_id.slice(0, 8)}...</p>
                                                         </div>
                                                     </div>
                                                 </TableCell>
@@ -250,7 +250,7 @@ export default function AdminUsersPage() {
                                                     )}
                                                 </TableCell>
                                                 <TableCell>
-                                                    <p className="text-xs font-bold text-slate-400">
+                                                    <p className="text-xs font-bold text-muted-foreground">
                                                         {new Date(user.created_at).toLocaleDateString("ru-RU")}
                                                     </p>
                                                 </TableCell>
@@ -290,11 +290,11 @@ export default function AdminUsersPage() {
 
                 {/* Stats Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <Card className="border-2 border-slate-100 rounded-3xl p-6 bg-gradient-to-br from-emerald-50 to-white">
+                    <Card className="border-2 border-border rounded-3xl p-6 bg-gradient-to-br from-emerald-50 to-white">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Одобренные</p>
-                                <p className="text-3xl font-black text-slate-900">
+                                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-2">Одобренные</p>
+                                <p className="text-3xl font-black text-foreground">
                                     {users.filter(u => u.is_approved).length}
                                 </p>
                             </div>
@@ -304,11 +304,11 @@ export default function AdminUsersPage() {
                         </div>
                     </Card>
 
-                    <Card className="border-2 border-slate-100 rounded-3xl p-6 bg-gradient-to-br from-amber-50 to-white">
+                    <Card className="border-2 border-border rounded-3xl p-6 bg-gradient-to-br from-amber-50 to-white">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Ожидают</p>
-                                <p className="text-3xl font-black text-slate-900">
+                                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-2">Ожидают</p>
+                                <p className="text-3xl font-black text-foreground">
                                     {users.filter(u => !u.is_approved).length}
                                 </p>
                             </div>
@@ -318,15 +318,15 @@ export default function AdminUsersPage() {
                         </div>
                     </Card>
 
-                    <Card className="border-2 border-slate-100 rounded-3xl p-6 bg-gradient-to-br from-blue-50 to-white">
+                    <Card className="border-2 border-border rounded-3xl p-6 bg-gradient-to-br from-blue-50 to-white">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Всего</p>
-                                <p className="text-3xl font-black text-slate-900">
+                                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-2">Всего</p>
+                                <p className="text-3xl font-black text-foreground">
                                     {users.length}
                                 </p>
                             </div>
-                            <div className="w-14 h-14 rounded-2xl bg-blue-500/10 flex items-center justify-center">
+                            <div className="w-14 h-14 rounded-2xl bg-primary/50/10 flex items-center justify-center">
                                 <User className="w-7 h-7 text-blue-500" />
                             </div>
                         </div>

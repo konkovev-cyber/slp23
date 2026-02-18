@@ -1,6 +1,7 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { BookOpen, ClipboardList, Book, User, Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
+import ThemeToggle from "@/components/ThemeToggle";
 
 interface BottomNavItem {
   path: string;
@@ -53,7 +54,7 @@ export function BottomNavigation({ role = 'student' }: BottomNavigationProps) {
   const currentPath = location.pathname;
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 safe-area-pb z-50">
+    <nav className="fixed bottom-0 left-0 right-0 bg-background border-t border-border safe-area-pb z-50">
       <div className="flex items-center justify-around h-16 md:hidden">
         {navItems.map((item) => {
           const Icon = item.icon;
@@ -66,7 +67,7 @@ export function BottomNavigation({ role = 'student' }: BottomNavigationProps) {
               onClick={() => navigate(item.path)}
               className={cn(
                 "flex flex-col items-center justify-center w-full h-full gap-1 transition-colors",
-                isActive ? "text-primary" : "text-slate-400 hover:text-slate-600"
+                isActive ? "text-primary" : "text-muted-foreground hover:text-slate-600"
               )}
             >
               <Icon className={cn(
@@ -79,6 +80,9 @@ export function BottomNavigation({ role = 'student' }: BottomNavigationProps) {
             </button>
           );
         })}
+        <div className="flex items-center justify-center w-full h-full">
+          <ThemeToggle />
+        </div>
       </div>
     </nav>
   );

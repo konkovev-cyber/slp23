@@ -15,12 +15,11 @@ export default function AdminLogin() {
   const navigate = useNavigate();
   const location = useLocation();
   const { userId } = useAuth();
-  const { isLoading: isRoleLoading, isAdmin } = useIsAdmin(userId);
+  const { isAdmin } = useIsAdmin(userId);
 
   const redirectPath = useMemo(() => {
     const params = new URLSearchParams(location.search);
     const raw = params.get("redirect");
-    // Prevent open-redirects: allow only in-app absolute paths.
     if (!raw || !raw.startsWith("/")) return null;
     return raw;
   }, [location.search]);
@@ -28,14 +27,6 @@ export default function AdminLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showAccessCheck, setShowAccessCheck] = useState(false);
-
-  const accessStatus = useMemo(() => {
-    if (!showAccessCheck) return null;
-    if (!userId) return { kind: "signed_out" as const };
-    if (isRoleLoading) return { kind: "loading" as const };
-    return isAdmin ? { kind: "admin" as const } : { kind: "no_admin" as const };
-  }, [showAccessCheck, userId, isRoleLoading, isAdmin]);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,14 +34,10 @@ export default function AdminLogin() {
     try {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
-      // If we came here from a protected area (e.g. diary), continue there.
       if (redirectPath) {
         navigate(redirectPath, { replace: true });
         return;
       }
-
-      // Default admin login flow.
-      // Route is protected; if role check isn't ready yet, ProtectedRoute may send user back to /admin.
       navigate("/admin/dashboard", { replace: true });
     } catch (err: any) {
       toast({
@@ -84,7 +71,6 @@ export default function AdminLogin() {
                 if (redirectPath) return navigate(redirectPath, { replace: true });
                 return navigate(isAdmin ? "/admin/dashboard" : "/admin/access", { replace: true });
               }}
-              disabled={isRoleLoading}
             >
               {redirectPath ? "Продолжить" : "Перейти в дашборд"}
             </Button>
@@ -93,46 +79,15 @@ export default function AdminLogin() {
               type="button"
               variant="outline"
               className="w-full"
-              onClick={() => setShowAccessCheck(true)}
-            >
-              Проверить доступ
-            </Button>
-
-            {accessStatus?.kind === "loading" ? (
-              <div className="text-xs text-muted-foreground">Проверяем роль…</div>
-            ) : null}
-            {accessStatus?.kind === "admin" ? (
-              <div className="text-xs text-muted-foreground">
-                Доступ подтверждён: роль <span className="text-foreground font-medium">admin</span>.
-              </div>
-            ) : null}
-            {accessStatus?.kind === "no_admin" ? (
-              <div className="text-xs text-muted-foreground">
-                Роль admin не найдена. Откройте страницу{" "}
-                <a className="text-primary hover:underline" href="/admin/access">
-                  /admin/access
-                </a>
-                .
-              </div>
-            ) : null}
-
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full"
               onClick={async () => {
                 await supabase.auth.signOut();
-                navigate("/", { replace: true });
+                navigate("/school/login", { replace: true });
               }}
             >
               Выйти
             </Button>
-            <div className="text-xs text-muted-foreground">
-              Если нужно войти под другим аккаунтом — сначала выйдите.
-            </div>
           </div>
         ) : (
-
           <form onSubmit={onSubmit} className="mt-6 space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
@@ -166,18 +121,9 @@ export default function AdminLogin() {
               type="button"
               variant="outline"
               className="w-full"
-              onClick={() => navigate("/", { replace: true })}
+              onClick={() => navigate("/school/login", { replace: true })}
             >
               На сайт
-            </Button>
-
-            <Button
-              type="button"
-              variant="ghost"
-              className="w-full"
-              onClick={() => navigate("/admin/access")}
-            >
-              Проверить доступ / получить роль
             </Button>
 
             <div className="text-center pt-4 border-t">

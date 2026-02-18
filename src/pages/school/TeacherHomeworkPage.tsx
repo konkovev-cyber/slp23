@@ -133,19 +133,19 @@ export default function TeacherHomeworkPage() {
             </Helmet>
 
             <div className="space-y-10">
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-[24px] border border-slate-100 shadow-sm">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-background p-6 rounded-[24px] border border-border shadow-sm">
                     <div className="flex items-center gap-4">
                         <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary shadow-sm">
                             <BookOpen className="w-6 h-6" />
                         </div>
                         <div>
-                            <h2 className="text-xl font-black text-slate-900">Управление ДЗ</h2>
-                            <p className="text-sm font-medium text-slate-500">Назначайте задания для классов</p>
+                            <h2 className="text-xl font-black text-foreground">Управление ДЗ</h2>
+                            <p className="text-sm font-medium text-muted-foreground">Назначайте задания для классов</p>
                         </div>
                     </div>
                     <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
                         <DialogTrigger asChild>
-                            <Button className="h-12 rounded-xl gap-2 font-bold px-6 bg-slate-900 shadow-md hover:translate-y-[-1px] transition-all">
+                            <Button className="h-12 rounded-xl gap-2 font-bold px-6 bg-foreground shadow-md hover:translate-y-[-1px] transition-all">
                                 <Plus className="w-5 h-5" /> Новое задание
                             </Button>
                         </DialogTrigger>
@@ -155,7 +155,7 @@ export default function TeacherHomeworkPage() {
                             </DialogHeader>
                             <div className="space-y-6 py-6">
                                 <div className="space-y-2">
-                                    <Label className="font-black text-[10px] uppercase tracking-widest text-slate-400 pl-1">Класс и Предмет</Label>
+                                    <Label className="font-black text-[10px] uppercase tracking-widest text-muted-foreground pl-1">Класс и Предмет</Label>
                                     <Select value={formAssignmentId} onValueChange={setFormAssignmentId}>
                                         <SelectTrigger className="h-14 rounded-2xl border-2 font-bold"><SelectValue /></SelectTrigger>
                                         <SelectContent className="rounded-2xl">
@@ -168,15 +168,15 @@ export default function TeacherHomeworkPage() {
                                     </Select>
                                 </div>
                                 <div className="space-y-2">
-                                    <Label className="font-black text-[10px] uppercase tracking-widest text-slate-400 pl-1">Заголовок</Label>
+                                    <Label className="font-black text-[10px] uppercase tracking-widest text-muted-foreground pl-1">Заголовок</Label>
                                     <Input value={formTitle} onChange={e => setFormTitle(e.target.value)} placeholder="Напр.: Параграф 12, упр. 5" className="h-14 rounded-2xl border-2 font-bold" />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label className="font-black text-[10px] uppercase tracking-widest text-slate-400 pl-1">Описание / Текст задания</Label>
+                                    <Label className="font-black text-[10px] uppercase tracking-widest text-muted-foreground pl-1">Описание / Текст задания</Label>
                                     <Textarea value={formDesc} onChange={e => setFormDesc(e.target.value)} className="min-h-[120px] rounded-2xl border-2 font-bold p-5" placeholder="Подробности задания..." />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label className="font-black text-[10px] uppercase tracking-widest text-slate-400 pl-1">Срок сдачи (Due Date)</Label>
+                                    <Label className="font-black text-[10px] uppercase tracking-widest text-muted-foreground pl-1">Срок сдачи (Due Date)</Label>
                                     <Input type="date" value={formDueDate} onChange={e => setFormDueDate(e.target.value)} className="h-14 rounded-2xl border-2 font-bold" />
                                 </div>
                             </div>
@@ -193,30 +193,30 @@ export default function TeacherHomeworkPage() {
                     {loading ? (
                         <div className="col-span-full py-24 flex justify-center"><Loader2 className="animate-spin text-primary w-12 h-12" /></div>
                     ) : homeworkList.length === 0 ? (
-                        <Card className="col-span-full border-2 border-dashed border-slate-200 p-24 text-center rounded-[48px] bg-slate-50/50">
+                        <Card className="col-span-full border-2 border-dashed border-border p-24 text-center rounded-[48px] bg-muted/50">
                             <FileText className="w-16 h-16 text-slate-200 mx-auto mb-4" />
-                            <p className="text-slate-400 font-bold italic">Вы еще не добавили ни одного задания</p>
+                            <p className="text-muted-foreground font-bold italic">Вы еще не добавили ни одного задания</p>
                         </Card>
                     ) : (
                         homeworkList.map(hw => (
-                            <Card key={hw.id} className="group border border-slate-100 rounded-[24px] overflow-hidden shadow-sm bg-white hover:border-primary/20 hover:shadow-md transition-all duration-300 flex flex-col">
-                                <CardHeader className="p-5 border-b bg-slate-50/30">
+                            <Card key={hw.id} className="group border border-border rounded-[24px] overflow-hidden shadow-sm bg-background hover:border-primary/20 hover:shadow-md transition-all duration-300 flex flex-col">
+                                <CardHeader className="p-5 border-b bg-muted/30">
                                     <div className="flex items-center justify-between mb-3">
-                                        <Badge className="bg-white border border-slate-200 text-slate-500 font-bold h-8 px-3 rounded-lg flex items-center gap-1.5 text-xs shadow-none">
+                                        <Badge className="bg-background border border-border text-muted-foreground font-bold h-8 px-3 rounded-lg flex items-center gap-1.5 text-xs shadow-none">
                                             <Calendar className="w-3.5 h-3.5" /> До {new Date(hw.due_date).toLocaleDateString('ru-RU')}
                                         </Badge>
-                                        <Button variant="ghost" size="icon" onClick={() => handleDeleteHomework(hw.id)} className="h-8 w-8 text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all">
+                                        <Button variant="ghost" size="icon" onClick={() => handleDeleteHomework(hw.id)} className="h-8 w-8 text-muted-foreground hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all">
                                             <Trash2 className="w-4 h-4" />
                                         </Button>
                                     </div>
-                                    <CardTitle className="text-lg font-black text-slate-800 mb-1 group-hover:text-primary transition-colors">{hw.title}</CardTitle>
-                                    <CardDescription className="flex items-center gap-1.5 font-semibold text-slate-400 uppercase tracking-wider text-[9px]">
+                                    <CardTitle className="text-lg font-black text-foreground mb-1 group-hover:text-primary transition-colors">{hw.title}</CardTitle>
+                                    <CardDescription className="flex items-center gap-1.5 font-semibold text-muted-foreground uppercase tracking-wider text-[9px]">
                                         <GraduationCap className="w-3.5 h-3.5" /> {hw.assignment.school_classes.name} • {hw.assignment.subjects.name}
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent className="p-5 flex-1">
-                                    <div className="bg-slate-50 rounded-xl p-4 border border-slate-100 min-h-[80px] flex items-center">
-                                        <p className="text-slate-600 font-medium text-sm italic leading-relaxed">{hw.description}</p>
+                                    <div className="bg-muted rounded-xl p-4 border border-border min-h-[80px] flex items-center">
+                                        <p className="text-muted-foreground font-medium text-sm italic leading-relaxed">{hw.description}</p>
                                     </div>
                                 </CardContent>
                                 <div className="p-5 pt-0 flex justify-end">

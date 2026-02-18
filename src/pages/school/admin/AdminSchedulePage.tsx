@@ -136,11 +136,11 @@ export default function AdminSchedulePage() {
             </Helmet>
 
             <div className="space-y-6">
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-4 rounded-[24px] border border-slate-100 shadow-sm">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-background p-4 rounded-[24px] border border-border shadow-sm">
                     <div className="flex items-center gap-4 w-full md:w-auto">
                         <Users className="text-primary w-5 h-5" />
                         <Select value={selectedClassId} onValueChange={setSelectedClassId}>
-                            <SelectTrigger className="w-full md:w-56 h-10 rounded-xl border-slate-200 font-bold text-slate-800 bg-slate-50 shadow-sm text-sm">
+                            <SelectTrigger className="w-full md:w-56 h-10 rounded-xl border-border font-bold text-foreground bg-muted shadow-sm text-sm">
                                 <SelectValue placeholder="Выберите класс" />
                             </SelectTrigger>
                             <SelectContent className="rounded-2xl border-2 p-1">
@@ -155,7 +155,7 @@ export default function AdminSchedulePage() {
 
                     <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
                         <DialogTrigger asChild>
-                            <Button className="h-10 rounded-xl gap-2 font-bold px-5 bg-slate-900 shadow-md hover:translate-y-[-1px] transition-all text-sm">
+                            <Button className="h-10 rounded-xl gap-2 font-bold px-5 bg-foreground shadow-md hover:translate-y-[-1px] transition-all text-sm">
                                 <Plus className="w-4 h-4" /> Добавить урок
                             </Button>
                         </DialogTrigger>
@@ -168,7 +168,7 @@ export default function AdminSchedulePage() {
                             <div className="space-y-5 py-6">
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <Label className="font-black text-[10px] uppercase tracking-widest text-slate-400 pl-1">День недели</Label>
+                                        <Label className="font-black text-[10px] uppercase tracking-widest text-muted-foreground pl-1">День недели</Label>
                                         <Select value={formDay} onValueChange={setFormDay}>
                                             <SelectTrigger className="h-12 rounded-xl border-2 font-bold"><SelectValue /></SelectTrigger>
                                             <SelectContent className="rounded-xl border-2">
@@ -177,13 +177,13 @@ export default function AdminSchedulePage() {
                                         </Select>
                                     </div>
                                     <div className="space-y-2">
-                                        <Label className="font-black text-[10px] uppercase tracking-widest text-slate-400 pl-1">№ Урока</Label>
+                                        <Label className="font-black text-[10px] uppercase tracking-widest text-muted-foreground pl-1">№ Урока</Label>
                                         <Input type="number" value={formNum} onChange={(e) => setFormNum(e.target.value)} className="h-12 rounded-xl border-2 font-bold" />
                                     </div>
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label className="font-black text-[10px] uppercase tracking-widest text-slate-400 pl-1">Предмет</Label>
+                                    <Label className="font-black text-[10px] uppercase tracking-widest text-muted-foreground pl-1">Предмет</Label>
                                     <Select value={formSubjectId} onValueChange={setFormSubjectId}>
                                         <SelectTrigger className="h-12 rounded-xl border-2 font-bold"><SelectValue placeholder="Выберите предмет" /></SelectTrigger>
                                         <SelectContent className="rounded-xl border-2">
@@ -193,7 +193,7 @@ export default function AdminSchedulePage() {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label className="font-black text-[10px] uppercase tracking-widest text-slate-400 pl-1">Учитель</Label>
+                                    <Label className="font-black text-[10px] uppercase tracking-widest text-muted-foreground pl-1">Учитель</Label>
                                     <Select value={formTeacherId} onValueChange={setFormTeacherId}>
                                         <SelectTrigger className="h-12 rounded-xl border-2 font-bold"><SelectValue placeholder="Выберите учителя" /></SelectTrigger>
                                         <SelectContent className="rounded-xl border-2">
@@ -203,7 +203,7 @@ export default function AdminSchedulePage() {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label className="font-black text-[10px] uppercase tracking-widest text-slate-400 pl-1">Кабинет</Label>
+                                    <Label className="font-black text-[10px] uppercase tracking-widest text-muted-foreground pl-1">Кабинет</Label>
                                     <Input value={formRoom} onChange={(e) => setFormRoom(e.target.value)} placeholder="Номер кабинета..." className="h-12 rounded-xl border-2 font-bold" />
                                 </div>
                             </div>
@@ -221,11 +221,11 @@ export default function AdminSchedulePage() {
                     {DAYS.map((day) => {
                         const daySchedule = schedule.filter(s => s.day_of_week === day.id);
                         return (
-                            <Card key={day.id} className="border border-slate-100 rounded-[24px] overflow-hidden shadow-sm bg-white hover:border-primary/20 hover:shadow-md transition-all duration-300 flex flex-col group/card">
-                                <CardHeader className="bg-slate-50/30 p-4 border-b border-slate-100 flex-shrink-0">
-                                    <CardTitle className="text-base font-black uppercase tracking-wider text-slate-800 flex items-center justify-between">
+                            <Card key={day.id} className="border border-border rounded-[24px] overflow-hidden shadow-sm bg-background hover:border-primary/20 hover:shadow-md transition-all duration-300 flex flex-col group/card">
+                                <CardHeader className="bg-muted/30 p-4 border-b border-border flex-shrink-0">
+                                    <CardTitle className="text-base font-black uppercase tracking-wider text-foreground flex items-center justify-between">
                                         {day.name}
-                                        <Badge className="bg-slate-900 text-white font-bold h-6 w-6 rounded-lg flex items-center justify-center p-0 border-0 shadow-sm text-xs">
+                                        <Badge className="bg-foreground text-white font-bold h-6 w-6 rounded-lg flex items-center justify-center p-0 border-0 shadow-sm text-xs">
                                             {daySchedule.length}
                                         </Badge>
                                     </CardTitle>
@@ -234,25 +234,25 @@ export default function AdminSchedulePage() {
                                     {loading ? (
                                         <div className="py-12 flex flex-col items-center justify-center gap-3">
                                             <Loader2 className="animate-spin text-primary w-8 h-8" />
-                                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Загрузка...</span>
+                                            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Загрузка...</span>
                                         </div>
                                     ) : daySchedule.length === 0 ? (
                                         <div className="py-12 text-center flex flex-col items-center gap-3 group-hover/card:scale-105 transition-transform">
-                                            <div className="w-12 h-12 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-300">
+                                            <div className="w-12 h-12 rounded-xl bg-muted border border-border flex items-center justify-center text-muted-foreground">
                                                 <Calendar className="w-6 h-6" />
                                             </div>
-                                            <span className="text-slate-400 font-medium italic text-xs">Нет уроков</span>
+                                            <span className="text-muted-foreground font-medium italic text-xs">Нет уроков</span>
                                         </div>
                                     ) : (
                                         daySchedule.sort((a, b) => a.lesson_number - b.lesson_number).map((lesson) => (
-                                            <div key={lesson.id} className="p-3 rounded-[16px] bg-white border border-slate-100 hover:bg-slate-50 group transition-all duration-200 flex items-center gap-3 shadow-sm">
+                                            <div key={lesson.id} className="p-3 rounded-[16px] bg-background border border-border hover:bg-muted group transition-all duration-200 flex items-center gap-3 shadow-sm">
                                                 <div className="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center font-bold text-sm shadow-md">
                                                     {lesson.lesson_number}
                                                 </div>
                                                 <div className="flex-1 min-w-0">
-                                                    <div className="font-bold text-slate-800 text-sm truncate">{lesson.subjects.name}</div>
+                                                    <div className="font-bold text-foreground text-sm truncate">{lesson.subjects.name}</div>
                                                     <div className="flex flex-col">
-                                                        <span className="text-[10px] font-medium text-slate-400 flex items-center gap-1">
+                                                        <span className="text-[10px] font-medium text-muted-foreground flex items-center gap-1">
                                                             <GraduationCap className="w-3 h-3 text-primary/60" /> {lesson.teacher?.full_name}
                                                         </span>
                                                     </div>
@@ -261,7 +261,7 @@ export default function AdminSchedulePage() {
                                                     variant="ghost"
                                                     size="icon"
                                                     onClick={() => handleDeleteLesson(lesson.id)}
-                                                    className="h-8 w-8 rounded-lg text-slate-300 opacity-0 group-hover:opacity-100 hover:text-rose-500 hover:bg-rose-50 transition-all"
+                                                    className="h-8 w-8 rounded-lg text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-rose-500 hover:bg-rose-50 transition-all"
                                                 >
                                                     <Trash2 className="w-4 h-4" />
                                                 </Button>

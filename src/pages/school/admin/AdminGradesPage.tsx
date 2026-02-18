@@ -147,10 +147,10 @@ export default function AdminGradesPage() {
     const getGradeColor = (grade: string) => {
         const val = parseInt(grade);
         if (val === 5) return "bg-emerald-500 shadow-emerald-100";
-        if (val === 4) return "bg-blue-500 shadow-blue-100";
+        if (val === 4) return "bg-primary/50 shadow-primary/10";
         if (val === 3) return "bg-amber-500 shadow-amber-100";
         if (val === 2) return "bg-rose-500 shadow-rose-100";
-        return "bg-slate-400 shadow-slate-100";
+        return "bg-slate-400 shadow-muted/10";
     };
 
     const showDetails = (grade: any) => {
@@ -335,18 +335,18 @@ export default function AdminGradesPage() {
                 <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4">
                     <div className="flex flex-col md:flex-row gap-3 w-full xl:w-auto">
                         <div className="relative w-full md:w-80 group">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-primary transition-colors" />
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
                             <Input
                                 placeholder="Поиск..."
-                                className="pl-10 h-10 rounded-xl border border-slate-100 shadow-sm font-medium text-sm"
+                                className="pl-10 h-10 rounded-xl border border-border shadow-sm font-medium text-sm"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
                         </div>
                         <div className="w-full md:w-52">
                             <Select value={selectedClass} onValueChange={setSelectedClass}>
-                                <SelectTrigger className="h-10 rounded-xl border border-slate-100 bg-white font-bold text-sm">
-                                    <Filter className="w-3.5 h-3.5 mr-2 text-slate-400" />
+                                <SelectTrigger className="h-10 rounded-xl border border-border bg-background font-bold text-sm">
+                                    <Filter className="w-3.5 h-3.5 mr-2 text-muted-foreground" />
                                     <SelectValue placeholder="Все классы" />
                                 </SelectTrigger>
                                 <SelectContent className="rounded-xl border shadow-lg">
@@ -364,34 +364,34 @@ export default function AdminGradesPage() {
                     <div className="flex gap-3">
                         <Button
                             variant="outline"
-                            className="h-10 px-6 rounded-xl border font-bold hover:bg-slate-50 border-dashed border-slate-300 text-slate-500 text-sm"
+                            className="h-10 px-6 rounded-xl border font-bold hover:bg-muted border-dashed border-border text-muted-foreground text-sm"
                             onClick={handleSeedData}
                         >
                             🛠️ Заполнить
                         </Button>
-                        <Button className="h-10 rounded-xl gap-2 font-bold px-6 bg-slate-900 shadow-md hover:translate-y-[-1px] transition-all text-sm">
+                        <Button className="h-10 rounded-xl gap-2 font-bold px-6 bg-foreground shadow-md hover:translate-y-[-1px] transition-all text-sm">
                             <Download className="w-4 h-4" /> Экспорт
                         </Button>
                     </div>
                 </div>
 
-                <Card className="border border-slate-100 rounded-[24px] overflow-hidden shadow-sm bg-white hover:shadow-md transition-all">
-                    <CardHeader className="p-6 border-b bg-slate-50/30">
+                <Card className="border border-border rounded-[24px] overflow-hidden shadow-sm bg-background hover:shadow-md transition-all">
+                    <CardHeader className="p-6 border-b bg-muted/30">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-primary shadow-sm">
+                                <div className="w-12 h-12 rounded-xl bg-background border border-border flex items-center justify-center text-primary shadow-sm">
                                     <Award className="w-6 h-6" />
                                 </div>
                                 <div>
-                                    <CardTitle className="text-xl font-black text-slate-900 tracking-tight">Ведомость оценок</CardTitle>
+                                    <CardTitle className="text-xl font-black text-foreground tracking-tight">Ведомость оценок</CardTitle>
                                     <div className="flex items-center gap-2 mt-0.5">
                                         <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                                        <p className="font-medium text-slate-500 text-xs italic">Академические данные школы</p>
+                                        <p className="font-medium text-muted-foreground text-xs italic">Академические данные школы</p>
                                     </div>
                                 </div>
                             </div>
                             <div className="hidden md:flex gap-2">
-                                <Badge className="bg-slate-900 text-white rounded-lg px-3 py-1 font-bold uppercase text-[9px] tracking-widest shadow-none">
+                                <Badge className="bg-foreground text-white rounded-lg px-3 py-1 font-bold uppercase text-[9px] tracking-widest shadow-none">
                                     {filteredGrades.length} записей
                                 </Badge>
                             </div>
@@ -399,26 +399,26 @@ export default function AdminGradesPage() {
                     </CardHeader>
                     <CardContent className="p-0">
                         {loading ? (
-                            <div className="py-32 flex flex-col items-center justify-center gap-6 text-slate-300">
+                            <div className="py-32 flex flex-col items-center justify-center gap-6 text-muted-foreground">
                                 <Loader2 className="animate-spin text-primary w-16 h-16" />
                                 <span className="font-black uppercase tracking-[0.3em] text-[11px]">Генерация отчета...</span>
                             </div>
                         ) : filteredGrades.length === 0 ? (
                             <div className="py-32 flex flex-col items-center justify-center gap-4">
                                 <Search className="w-20 h-20 text-slate-100" />
-                                <p className="text-xl font-black text-slate-300 uppercase tracking-widest">Ничего не найдено</p>
+                                <p className="text-xl font-black text-muted-foreground uppercase tracking-widest">Ничего не найдено</p>
                             </div>
                         ) : (
                             <div className="overflow-x-auto">
                                 <Table>
                                     <TableHeader>
-                                        <TableRow className="bg-slate-50/30">
-                                            <TableHead className="py-4 px-6 font-bold text-[10px] uppercase tracking-wider text-slate-400">Ученик</TableHead>
-                                            <TableHead className="py-4 px-6 font-bold text-[10px] uppercase tracking-wider text-slate-400">Класс</TableHead>
-                                            <TableHead className="py-4 px-6 font-bold text-[10px] uppercase tracking-wider text-slate-400">Предмет</TableHead>
-                                            <TableHead className="py-4 px-6 font-bold text-[10px] uppercase tracking-wider text-slate-400">Дата</TableHead>
-                                            <TableHead className="py-4 px-6 font-bold text-[10px] uppercase tracking-wider text-slate-400 text-center">Оценка</TableHead>
-                                            <TableHead className="py-4 px-6 text-right font-bold text-[10px] uppercase tracking-wider text-slate-400">Инфо</TableHead>
+                                        <TableRow className="bg-muted/30">
+                                            <TableHead className="py-4 px-6 font-bold text-[10px] uppercase tracking-wider text-muted-foreground">Ученик</TableHead>
+                                            <TableHead className="py-4 px-6 font-bold text-[10px] uppercase tracking-wider text-muted-foreground">Класс</TableHead>
+                                            <TableHead className="py-4 px-6 font-bold text-[10px] uppercase tracking-wider text-muted-foreground">Предмет</TableHead>
+                                            <TableHead className="py-4 px-6 font-bold text-[10px] uppercase tracking-wider text-muted-foreground">Дата</TableHead>
+                                            <TableHead className="py-4 px-6 font-bold text-[10px] uppercase tracking-wider text-muted-foreground text-center">Оценка</TableHead>
+                                            <TableHead className="py-4 px-6 text-right font-bold text-[10px] uppercase tracking-wider text-muted-foreground">Инфо</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -427,18 +427,18 @@ export default function AdminGradesPage() {
                                             const className = studentInfo?.school_classes?.name;
 
                                             return (
-                                                <TableRow key={grade.id} className="group hover:bg-slate-50/50 border-b border-slate-50 last:border-0 transition-all">
+                                                <TableRow key={grade.id} className="group hover:bg-muted/50 border-b border-slate-50 last:border-0 transition-all">
                                                     <TableCell className="py-4 px-6">
                                                         <div className="flex items-center gap-3">
                                                             <Avatar className="w-10 h-10 border-2 border-white shadow-sm rounded-xl">
                                                                 <AvatarImage src={grade.student?.avatar_url || ""} />
-                                                                <AvatarFallback className="font-bold bg-slate-50 text-slate-400 text-xs">
+                                                                <AvatarFallback className="font-bold bg-muted text-muted-foreground text-xs">
                                                                     {grade.student?.full_name?.[0]}
                                                                 </AvatarFallback>
                                                             </Avatar>
                                                             <Link
                                                                 to={`/school/profile?id=${grade.student?.auth_id}`}
-                                                                className="font-bold text-slate-800 text-sm hover:text-primary transition-colors cursor-pointer"
+                                                                className="font-bold text-foreground text-sm hover:text-primary transition-colors cursor-pointer"
                                                             >
                                                                 {grade.student?.full_name || "Ученик"}
                                                             </Link>
@@ -450,19 +450,19 @@ export default function AdminGradesPage() {
                                                                 {className}
                                                             </Badge>
                                                         ) : (
-                                                            <span className="text-slate-300">—</span>
+                                                            <span className="text-muted-foreground">—</span>
                                                         )}
                                                     </TableCell>
                                                     <TableCell className="py-4 px-6">
                                                         <div className="flex flex-col">
-                                                            <span className="font-bold text-slate-700 text-sm">{grade.assignment?.subject?.name || "Предмет"}</span>
-                                                            <span className="text-[9px] font-medium text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                                                            <span className="font-bold text-foreground text-sm">{grade.assignment?.subject?.name || "Предмет"}</span>
+                                                            <span className="text-[9px] font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-1">
                                                                 {grade.assignment?.teacher?.full_name || "Учитель"}
                                                             </span>
                                                         </div>
                                                     </TableCell>
                                                     <TableCell className="py-4 px-6">
-                                                        <span className="text-[12px] font-medium text-slate-500 tabular-nums">
+                                                        <span className="text-[12px] font-medium text-muted-foreground tabular-nums">
                                                             {new Date(grade.date).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' })}
                                                         </span>
                                                     </TableCell>
@@ -476,7 +476,7 @@ export default function AdminGradesPage() {
                                                             <Button
                                                                 variant="ghost"
                                                                 size="icon"
-                                                                className="h-8 w-8 rounded-lg hover:bg-slate-100 text-slate-300 hover:text-slate-900"
+                                                                className="h-8 w-8 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground"
                                                                 onClick={() => showDetails(grade)}
                                                             >
                                                                 <Eye className="w-4 h-4" />
@@ -496,29 +496,29 @@ export default function AdminGradesPage() {
 
             {/* Detailed Grade Dialog */}
             <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
-                <DialogContent className="rounded-[24px] border p-0 max-w-lg bg-white overflow-hidden shadow-2xl">
-                    <div className="h-24 bg-slate-50 flex items-center px-8 relative overflow-hidden">
+                <DialogContent className="rounded-[24px] border p-0 max-w-lg bg-background overflow-hidden shadow-2xl">
+                    <div className="h-24 bg-muted flex items-center px-8 relative overflow-hidden">
                         <div className="absolute top-0 right-0 p-4 text-6xl font-black text-slate-100/50 select-none">
                             {selectedGrade?.grade}
                         </div>
-                        <CardTitle className="text-xl font-black tracking-tight text-slate-800">Детали оценки</CardTitle>
+                        <CardTitle className="text-xl font-black tracking-tight text-foreground">Детали оценки</CardTitle>
                     </div>
 
                     <div className="p-8 space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {/* Student Info */}
                             <div className="space-y-3">
-                                <Label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Ученик</Label>
-                                <div className="flex items-center gap-3 bg-slate-50/50 p-3 rounded-2xl border border-slate-100">
+                                <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Ученик</Label>
+                                <div className="flex items-center gap-3 bg-muted/50 p-3 rounded-2xl border border-border">
                                     <Avatar className="w-10 h-10 border-2 border-white shadow-sm rounded-xl">
                                         <AvatarImage src={selectedGrade?.student?.avatar_url || ""} />
-                                        <AvatarFallback className="font-bold bg-white text-slate-300 text-xs">
+                                        <AvatarFallback className="font-bold bg-background text-muted-foreground text-xs">
                                             {selectedGrade?.student?.full_name?.[0]}
                                         </AvatarFallback>
                                     </Avatar>
                                     <div className="flex flex-col">
-                                        <span className="font-bold text-sm text-slate-800 leading-tight">{selectedGrade?.student?.full_name}</span>
-                                        <span className="text-[10px] font-medium text-slate-500">
+                                        <span className="font-bold text-sm text-foreground leading-tight">{selectedGrade?.student?.full_name}</span>
+                                        <span className="text-[10px] font-medium text-muted-foreground">
                                             {selectedGrade?.student?.info?.[0]?.school_classes?.name || "Класс"}
                                         </span>
                                     </div>
@@ -527,10 +527,10 @@ export default function AdminGradesPage() {
 
                             {/* Info */}
                             <div className="space-y-3">
-                                <Label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Предмет</Label>
-                                <div className="bg-slate-50/50 p-4 rounded-2xl border border-slate-100 h-full flex flex-col justify-center">
-                                    <h4 className="text-base font-black text-slate-800">{selectedGrade?.assignment?.subject?.name}</h4>
-                                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">
+                                <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Предмет</Label>
+                                <div className="bg-muted/50 p-4 rounded-2xl border border-border h-full flex flex-col justify-center">
+                                    <h4 className="text-base font-black text-foreground">{selectedGrade?.assignment?.subject?.name}</h4>
+                                    <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider mt-0.5">
                                         {selectedGrade?.assignment?.teacher?.full_name}
                                     </p>
                                 </div>
@@ -539,15 +539,15 @@ export default function AdminGradesPage() {
 
                         <div className="space-y-4">
                             <div className="grid grid-cols-2 gap-4">
-                                <div className="bg-slate-50/50 p-4 rounded-2xl border border-slate-100 flex items-center justify-between">
-                                    <span className="font-bold text-[10px] uppercase text-slate-400 tracking-wider">Оценка</span>
+                                <div className="bg-muted/50 p-4 rounded-2xl border border-border flex items-center justify-between">
+                                    <span className="font-bold text-[10px] uppercase text-muted-foreground tracking-wider">Оценка</span>
                                     <div className={`w-9 h-9 rounded-lg flex items-center justify-center text-white font-black text-lg shadow-md ${getGradeColor(selectedGrade?.grade)}`}>
                                         {selectedGrade?.grade}
                                     </div>
                                 </div>
-                                <div className="bg-slate-50/50 p-4 rounded-2xl border border-slate-100 flex items-center justify-between">
-                                    <span className="font-bold text-[10px] uppercase text-slate-400 tracking-wider">Дата</span>
-                                    <span className="font-bold text-slate-700 text-xs tabular-nums">
+                                <div className="bg-muted/50 p-4 rounded-2xl border border-border flex items-center justify-between">
+                                    <span className="font-bold text-[10px] uppercase text-muted-foreground tracking-wider">Дата</span>
+                                    <span className="font-bold text-foreground text-xs tabular-nums">
                                         {selectedGrade?.date && new Date(selectedGrade.date).toLocaleDateString('ru-RU')}
                                     </span>
                                 </div>
@@ -555,20 +555,20 @@ export default function AdminGradesPage() {
 
                             <div className="bg-primary/5 p-4 rounded-2xl border border-primary/10">
                                 <Label className="text-[10px] font-bold uppercase text-primary/60 tracking-wider mb-2 block">Комментарий</Label>
-                                <p className="text-sm font-medium text-slate-700 italic">
+                                <p className="text-sm font-medium text-foreground italic">
                                     {selectedGrade?.comment ? `«${selectedGrade.comment}»` : "Комментарий не оставлен"}
                                 </p>
                             </div>
                         </div>
                     </div>
 
-                    <div className="bg-slate-50 p-6 border-t border-slate-100 flex gap-3">
-                        <Button variant="ghost" className="flex-1 h-10 rounded-xl font-bold text-slate-400 uppercase tracking-wider text-[10px]" onClick={() => setIsDetailsOpen(false)}>
+                    <div className="bg-muted p-6 border-t border-border flex gap-3">
+                        <Button variant="ghost" className="flex-1 h-10 rounded-xl font-bold text-muted-foreground uppercase tracking-wider text-[10px]" onClick={() => setIsDetailsOpen(false)}>
                             Закрыть
                         </Button>
                         <Button
                             asChild
-                            className="flex-1 h-10 rounded-xl bg-slate-900 text-white font-bold uppercase tracking-wider text-[10px] gap-2 shadow-md hover:bg-slate-800"
+                            className="flex-1 h-10 rounded-xl bg-foreground text-white font-bold uppercase tracking-wider text-[10px] gap-2 shadow-md hover:bg-slate-800"
                         >
                             <Link to={`/school/profile?id=${selectedGrade?.student?.auth_id}`}>
                                 <User className="w-3.5 h-3.5" /> Профиль

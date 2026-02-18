@@ -75,14 +75,14 @@ export default function ParentChildrenPage() {
             </Helmet>
 
             <div className="max-w-4xl mx-auto space-y-10 pb-20">
-                <div className="bg-white p-8 rounded-[40px] border-2 border-slate-100 shadow-2xl shadow-slate-100/50 flex flex-col md:flex-row items-center justify-between gap-6">
+                <div className="bg-background p-8 rounded-[40px] border-2 border-border shadow-2xl shadow-muted/10/50 flex flex-col md:flex-row items-center justify-between gap-6">
                     <div className="flex items-center gap-6">
                         <div className="w-16 h-16 rounded-3xl bg-primary/10 flex items-center justify-center text-primary">
                             <Heart className="w-8 h-8" />
                         </div>
                         <div>
-                            <h2 className="text-3xl font-black text-slate-900">Семья</h2>
-                            <p className="font-bold text-slate-400">Успеваемость и посещаемость ваших детей</p>
+                            <h2 className="text-3xl font-black text-foreground">Семья</h2>
+                            <p className="font-bold text-muted-foreground">Успеваемость и посещаемость ваших детей</p>
                         </div>
                     </div>
                 </div>
@@ -90,30 +90,30 @@ export default function ParentChildrenPage() {
                 {loading ? (
                     <div className="py-24 flex flex-col items-center justify-center gap-4">
                         <Loader2 className="animate-spin text-primary w-12 h-12" />
-                        <span className="font-black uppercase tracking-[0.2em] text-[10px] text-slate-300">Загрузка профилей...</span>
+                        <span className="font-black uppercase tracking-[0.2em] text-[10px] text-muted-foreground">Загрузка профилей...</span>
                     </div>
                 ) : children.length === 0 ? (
-                    <Card className="border-4 border-dashed border-slate-100 p-24 text-center rounded-[48px] bg-slate-50/50">
+                    <Card className="border-4 border-dashed border-border p-24 text-center rounded-[48px] bg-muted/50">
                         <Users className="w-20 h-20 text-slate-100 mx-auto mb-6" />
-                        <h3 className="text-xl font-black text-slate-400 mb-2 uppercase tracking-widest">Нет привязок</h3>
-                        <p className="text-slate-400 font-bold italic">Обратитесь к администратору для привязки вашего ребенка к аккаунту</p>
+                        <h3 className="text-xl font-black text-muted-foreground mb-2 uppercase tracking-widest">Нет привязок</h3>
+                        <p className="text-muted-foreground font-bold italic">Обратитесь к администратору для привязки вашего ребенка к аккаунту</p>
                     </Card>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         {children.map((child) => (
-                            <Card key={child.auth_id} className="group overflow-hidden border-2 border-slate-100 rounded-[40px] bg-white hover:border-primary/20 hover:shadow-2xl transition-all duration-500">
+                            <Card key={child.auth_id} className="group overflow-hidden border-2 border-border rounded-[40px] bg-background hover:border-primary/20 hover:shadow-2xl transition-all duration-500">
                                 <CardContent className="p-10 flex flex-col items-center text-center">
                                     <Avatar className="w-24 h-24 border-4 border-white shadow-xl rounded-[32px] mb-6 group-hover:scale-110 transition-transform duration-500">
                                         <AvatarImage src={child.avatar_url || ""} />
-                                        <AvatarFallback className="text-2xl font-black bg-slate-50 text-slate-300">
+                                        <AvatarFallback className="text-2xl font-black bg-muted text-muted-foreground">
                                             {child.full_name[0]}
                                         </AvatarFallback>
                                     </Avatar>
 
-                                    <h3 className="text-2xl font-black text-slate-900 mb-2">{child.full_name}</h3>
+                                    <h3 className="text-2xl font-black text-foreground mb-2">{child.full_name}</h3>
                                     <div className="flex items-center gap-2 mb-8">
                                         <GraduationCap className="w-4 h-4 text-primary/60" />
-                                        <span className="font-bold text-slate-400 uppercase tracking-widest text-xs">
+                                        <span className="font-bold text-muted-foreground uppercase tracking-widest text-xs">
                                             {child.class_name ? `КЛАСС ${child.class_name}` : 'Класс не назначен'}
                                         </span>
                                     </div>
@@ -121,22 +121,22 @@ export default function ParentChildrenPage() {
                                     <div className="grid grid-cols-2 gap-4 w-full">
                                         <Button
                                             variant="outline"
-                                            className="h-14 rounded-2xl font-black text-[10px] uppercase tracking-widest border-2 border-slate-100 hover:bg-slate-50 gap-2"
+                                            className="h-14 rounded-2xl font-black text-[10px] uppercase tracking-widest border-2 border-border hover:bg-muted gap-2"
                                             onClick={() => navigate(`/school/grades?studentId=${child.auth_id}`)}
                                         >
                                             <Award className="w-4 h-4" /> Оценки
                                         </Button>
                                         <Button
-                                            className="h-14 rounded-2xl font-black text-[10px] uppercase tracking-widest bg-slate-900 text-white shadow-lg gap-2"
+                                            className="h-14 rounded-2xl font-black text-[10px] uppercase tracking-widest bg-foreground text-white shadow-lg gap-2"
                                             onClick={() => navigate(`/school/diary?studentId=${child.auth_id}`)}
                                         >
                                             <BookOpen className="w-4 h-4" /> Дневник
                                         </Button>
                                     </div>
                                 </CardContent>
-                                <div className="bg-slate-50/50 py-4 px-10 border-t border-slate-50 flex items-center justify-between">
-                                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-300">Активность сегодня</span>
-                                    <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-primary transition-colors" />
+                                <div className="bg-muted/50 py-4 px-10 border-t border-slate-50 flex items-center justify-between">
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Активность сегодня</span>
+                                    <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
                                 </div>
                             </Card>
                         ))}

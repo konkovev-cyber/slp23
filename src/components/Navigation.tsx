@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Menu, X, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -53,8 +53,7 @@ const Navigation = () => {
   const diaryLabel = isLoading ? "Загружаем…" : userId ? "Открыть дневник" : "Войти в дневник";
 
   const handleDiaryClick = () => {
-    // School portal is protected; if user isn't signed in, send them to login.
-    navigate(userId ? "/school/diary" : "/admin?redirect=%2Fschool%2Fdiary");
+    navigate(userId ? "/school/diary" : "/school/login");
     setIsOpen(false);
   };
 

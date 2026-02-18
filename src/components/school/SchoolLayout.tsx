@@ -8,6 +8,7 @@ import { BottomNavigation } from "@/components/school/BottomNavigation";
 import { LogOut, GraduationCap, User } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useRole } from "@/hooks/use-role";
+import ThemeToggle from "@/components/ThemeToggle";
 
 type Props = {
     title?: string;
@@ -26,10 +27,10 @@ export default function SchoolLayout({ title, children }: Props) {
 
     return (
         <SidebarProvider>
-            <div className="min-h-screen flex w-full bg-[#FAFBFF]">
+            <div className="min-h-screen flex w-full bg-background">
                 <SchoolSidebar />
                 <SidebarInset className="bg-transparent">
-                    <header className="sticky top-0 z-40 border-b border-border/40 bg-white/80 backdrop-blur-md">
+                    <header className="sticky top-0 z-40 border-b border-border/40 bg-background/80 backdrop-blur-md">
                         <div className="flex h-16 items-center justify-between px-4 md:px-6">
                             <div className="flex items-center gap-3 md:gap-4">
                                 <SidebarTrigger className="hover:bg-primary/5 transition-colors md:flex hidden" />
@@ -44,6 +45,7 @@ export default function SchoolLayout({ title, children }: Props) {
                             </div>
 
                             <div className="flex items-center gap-2 md:gap-3">
+                                <ThemeToggle />
                                 <Button asChild variant="ghost" size="icon" className="rounded-full h-10 w-10 text-slate-500 hover:text-primary hover:bg-primary/5 border border-transparent hover:border-primary/10 transition-all md:flex hidden">
                                     <Link to="/school/profile">
                                         <User className="h-5 w-5" />

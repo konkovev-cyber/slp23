@@ -1,33 +1,64 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="ru">
 
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no" />
-  <title>Р›РёС‡РЅРѕСЃС‚СЊ РџР›Р®РЎ вЂ” Р§Р°СЃС‚РЅР°СЏ С€РєРѕР»Р° РІ Р“РѕСЂСЏС‡РµРј РљР»СЋС‡Рµ</title>
+  <title>Личность ПЛЮС — Частная школа в Горячем Ключе</title>
   <meta name="description"
-    content="Р§Р°СЃС‚РЅР°СЏ С€РєРѕР»Р° В«Р›РёС‡РЅРѕСЃС‚СЊ РџР›Р®РЎВ» РІ Р“РѕСЂСЏС‡РµРј РљР»СЋС‡Рµ. РЈРіР»СѓР±Р»РµРЅРЅРѕРµ РѕР±СѓС‡РµРЅРёРµ, РјР°Р»С‹Рµ РєР»Р°СЃСЃС‹, РІСЃРµСЃС‚РѕСЂРѕРЅРЅРµРµ СЂР°Р·РІРёС‚РёРµ СЂРµР±РµРЅРєР° Рё РїРѕРґРіРѕС‚РѕРІРєР° Рє Р¶РёР·РЅРё." />
-  <meta name="author" content="Р›РёС‡РЅРѕСЃС‚СЊ РџР›Р®РЎ" />
+    content="Частная школа «Личность ПЛЮС» в Горячем Ключе. Углубленное обучение, малые классы, всестороннее развитие ребенка и подготовка к жизни." />
+  <meta name="author" content="Личность ПЛЮС" />
   <link rel="icon" type="image/x-icon" href="/favicon.ico" />
   <link rel="manifest" href="/manifest.json" />
   <link rel="apple-touch-icon" href="/icon-192.png" />
-  <meta name="keywords" content="С‡Р°СЃС‚РЅР°СЏ С€РєРѕР»Р° РіРѕСЂСЏС‡РёР№ РєР»СЋС‡, Р»РёС†РµР№, РіРёРјРЅР°Р·РёСЏ, РѕР±СЂР°Р·РѕРІР°РЅРёРµ РґРµС‚РµР№, Р»РёС‡РЅРѕСЃС‚СЊ РїР»СЋСЃ" />
+  <meta name="keywords" content="частная школа горячий ключ, лицей, гимназия, образование детей, личность плюс" />
 
-  <!-- APK: redirekt --><script>if(window.location.pathname==='/'){window.location.href='/school/schedule';}</script><!-- PWA -->
+  <!-- Инициализация темы -->
+  <script>
+    (function() {
+      const theme = localStorage.getItem('theme');
+      if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    })();
+  </script>
+
+  <!-- APK: redirekt --><!-- <script>if(window.location.pathname==='/'){window.location.href='/school/schedule';}</script> --><!-- PWA -->
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-  <meta name="apple-mobile-web-app-title" content="Р›РёС‡РЅРѕСЃС‚СЊ РџР›Р®РЎ" />
-  <meta name="application-name" content="Р›РёС‡РЅРѕСЃС‚СЊ РџР›Р®РЎ" />
+  <meta name="apple-mobile-web-app-title" content="Личность ПЛЮС" />
+  <meta name="application-name" content="Личность ПЛЮС" />
   <meta name="theme-color" content="#3b82f6" />
   <meta name="msapplication-TileColor" content="#3b82f6" />
   <meta name="msapplication-tap-highlight" content="no" />
   
-  <!-- Force redirect to login for app -->
+  <!-- APK: всегда открываем school/login или school/schedule -->
   <script>
-    if (window.location.pathname === '/' && window.matchMedia('(display-mode: standalone)').matches) {
-      window.location.href = '/school/login';
-    }
+    (function() {
+      // Проверяем, запущено ли как standalone приложение (APK/PWA)
+      var isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
+                         window.navigator.standalone === true;
+      
+      if (isStandalone) {
+        // Для APK: всегда проверяем авторизацию и открываем нужную страницу
+        try {
+          var session = localStorage.getItem('sb-qwuicyhadpesklhkjxpn-auth-token');
+          if (session) {
+            // Авторизован - открываем расписание
+            window.location.href = '/school/schedule';
+          } else {
+            // Не авторизован - открываем вход
+            window.location.href = '/school/login';
+          }
+        } catch(e) {
+          window.location.href = '/school/login';
+        }
+      }
+      // В обычном браузере (не standalone) - показываем главную страницу лендинга
+    })();
   </script>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -36,16 +67,16 @@
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap"
     rel="stylesheet">
 
-  <meta property="og:title" content="Р›РёС‡РЅРѕСЃС‚СЊ РџР›Р®РЎ вЂ” РџСЂРѕСЃС‚СЂР°РЅСЃС‚РІРѕ РґР»СЏ СЂРѕСЃС‚Р° Р»РёС‡РЅРѕСЃС‚Рё" />
+  <meta property="og:title" content="Личность ПЛЮС — Пространство для роста личности" />
   <meta property="og:description"
-    content="Р§Р°СЃС‚РЅР°СЏ С€РєРѕР»Р° РІ Р“РѕСЂСЏС‡РµРј РљР»СЋС‡Рµ СЃ РёРЅРґРёРІРёРґСѓР°Р»СЊРЅС‹Рј РїРѕРґС…РѕРґРѕРј Рё СѓРіР»СѓР±Р»РµРЅРЅС‹Рј РѕР±СѓС‡РµРЅРёРµРј." />
+    content="Частная школа в Горячем Ключе с индивидуальным подходом и углубленным обучением." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://slp23.ru/" />
   <meta property="og:image" content="https://slp23.ru/og-image.png" />
 
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Р›РёС‡РЅРѕСЃС‚СЊ РџР›Р®РЎ вЂ” Р§Р°СЃС‚РЅР°СЏ С€РєРѕР»Р°" />
-  <meta name="twitter:description" content="Р§Р°СЃС‚РЅР°СЏ С€РєРѕР»Р° РІ Р“РѕСЂСЏС‡РµРј РљР»СЋС‡Рµ." />
+  <meta name="twitter:title" content="Личность ПЛЮС — Частная школа" />
+  <meta name="twitter:description" content="Частная школа в Горячем Ключе." />
   <meta name="twitter:image" content="https://slp23.ru/og-image.png" />
 
   <!-- Yandex.Metrika counter -->

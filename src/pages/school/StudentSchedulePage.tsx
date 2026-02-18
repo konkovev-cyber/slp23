@@ -133,7 +133,7 @@ export default function StudentSchedulePage() {
             <SchoolLayout title="Расписание">
                 <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-4">
                     <Loader2 className="w-10 h-10 animate-spin text-primary" />
-                    <p className="text-slate-500 font-medium">Загружаем расписание занятий...</p>
+                    <p className="text-muted-foreground font-medium">Загружаем расписание занятий...</p>
                 </div>
             </SchoolLayout>
         );
@@ -141,11 +141,11 @@ export default function StudentSchedulePage() {
 
     if (!className) return (
         <SchoolLayout title="Расписание">
-            <div className="p-20 text-center space-y-6 bg-white rounded-[32px] border-2 border-slate-100 shadow-sm">
-                <div className="w-20 h-20 bg-slate-50 rounded-[32px] flex items-center justify-center mx-auto text-slate-300 border-2 border-slate-200 border-dashed">
+            <div className="p-20 text-center space-y-6 bg-background rounded-[32px] border-2 border-border shadow-sm">
+                <div className="w-20 h-20 bg-muted rounded-[32px] flex items-center justify-center mx-auto text-muted-foreground border-2 border-border border-dashed">
                     <Info className="w-10 h-10" />
                 </div>
-                <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">Вы пока не прикреплены к классу</p>
+                <p className="text-muted-foreground font-bold uppercase tracking-widest text-xs">Вы пока не прикреплены к классу</p>
             </div>
         </SchoolLayout>
     );
@@ -156,22 +156,22 @@ export default function StudentSchedulePage() {
                 <title>Расписание | {className}</title>
             </Helmet>
 
-            <Card className="shadow-2xl border-2 border-slate-100 overflow-hidden rounded-[32px] bg-white mb-10">
-                <CardHeader className="bg-slate-50/50 border-b border-slate-100 p-8">
+            <Card className="shadow-2xl border-2 border-border overflow-hidden rounded-[32px] bg-background mb-10">
+                <CardHeader className="bg-muted/50 border-b border-border p-8">
                     <div className="flex flex-col md:flex-row justify-between items-center gap-6">
                         <div className="flex items-center gap-5">
-                            <div className="w-14 h-14 rounded-2xl bg-slate-900 flex items-center justify-center text-white shadow-xl shadow-slate-200">
+                            <div className="w-14 h-14 rounded-2xl bg-foreground flex items-center justify-center text-white shadow-xl shadow-slate-200">
                                 <Calendar className="w-7 h-7" />
                             </div>
                             <div>
-                                <CardTitle className="text-xl font-black text-slate-900 uppercase">Учебное расписание</CardTitle>
-                                <CardDescription className="text-sm font-bold text-slate-500">
+                                <CardTitle className="text-xl font-black text-foreground uppercase">Учебное расписание</CardTitle>
+                                <CardDescription className="text-sm font-bold text-muted-foreground">
                                     Класс {className} • Текущая неделя
                                 </CardDescription>
                             </div>
                         </div>
                         <div className="text-center sm:text-right">
-                            <div className="text-3xl font-black text-slate-900 tabular-nums leading-none tracking-tighter mb-2 flex items-center gap-3 justify-center sm:justify-end">
+                            <div className="text-3xl font-black text-foreground tabular-nums leading-none tracking-tighter mb-2 flex items-center gap-3 justify-center sm:justify-end">
                                 <Clock className="w-6 h-6 text-primary" />
                                 {now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                             </div>
@@ -185,15 +185,15 @@ export default function StudentSchedulePage() {
                     <div className="overflow-x-auto">
                         <Table>
                             <TableHeader>
-                                <TableRow className="bg-slate-50/30 hover:bg-slate-50/30 border-b-2">
-                                    <TableHead className="w-20 text-center font-black text-slate-400 uppercase tracking-widest text-[9px] border-r">Урок</TableHead>
+                                <TableRow className="bg-muted/30 hover:bg-muted/30 border-b-2">
+                                    <TableHead className="w-20 text-center font-black text-muted-foreground uppercase tracking-widest text-[9px] border-r">Урок</TableHead>
                                     {DAYS.map((day) => {
                                         const isToday = currentDayOfWeek === day.id;
                                         const dateStr = new Date(weekDates[day.id]).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
                                         return (
                                             <TableHead key={day.id} className={`min-w-[180px] text-center py-6 border-r last:border-0 ${isToday ? "bg-primary/[0.03]" : ""}`}>
-                                                <div className={`font-black uppercase tracking-[0.2em] text-[11px] mb-1 ${isToday ? "text-primary" : "text-slate-900"}`}>{day.name}</div>
-                                                <div className={`text-[10px] font-black ${isToday ? "text-primary/60" : "text-slate-400"}`}>{dateStr}</div>
+                                                <div className={`font-black uppercase tracking-[0.2em] text-[11px] mb-1 ${isToday ? "text-primary" : "text-foreground"}`}>{day.name}</div>
+                                                <div className={`text-[10px] font-black ${isToday ? "text-primary/60" : "text-muted-foreground"}`}>{dateStr}</div>
                                             </TableHead>
                                         );
                                     })}
@@ -202,23 +202,23 @@ export default function StudentSchedulePage() {
                             <TableBody>
                                 {LESSON_NUMBERS.map((lesson) => (
                                     <TableRow key={lesson} className="border-b last:border-0">
-                                        <TableCell className="text-center font-black text-lg text-slate-400 border-r bg-slate-50/20">{lesson}</TableCell>
+                                        <TableCell className="text-center font-black text-lg text-muted-foreground border-r bg-muted/20">{lesson}</TableCell>
                                         {DAYS.map((day) => {
                                             const entry = getEntry(day.id, lesson);
                                             const isToday = currentDayOfWeek === day.id;
                                             return (
                                                 <TableCell key={day.id} className={`p-4 align-top border-r last:border-0 ${isToday ? "bg-primary/[0.01]" : ""}`}>
                                                     {entry ? (
-                                                        <div className="group relative bg-white border-2 border-slate-100 p-4 rounded-2xl shadow-sm hover:shadow-xl hover:border-primary/30 hover:-translate-y-1 transition-all duration-300">
+                                                        <div className="group relative bg-background border-2 border-border p-4 rounded-2xl shadow-sm hover:shadow-xl hover:border-primary/30 hover:-translate-y-1 transition-all duration-300">
                                                             <div className="flex flex-col gap-1.5 items-center text-center">
-                                                                <span className="font-black text-[14px] text-slate-900 group-hover:text-primary leading-tight transition-colors">{entry.subjects.name}</span>
+                                                                <span className="font-black text-[14px] text-foreground group-hover:text-primary leading-tight transition-colors">{entry.subjects.name}</span>
                                                                 <div className="flex flex-col gap-0.5 mt-1">
-                                                                    <span className="text-[10px] font-bold text-slate-400 flex items-center justify-center gap-1">
+                                                                    <span className="text-[10px] font-bold text-muted-foreground flex items-center justify-center gap-1">
                                                                         <User className="w-3 h-3 shrink-0" />
                                                                         <span className="line-clamp-1">{entry.teacher.full_name}</span>
                                                                     </span>
                                                                     {entry.room && (
-                                                                        <span className="text-[10px] font-bold text-slate-400 flex items-center justify-center gap-1">
+                                                                        <span className="text-[10px] font-bold text-muted-foreground flex items-center justify-center gap-1">
                                                                             < MapPin className="w-3 h-3 shrink-0" />
                                                                             Каб. {entry.room}
                                                                         </span>

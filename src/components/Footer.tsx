@@ -10,12 +10,12 @@ const Footer = () => {
           <div className="space-y-6">
             <div className="flex items-center space-x-2.5 group">
               <div className="w-9 h-9 bg-primary rounded-xl flex items-center justify-center shadow-sm transition-transform group-hover:scale-105">
-                <span className="text-white font-bold text-lg">Р›+</span>
+                <span className="text-white font-bold text-lg">Л+</span>
               </div>
-              <span className="font-bold text-xl text-foreground tracking-tight">Р›РёС‡РЅРѕСЃС‚СЊ РџР›Р®РЎ</span>
+              <span className="font-bold text-xl text-foreground tracking-tight">Личность ПЛЮС</span>
             </div>
             <p className="text-muted-foreground text-[13px] font-medium leading-relaxed max-w-xs">
-              Р§Р°СЃС‚РЅР°СЏ РѕР±С‰РµРѕР±СЂР°Р·РѕРІР°С‚РµР»СЊРЅР°СЏ С€РєРѕР»Р° РЅРѕРІРѕРіРѕ РїРѕРєРѕР»РµРЅРёСЏ. РЎРѕР·РґР°РµРј СѓСЃР»РѕРІРёСЏ РґР»СЏ СЂР°Р·РІРёС‚РёСЏ Р»РёРґРµСЂРѕРІ Р±СѓРґСѓС‰РµРіРѕ.
+              Частная общеобразовательная школа нового поколения. Создаем условия для развития лидеров будущего.
             </p>
             <div className="flex space-x-3 pt-2">
               {[
@@ -37,74 +37,74 @@ const Footer = () => {
             </div>
           </div>
 
-          <nav role="navigation" aria-label="РќР°РІРёРіР°С†РёСЏ РІ РїРѕРґРІР°Р»Рµ">
-            <h4 className="text-foreground font-bold mb-6 uppercase tracking-wider text-[10px]">РќР°РІРёРіР°С†РёСЏ</h4>
+          <nav role="navigation" aria-label="Навигация в подвале">
+            <h4 className="text-foreground font-bold mb-6 uppercase tracking-wider text-[10px]">Навигация</h4>
             <ul className="space-y-3.5">
               <li>
                 <Link to="/" className="text-muted-foreground hover:text-primary transition-colors text-[13px] font-medium">
-                  Р“Р»Р°РІРЅР°СЏ СЃС‚СЂР°РЅРёС†Р°
+                  Главная страница
                 </Link>
               </li>
               <li>
                 <Link to="/#about" className="text-muted-foreground hover:text-primary transition-colors text-[13px] font-medium">
-                  Рћ РЅР°С€РµР№ С€РєРѕР»Рµ
+                  О нашей школе
                 </Link>
               </li>
               <li>
                 <Link to="/#programs" className="text-muted-foreground hover:text-primary transition-colors text-[13px] font-medium">
-                  РџСЂРѕРіСЂР°РјРјС‹ РѕР±СѓС‡РµРЅРёСЏ
+                  Программы обучения
                 </Link>
               </li>
               <li>
                 <Link to="/#clubs" className="text-muted-foreground hover:text-primary transition-colors text-[13px] font-medium">
-                  РљСЂСѓР¶РєРё Рё СЃРµРєС†РёРё
+                  Кружки и секции
                 </Link>
               </li>
               <li>
                 <Link to="/news" className="text-muted-foreground hover:text-primary transition-colors text-[13px] font-medium">
-                  РќРѕРІРѕСЃС‚Рё С€РєРѕР»С‹
+                  Новости школы
                 </Link>
               </li>
               <li>
                 <Link to="/#gallery" className="text-muted-foreground hover:text-primary transition-colors text-[13px] font-medium">
-                  Р¤РѕС‚РѕРіР°Р»РµСЂРµСЏ
+                  Фотогалерея
                 </Link>
               </li>
             </ul>
           </nav>
 
-          <nav role="navigation" aria-label="РРЅС„РѕСЂРјР°С†РёРѕРЅРЅРѕРµ РјРµРЅСЋ РїРѕРґРІР°Р»Р°">
-            <h4 className="text-foreground font-bold mb-6 uppercase tracking-wider text-[10px]">РРЅС„РѕСЂРјР°С†РёСЏ</h4>
+          <nav role="navigation" aria-label="Информационное меню подвала">
+            <h4 className="text-foreground font-bold mb-6 uppercase tracking-wider text-[10px]">Информация</h4>
             <ul className="space-y-3.5">
               <li>
                 <Link to="/svedeniya" className="text-muted-foreground hover:text-primary transition-colors text-[13px] font-medium">
-                  РЎРІРµРґРµРЅРёСЏ РѕР± РѕСЂРіР°РЅРёР·Р°С†РёРё
+                  Сведения об организации
                 </Link>
               </li>
               <li>
                 <Link to="/svedeniya#documents" className="text-muted-foreground hover:text-primary transition-colors text-[13px] font-medium">
-                  Р”РѕРєСѓРјРµРЅС‚С‹ Рё Р»РёС†РµРЅР·РёСЏ
+                  Документы и лицензия
                 </Link>
               </li>
               <li>
                 <Link to="/contact" className="text-muted-foreground hover:text-primary transition-colors text-[13px] font-medium">
-                  РљРѕРЅС‚Р°РєС‚С‹ Рё Р°РґСЂРµСЃ
+                  Контакты и адрес
                 </Link>
               </li>
               <li>
                 <Link to="/privacy" className="text-muted-foreground hover:text-primary transition-colors text-[13px] font-medium">
-                  РџРѕР»РёС‚РёРєР° РєРѕРЅС„РёРґРµРЅС†РёР°Р»СЊРЅРѕСЃС‚Рё
+                  Политика конфиденциальности
                 </Link>
               </li>
             </ul>
           </nav>
 
           <div>
-            <h4 className="text-foreground font-bold mb-6 uppercase tracking-wider text-[10px]">РљРѕРЅС‚Р°РєС‚С‹</h4>
+            <h4 className="text-foreground font-bold mb-6 uppercase tracking-wider text-[10px]">Контакты</h4>
             <div className="space-y-4">
               <p className="text-muted-foreground text-[13px] font-medium leading-relaxed">
-                РљСЂР°СЃРЅРѕРґР°СЂСЃРєРёР№ РєСЂР°Р№,<br />
-                Рі. Р“РѕСЂСЏС‡РёР№ РљР»СЋС‡, РїРµСЂ. РЁРєРѕР»СЊРЅС‹Р№, 27
+                Краснодарский край,<br />
+                г. Горячий Ключ, пер. Школьный, 27
               </p>
               <div className="space-y-1.5 pt-2">
                 <a href="tel:+79282619928" className="block text-lg font-bold text-foreground hover:text-primary transition-colors tracking-tight">
@@ -120,7 +120,7 @@ const Footer = () => {
 
         <div className="border-t border-border pt-8 flex flex-col md:flex-row justify-between items-center gap-6">
           <p className="text-muted-foreground text-[10px] font-medium uppercase tracking-widest text-center md:text-left">
-            В© 2026 Р§РћРЈ В«Р›РёС‡РЅРѕСЃС‚СЊ РџР›Р®РЎВ». Р’СЃРµ РїСЂР°РІР° Р·Р°С‰РёС‰РµРЅС‹.
+            © 2026 ЧОУ «Личность ПЛЮС». Все права защищены.
           </p>
           
           <div className="flex items-center gap-6">
@@ -130,14 +130,14 @@ const Footer = () => {
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center justify-center w-9 h-9 bg-primary/10 hover:bg-primary/20 text-primary rounded-lg transition-all hover:scale-110 border-2 border-primary/20"
-              title="РЎРєР°С‡Р°С‚СЊ РїСЂРёР»РѕР¶РµРЅРёРµ РґР»СЏ Android"
+              title="Скачать приложение для Android"
             >
               <Download className="w-4 h-4" />
             </a>
             
             <div className="flex gap-8">
-              <Link to="/privacy" className="text-muted-foreground text-[10px] font-medium uppercase tracking-widest hover:text-foreground transition-colors">РљРѕРЅС„РёРґРµРЅС†РёР°Р»СЊРЅРѕСЃС‚СЊ</Link>
-              <Link to="/terms" className="text-muted-foreground text-[10px] font-medium uppercase tracking-widest hover:text-foreground transition-colors">РЈСЃР»РѕРІРёСЏ</Link>
+              <Link to="/privacy" className="text-muted-foreground text-[10px] font-medium uppercase tracking-widest hover:text-foreground transition-colors">Конфиденциальность</Link>
+              <Link to="/terms" className="text-muted-foreground text-[10px] font-medium uppercase tracking-widest hover:text-foreground transition-colors">Условия</Link>
             </div>
           </div>
         </div>

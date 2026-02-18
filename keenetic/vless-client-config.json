@@ -1,0 +1,167 @@
+{
+  "log": {
+    "access": "/tmp/xray/access.log",
+    "error": "/tmp/xray/error.log",
+    "loglevel": "warning"
+  },
+  
+  "inbounds": [
+    {
+      "tag": "socks",
+      "port": 7890,
+      "listen": "0.0.0.0",
+      "protocol": "socks",
+      "settings": {
+        "auth": "noauth",
+        "udp": true
+      }
+    },
+    {
+      "tag": "http",
+      "port": 7891,
+      "listen": "0.0.0.0",
+      "protocol": "http",
+      "settings": {}
+    }
+  ],
+  
+  "outbounds": [
+    {
+      "tag": "vless-reality",
+      "protocol": "vless",
+      "settings": {
+        "vnext": [
+          {
+            "address": "23fito.ru",
+            "port": 443,
+            "users": [
+              {
+                "id": "ВАШ_UUID_ИЗ_3X-UI",
+                "flow": "xtls-rprx-vision",
+                "encryption": "none"
+              }
+            ]
+          }
+        ]
+      },
+      "streamSettings": {
+        "network": "tcp",
+        "security": "reality",
+        "realitySettings": {
+          "serverName": "23fito.ru",
+          "fingerprint": "chrome",
+          "publicKey": "ВАШ_PUBLIC_KEY_ИЗ_3X-UI",
+          "shortId": "ВАШ_SHORT_ID_ИЗ_3X-UI",
+          "spiderX": ""
+        }
+      }
+    },
+    {
+      "tag": "direct",
+      "protocol": "freedom",
+      "settings": {}
+    },
+    {
+      "tag": "block",
+      "protocol": "blackhole",
+      "settings": {}
+    }
+  ],
+  
+  "routing": {
+    "domainStrategy": "IPIfNonMatch",
+    "rules": [
+      {
+        "type": "field",
+        "ip": [
+          "192.168.100.0/24",
+          "192.168.0.0/16",
+          "10.0.0.0/8",
+          "172.16.0.0/12",
+          "geoip:private"
+        ],
+        "outboundTag": "direct"
+      },
+      {
+        "type": "field",
+        "domain": [
+          "gos.roseltorg.ru",
+          "roseltorg.ru",
+          "gosuslugi.ru",
+          "nalog.ru",
+          "regexp:^([\\w\\-\\.]+\\.)ru$",
+          "regexp:^([\\w\\-\\.]+\\.)su$",
+          "regexp:^([\\w\\-\\.]+\\.)xn--p1ai$",
+          "ext:geosite_v2fly.dat:category-gov-ru",
+          "ext:geosite_v2fly.dat:yandex",
+          "ext:geosite_v2fly.dat:vk"
+        ],
+        "outboundTag": "direct"
+      },
+      {
+        "type": "field",
+        "domain": [
+          "lovable.dev",
+          "lovable.app",
+          "gemini.google.com",
+          "generativelanguage.googleapis.com",
+          "ai.google.dev",
+          "openai.com",
+          "chat.openai.com",
+          "whatsapp.com",
+          "whatsapp.net",
+          "telegram.org",
+          "telegram.me",
+          "t.me",
+          "youtube.com",
+          "google.com",
+          "facebook.com",
+          "instagram.com",
+          "twitter.com",
+          "x.com"
+        ],
+        "outboundTag": "vless-reality"
+      },
+      {
+        "type": "field",
+        "protocol": ["bittorrent"],
+        "outboundTag": "direct"
+      },
+      {
+        "type": "field",
+        "network": "udp",
+        "port": "135,137,138,139",
+        "outboundTag": "block"
+      },
+      {
+        "type": "field",
+        "outboundTag": "vless-reality"
+      }
+    ]
+  },
+  
+  "transport": {
+    "domainStrategy": "IPIfNonMatch",
+    "sockopt": {
+      "tcpMptcp": false,
+      "tcpFastOpen": true,
+      "tcpNoDelay": true,
+      "tcpKeepAliveInterval": 30
+    }
+  },
+  
+  "policy": {
+    "levels": {
+      "0": {
+        "handshake": 4,
+        "connIdle": 300,
+        "uplinkOnly": 0,
+        "downlinkOnly": 0
+      }
+    },
+    "system": {
+      "statsInboundUplink": false,
+      "statsInboundDownlink": false
+    }
+  }
+}

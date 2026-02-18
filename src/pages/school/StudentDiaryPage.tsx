@@ -269,10 +269,10 @@ export default function StudentDiaryPage() {
     const getGradeColor = (grade: string) => {
         const val = parseInt(grade);
         if (val === 5) return "bg-emerald-500 shadow-emerald-100";
-        if (val === 4) return "bg-blue-500 shadow-blue-100";
+        if (val === 4) return "bg-primary/50 shadow-primary/10";
         if (val === 3) return "bg-amber-500 shadow-amber-100";
         if (val === 2) return "bg-rose-500 shadow-rose-100";
-        return "bg-slate-400 shadow-slate-100";
+        return "bg-slate-400 shadow-muted/10";
     };
 
     const upcomingHomework = useMemo(() => {
