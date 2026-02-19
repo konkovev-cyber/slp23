@@ -1,8 +1,14 @@
 ﻿import { SiInstagram, SiTelegram, SiVk, SiGithub } from "react-icons/si";
 import { Link } from "react-router-dom";
 import { Download } from "lucide-react";
+import { Capacitor } from "@capacitor/core";
+
+const isNative = Capacitor.isNativePlatform();
 
 const Footer = () => {
+  // В нативном приложении (APK) не показываем кнопку скачивания
+  const showApkDownload = !isNative;
+
   return (
     <footer className="bg-background border-t border-border pt-16 pb-12">
       <div className="container mx-auto px-4">
@@ -124,17 +130,19 @@ const Footer = () => {
           </p>
           
           <div className="flex items-center gap-6">
-            {/* APK Download Icon - Small */}
-            <a
-              href="https://github.com/konkovev-cyber/slp23/releases/latest"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center w-9 h-9 bg-primary/10 hover:bg-primary/20 text-primary rounded-lg transition-all hover:scale-110 border-2 border-primary/20"
-              title="Скачать приложение для Android"
-            >
-              <Download className="w-4 h-4" />
-            </a>
-            
+            {/* APK Download Icon - показываем только в веб-версии */}
+            {showApkDownload && (
+              <a
+                href="https://github.com/konkovev-cyber/slp23/releases/latest"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center w-9 h-9 bg-primary/10 hover:bg-primary/20 text-primary rounded-lg transition-all hover:scale-110 border-2 border-primary/20"
+                title="Скачать приложение для Android"
+              >
+                <Download className="w-4 h-4" />
+              </a>
+            )}
+
             <div className="flex gap-8">
               <Link to="/privacy" className="text-muted-foreground text-[10px] font-medium uppercase tracking-widest hover:text-foreground transition-colors">Конфиденциальность</Link>
             </div>

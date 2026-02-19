@@ -23,6 +23,9 @@ import { Label } from "@/components/ui/label";
 import ImageUploader, { ImageValue } from "@/components/admin/ImageUploader";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { APP_VERSION } from "@/config/app-info";
+import { Capacitor } from "@capacitor/core";
+
+const isNative = Capacitor.isNativePlatform();
 
 // Preset avatars from public folder
 const PRESET_AVATARS = [
@@ -330,7 +333,7 @@ export default function StudentProfilePage() {
                             </Button>
                         </div>
 
-                        {updateAvailable && latestVersion && (
+                        {updateAvailable && latestVersion && !isNative && (
                             <div className="p-4 bg-emerald-500/10 border-2 border-emerald-500/20 rounded-2xl">
                                 <p className="text-sm font-bold text-emerald-700 mb-2">
                                     🎉 Доступно обновление v{latestVersion}!
