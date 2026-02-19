@@ -133,10 +133,9 @@ const Footer = () => {
             {/* APK Download Icon - показываем только в веб-версии */}
             {showApkDownload && (
               <a
-                href="https://github.com/konkovev-cyber/slp23/releases/download/v1.0.1/slp23.apk"
+                href="https://github.com/konkovev-cyber/slp23/releases"
                 target="_blank"
                 rel="noopener noreferrer"
-                download
                 className="inline-flex items-center justify-center w-9 h-9 bg-primary/10 hover:bg-primary/20 text-primary rounded-lg transition-all hover:scale-110 border-2 border-primary/20"
                 title="Скачать приложение для Android"
               >
