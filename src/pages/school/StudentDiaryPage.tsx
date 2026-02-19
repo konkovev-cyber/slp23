@@ -302,9 +302,9 @@ export default function StudentDiaryPage() {
                 <title>Дневник | {className}</title>
             </Helmet>
 
-            <div className="w-full max-w-4xl mx-auto space-y-4 pb-20 px-2 sm:px-4 overflow-x-hidden touch-none">
+            <div className="max-w-4xl mx-auto space-y-4 pb-20 px-4 sm:px-6 overflow-x-hidden touch-none">
                 {/* Controls */}
-                <div className="flex flex-col md:flex-row items-center justify-between gap-4 bg-background p-3 sm:p-4 rounded-[32px] border-2 border-border shadow-xl touch-none">
+                <div className="flex flex-col md:flex-row items-center justify-between gap-4 bg-background p-3 sm:p-4 rounded-[32px] border-2 border-border shadow-xl touch-none w-full">
                     <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as 'day' | 'week' | 'month')} className="w-full md:w-auto">
                         <TabsList className="bg-muted/50 p-1 rounded-2xl h-12 w-full md:w-auto">
                             <TabsTrigger value="day" className="rounded-xl h-10 px-6 font-bold data-[state=active]:bg-background data-[state=active]:shadow-md">День</TabsTrigger>
