@@ -1,4 +1,4 @@
-project_id = "vwfwtpshwghuonoekwzk"
+project_id = "qwuicyhadpesklhkjxpn"
 
 [functions.bootstrap-admin]
 verify_jwt = false
@@ -13,4 +13,7 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.news-fill-images]
+verify_jwt = false
+
+[functions.fetch-metadata]
 verify_jwt = false

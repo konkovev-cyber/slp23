@@ -34,7 +34,7 @@ import { useToast } from "@/hooks/use-toast";
 import ImageUploader, { ImageValue } from "@/components/admin/ImageUploader";
 import { format } from "date-fns";
 import { detectVideoProvider, isDirectVideoFile } from "@/lib/video-embed";
-import { Plus, Trash2, Edit2, Download, Share2, Globe, Calendar, Search, Wand2 as MagicWand, Image as ImageIcon, Video, X, Type, Film } from "lucide-react";
+import { Plus, Trash2, Edit2, Download, Share2, Globe, Calendar, Search, Wand2 as MagicWand, Image as ImageIcon, Video, X, Type, Film, Copy, Check } from "lucide-react";
 
 type Post = {
   id: string;
@@ -67,6 +67,9 @@ export default function AdminNews() {
   // Import State
   const [importUrl, setImportUrl] = useState("");
   const [isFetchingInfo, setIsFetchingInfo] = useState(false);
+  const [showVkManualImport, setShowVkManualImport] = useState(false);
+  const [vkText, setVkText] = useState("");
+  const [vkImages, setVkImages] = useState("");
 
   // Form State
   const [formData, setFormData] = useState<{
@@ -80,7 +83,7 @@ export default function AdminNews() {
     image_value: ImageValue;
     source?: string;
     source_id?: string;
-    mediaList?: MediaItem[]; // Доп. медиа (картинки + видео)
+    mediaList?: MediaItem[];
   }>({
     title: "",
     slug: "",
@@ -105,15 +108,11 @@ export default function AdminNews() {
       'ш': 'sh', 'щ': 'sch', 'ъ': '', 'ы': 'y', 'ь': '',
       'э': 'e', 'ю': 'yu', 'я': 'ya'
     };
-
-    return text.toLowerCase().split('').map(char => {
-      return ru[char] || char; // Transliterate or keep distinct
-    }).join('').replace(/ /g, '-').replace(/[^\w-]+/g, '');
+    return text.toLowerCase().split('').map(char => ru[char] || char).join('').replace(/ /g, '-').replace(/[^\w-]+/g, '');
   };
 
   const generateUniqueSlug = (title: string) => {
     const baseSlug = transliterate(title);
-    // Add 4 random chars to ensure uniqueness and prevent duplicates
     const randomSuffix = Math.random().toString(36).substring(2, 6);
     return `${baseSlug}-${randomSuffix}`;
   };
@@ -131,7 +130,6 @@ export default function AdminNews() {
         const toPlainText = (t: string) =>
           (t ?? "")
             .replace(/\r\n/g, "\n")
-            // remove obvious markdown bullets/headers for title/excerpt derivation
             .replace(/^\s*[#>*\-•]+\s*/gm, "")
             .trim();
 
@@ -139,7 +137,6 @@ export default function AdminNews() {
           const plain = toPlainText(t);
           if (!plain) return "";
           const firstLine = plain.split("\n").find(Boolean) ?? plain;
-          // Prefer a short, readable title
           const max = 90;
           const cutAt = (() => {
             const candidates = [".", "!", "?", ":", "—", "–"].map((c) => firstLine.indexOf(c));
@@ -163,8 +160,6 @@ export default function AdminNews() {
         };
 
         const importedMedia: MediaItem[] = Array.isArray(data.mediaList) ? data.mediaList : [];
-
-        // If the imported URL itself is a video page that wasn't in the list
         const importedUrlType = guessMediaType(importUrl);
         if (importedUrlType === "video" && !importedMedia.some(m => m.url === importUrl.trim())) {
           importedMedia.push({ url: importUrl.trim(), type: "video" });
@@ -173,13 +168,8 @@ export default function AdminNews() {
         const importedContent = (data.content || data.description || "").trim();
         const newTitle = data.title || buildTitleFromText(importedContent) || formData.title;
         const newExcerpt = data.description || buildExcerptFromText(importedContent) || formData.excerpt;
-
-        // Find cover image from imported media or metadata
         const coverImage = data.image || importedMedia.find(m => m.type === "image")?.url;
-
-        // Build media gallery text (links for the bottom of content)
         const additionalMedia = importedMedia.filter(m => m.url !== coverImage);
-        // We no longer need textual gallery as it's handled by post_media sync
         let mediaGalleryText = "";
 
         setFormData(prev => ({
@@ -187,144 +177,68 @@ export default function AdminNews() {
           title: newTitle,
           slug: generateUniqueSlug(newTitle),
           category: data.source === "telegram" ? "Новости" : prev.category,
+          content: importedContent,
           excerpt: newExcerpt,
-          content: (importedContent || newExcerpt) + mediaGalleryText,
-          image_value: coverImage ? {
-            bucket: "news",
-            path: "external",
-            publicUrl: coverImage,
-            alt: newTitle
-          } : prev.image_value,
-          source: importUrl,
-          source_id: data.source_id || "",
-          mediaList: importedMedia,
+          image_value: coverImage ? { url: coverImage, name: "imported" } : prev.image_value,
+          mediaList: additionalMedia,
+          source: data.source,
         }));
 
-        const mediaCount = importedMedia.length;
         toast({
-          title: "✅ Данные импортированы",
-          description: `Найдено ${mediaCount} медиа-файлов. Текст и заголовок заполнены.`
+          title: "Импорт успешен",
+          description: `Загружено: ${importedMedia.length} медиа`,
         });
       }
-    } catch (e: any) {
-      console.error("Import error:", e);
+    } catch (err: any) {
       toast({
         title: "Ошибка импорта",
-        description: e.message || "Не удалось загрузить данные. Проверьте URL и доступность ссылки.",
-        variant: "destructive"
+        description: err?.message || "Не удалось загрузить данные",
+        variant: "destructive",
       });
-      console.error("DEBUG: Import Full Error:", e);
     } finally {
       setIsFetchingInfo(false);
     }
   };
 
-  const { data: posts = [], isLoading } = useQuery({
-    queryKey: ["admin_posts"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("posts")
-        .select("*")
-        .order("published_at", { ascending: false });
-      if (error) throw error;
-      return (data ?? []) as Post[];
-    },
-  });
+  // Быстрый импорт из VK (ручной)
+  const handleVkQuickImport = () => {
+    if (!vkText.trim()) {
+      toast({ title: "Ошибка", description: "Введите текст из VK", variant: "destructive" });
+      return;
+    }
 
-  const deleteMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from("posts").delete().eq("id", id);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin_posts"] });
-      toast({ title: "Удалено", description: "Новость успешно удалена." });
-    },
-    onError: (err: any) => {
-      toast({ title: "Ошибка", description: err.message, variant: "destructive" });
-    },
-  });
+    const lines = vkText.trim().split('\n').filter(l => l.trim().length > 0);
+    const title = lines[0]?.slice(0, 100).trim() || "Новости";
+    
+    // Парсим изображения из текста (если вставили с URL)
+    const imageUrls = vkImages.split('\n').filter(url => url.trim().startsWith('http'));
+    const mediaList: MediaItem[] = imageUrls.map(url => ({ url: url.trim(), type: "image" as const }));
 
-  const upsertMutation = useMutation({
-    mutationFn: async (values: typeof formData) => {
-      // Logic for final slug gen
-      const finalSlug = values.slug ? values.slug : generateUniqueSlug(values.title);
+    setFormData(prev => ({
+      ...prev,
+      title,
+      slug: generateUniqueSlug(title),
+      content: vkText.trim(),
+      excerpt: vkText.trim().slice(0, 255) + (vkText.length > 255 ? "..." : ""),
+      image_value: mediaList.length > 0 ? { url: mediaList[0].url, name: "imported" } : prev.image_value,
+      mediaList: mediaList.slice(1),
+    }));
 
-      const payload = {
-        title: values.title,
-        slug: finalSlug,
-        excerpt: values.excerpt,
-        content: values.content || values.excerpt, // Fallback
-        category: values.category,
-        published_at: new Date(values.published_at).toISOString(),
-        image_url: values.image_value?.publicUrl ?? null,
-        source: values.source ?? null,
-        source_id: values.source_id ?? null,
-      };
+    setShowVkManualImport(false);
+    setVkText("");
+    setVkImages("");
+    
+    toast({ title: "Готово", description: "Данные вставлены в форму" });
+  };
 
-      const coverUrl = values.image_value?.publicUrl ?? null;
-
-      const mediaItems: MediaItem[] = [
-        ...(coverUrl ? [{ url: coverUrl, type: "image" as const }] : []),
-        ...((values.mediaList ?? []) as MediaItem[]),
-      ];
-
-      // Dedup while keeping order
-      const seen = new Set<string>();
-      const normalized = mediaItems.filter((m) => {
-        const key = `${m.type}:${m.url}`;
-        if (!m.url) return false;
-        if (seen.has(key)) return false;
-        seen.add(key);
-        return true;
-      });
-
-      const syncPostMedia = async (postId: string) => {
-        // Replace media rows atomically-ish (best effort): delete then insert
-        const { error: delErr } = await supabase
-          .from("post_media")
-          .delete()
-          .eq("post_id", postId);
-        if (delErr) throw delErr;
-
-        if (normalized.length === 0) return;
-
-        const rows = normalized.map((m, idx) => ({
-          post_id: postId,
-          media_url: m.url,
-          media_type: m.type,
-          display_order: idx,
-          alt_text: values.title,
-        }));
-
-        const { error: insErr } = await supabase.from("post_media").insert(rows);
-        if (insErr) throw insErr;
-      };
-
-      if (values.id) {
-        const { error } = await supabase.from("posts").update(payload).eq("id", values.id);
-        if (error) throw error;
-        await syncPostMedia(values.id);
-      } else {
-        const { data, error } = await supabase
-          .from("posts")
-          .insert([payload])
-          .select("id")
-          .single();
-        if (error) throw error;
-        if (data?.id) await syncPostMedia(data.id);
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin_posts"] });
-      toast({ title: "Сохранено", description: "Новость успешно сохранена." });
-      setIsCreateOpen(false);
-      resetForm();
-    },
-    onError: (err: any) => {
-      toast({ title: "Ошибка", description: err.message, variant: "destructive" });
-    },
-  });
+  const generateExcerpt = () => {
+    const plainText = formData.content.replace(/[#*`]/g, '');
+    const sentenceEnd = plainText.indexOf('.');
+    const cutIndex = sentenceEnd > 0 && sentenceEnd < 200 ? sentenceEnd + 1 : 160;
+    const generated = plainText.slice(0, cutIndex).trim() + (plainText.length > cutIndex ? "..." : "");
+    setFormData({ ...formData, excerpt: generated });
+    toast({ title: "Сгенерировано", description: "Краткое описание создано из текста." });
+  };
 
   const resetForm = () => {
     setFormData({
@@ -335,77 +249,173 @@ export default function AdminNews() {
       category: "Новости",
       published_at: new Date().toISOString().slice(0, 16),
       image_value: null,
+      source: "",
+      source_id: "",
       mediaList: [],
     });
     setImportUrl("");
+    setVkText("");
+    setVkImages("");
+    setShowVkManualImport(false);
   };
 
-  const handleEdit = async (post: Post) => {
-    try {
-      const { data: mediaRows, error } = await supabase
-        .from("post_media")
-        .select("media_url, media_type, display_order")
-        .eq("post_id", post.id)
-        .order("display_order", { ascending: true });
+  /* --- CREATE / UPDATE MUTATIONS --- */
+  const createMutation = useMutation({
+    mutationFn: async (data: typeof formData) => {
+      const { data: record, error } = await supabase
+        .from("posts")
+        .insert([{
+          title: data.title,
+          slug: data.slug,
+          category: data.category,
+          excerpt: data.excerpt,
+          content: data.content,
+          image_url: data.image_value?.url || null,
+          published_at: data.published_at,
+          source: data.source || null,
+          source_id: data.source_id || null,
+        }])
+        .select()
+        .single();
       if (error) throw error;
-
-      const mediaList: MediaItem[] = (mediaRows ?? [])
-        .filter((r) => Boolean(r.media_url))
-        .map((r: any) => ({
-          url: String(r.media_url),
-          type: r.media_type === "video" ? "video" : "image",
+      return record;
+    },
+    onSuccess: async (record) => {
+      if (formData.mediaList && formData.mediaList.length > 0) {
+        const mediaRows = formData.mediaList.map((m, idx) => ({
+          post_id: record.id,
+          media_url: m.url,
+          media_type: m.type,
+          display_order: idx,
         }));
+        await supabase.from("post_media").insert(mediaRows);
+      }
+      toast({ title: "Создано", description: "Новость опубликована" });
+      resetForm();
+      setIsCreateOpen(false);
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
+    },
+    onError: (err: any) => {
+      toast({ title: "Ошибка", description: err?.message, variant: "destructive" });
+    },
+  });
 
-      setFormData({
-        id: post.id,
-        title: post.title,
-        slug: post.slug,
-        excerpt: post.excerpt ?? "",
-        content: post.content ?? "",
-        category: post.category,
-        published_at: new Date(post.published_at).toISOString().slice(0, 16),
-        image_value: post.image_url
-          ? {
-            bucket: "news",
-            path: post.image_url.split("/").pop() ?? "",
-            publicUrl: post.image_url,
-          }
-          : null,
-        mediaList: mediaList.length > 0
-          ? mediaList
-          : post.image_url
-            ? [{ url: post.image_url, type: "image" }]
-            : [],
-      });
-      setIsCreateOpen(true);
-    } catch (e: any) {
-      toast({
-        title: "Ошибка",
-        description: e.message || "Не удалось загрузить медиа для новости.",
-        variant: "destructive",
-      });
+  const updateMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: typeof formData }) => {
+      const { error } = await supabase
+        .from("posts")
+        .update({
+          title: data.title,
+          slug: data.slug,
+          category: data.category,
+          excerpt: data.excerpt,
+          content: data.content,
+          image_url: data.image_value?.url || null,
+          published_at: data.published_at,
+        })
+        .eq("id", id);
+      if (error) throw error;
+      return id;
+    },
+    onSuccess: async (id) => {
+      if (formData.mediaList && formData.mediaList.length > 0) {
+        await supabase.from("post_media").delete().eq("post_id", id);
+        const mediaRows = formData.mediaList.map((m, idx) => ({
+          post_id: id,
+          media_url: m.url,
+          media_type: m.type,
+          display_order: idx,
+        }));
+        await supabase.from("post_media").insert(mediaRows);
+      }
+      toast({ title: "Обновлено", description: "Новость обновлена" });
+      resetForm();
+      setIsCreateOpen(false);
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
+    },
+    onError: (err: any) => {
+      toast({ title: "Ошибка", description: err?.message, variant: "destructive" });
+    },
+  });
+
+  const handleSubmit = () => {
+    if (!formData.title || !formData.content) {
+      toast({ title: "Ошибка", description: "Заполните заголовок и текст", variant: "destructive" });
+      return;
+    }
+    if (!formData.slug) {
+      setFormData({ ...formData, slug: generateUniqueSlug(formData.title) });
+      toast({ title: "Сгенерирован slug", description: "Попробуйте сохранить ещё раз" });
+      return;
+    }
+    if (formData.id) {
+      updateMutation.mutate({ id: formData.id, data: formData });
+    } else {
+      createMutation.mutate(formData);
     }
   };
 
-  /* --- NEW STATES FOR UI --- */
-  const [searchTerm, setSearchTerm] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 7;
+  /* --- DELETE LOGIC --- */
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("posts").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast({ title: "Удалено", description: "Новость удалена" });
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
+    },
+    onError: (err: any) => {
+      toast({ title: "Ошибка", description: err?.message, variant: "destructive" });
+    },
+  });
 
-  /* --- ACTIONS --- */
-  // Auto-generate excerpt from content
-  const generateExcerpt = () => {
-    if (!formData.content) return;
-    // Take first 150 chars or first sentence
-    const plainText = formData.content.replace(/[#*`]/g, ''); // Simple markdown strip
-    const sentenceEnd = plainText.indexOf('.');
-    const cutIndex = sentenceEnd > 0 && sentenceEnd < 200 ? sentenceEnd + 1 : 160;
-    const generated = plainText.slice(0, cutIndex).trim() + (plainText.length > cutIndex ? "..." : "");
-    setFormData({ ...formData, excerpt: generated });
-    toast({ title: "Сгенерировано", description: "Краткое описание создано из текста." });
+  const handleDelete = (id: string) => {
+    if (confirm("Вы уверены?")) deleteMutation.mutate(id);
   };
 
-  /* --- FILTERING & PAGINATION LOGIC --- */
+  /* --- EDIT LOGIC --- */
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const editMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { data, error } = await supabase.from("posts").select("*").eq("id", id).single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (post) => {
+      setFormData({
+        ...formData,
+        id: post.id,
+        title: post.title,
+        slug: post.slug,
+        category: post.category,
+        excerpt: post.excerpt || "",
+        content: post.content || "",
+        published_at: post.published_at,
+        image_value: post.image_url ? { url: post.image_url, name: "existing" } : null,
+      });
+      setEditingId(post.id);
+      setIsCreateOpen(true);
+    },
+  });
+
+  const handleEdit = (id: string) => editMutation.mutate(id);
+
+  /* --- QUERY --- */
+  const { data: posts = [] } = useQuery<Post[]>({
+    queryKey: ["posts"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("posts").select("*").order("published_at", { ascending: false });
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  /* --- PAGINATION --- */
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
+  const [searchTerm, setSearchTerm] = useState("");
+
   const filteredPosts = posts.filter(post =>
     post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     post.slug.toLowerCase().includes(searchTerm.toLowerCase())
@@ -417,7 +427,6 @@ export default function AdminNews() {
     currentPage * itemsPerPage
   );
 
-  // Helper to determine status
   const getPostStatus = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
@@ -461,7 +470,6 @@ export default function AdminNews() {
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-              {/* ... (Existing Dialog Content Header) ... */}
               <DialogHeader>
                 <DialogTitle className="text-xl">
                   {formData.id ? "Редактировать новость" : "Новая новость"}
@@ -469,7 +477,6 @@ export default function AdminNews() {
               </DialogHeader>
 
               <div className="space-y-6 py-4">
-                {/* ... (Import Block remains same) ... */}
                 {!formData.id && (
                   <div className="bg-primary/5 p-4 rounded-xl border border-primary/10 shadow-sm">
                     <div className="flex flex-col gap-2">
@@ -477,8 +484,59 @@ export default function AdminNews() {
                         🌐 Импорт из внешних источников
                       </Label>
                       <p className="text-xs text-muted-foreground mb-1">
-                        Поддерживаются: Telegram, VK, и другие сайты с Open Graph метаданными
+                        Поддерживаются: Telegram, YouTube, и сайты с Open Graph
                       </p>
+                      
+                      {/* VK Quick Import */}
+                      <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-3 mb-2">
+                        <div className="flex items-center justify-between mb-2">
+                          <p className="text-xs font-semibold text-yellow-700">
+                            ⚠️ VK: Ручной импорт
+                          </p>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="h-7 text-xs"
+                            onClick={() => setShowVkManualImport(!showVkManualImport)}
+                          >
+                            {showVkManualImport ? "Скрыть" : "Открыть"}
+                          </Button>
+                        </div>
+                        
+                        {showVkManualImport && (
+                          <div className="space-y-3 mt-2">
+                            <div>
+                              <Label className="text-xs">Текст из поста</Label>
+                              <Textarea
+                                value={vkText}
+                                onChange={(e) => setVkText(e.target.value)}
+                                placeholder="Вставьте текст из поста VK..."
+                                className="h-24 mt-1"
+                              />
+                            </div>
+                            <div>
+                              <Label className="text-xs">URL изображений (по одному в строке)</Label>
+                              <Textarea
+                                value={vkImages}
+                                onChange={(e) => setVkImages(e.target.value)}
+                                placeholder="https://sun9-1.userapi.com/...&#10;https://sun9-2.userapi.com/..."
+                                className="h-20 mt-1 font-mono text-xs"
+                              />
+                            </div>
+                            <Button
+                              type="button"
+                              size="sm"
+                              onClick={handleVkQuickImport}
+                              className="w-full"
+                            >
+                              <Copy className="w-3 h-3 mr-2" />
+                              Вставить в форму
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+
                       <div className="flex items-center gap-2">
                         <div className="relative flex-1">
                           <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -504,7 +562,6 @@ export default function AdminNews() {
                 )}
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* ... (Existing Fields) ... */}
                   <div className="md:col-span-2 space-y-2">
                     <Label className="font-medium">Заголовок</Label>
                     <Input
@@ -553,7 +610,6 @@ export default function AdminNews() {
                     />
                   </div>
 
-                  {/* Content First to allow generation */}
                   <div className="md:col-span-2 space-y-2">
                     <Label className="font-medium">Полный текст (content)</Label>
                     <Textarea
@@ -599,7 +655,6 @@ export default function AdminNews() {
                       onChange={(v) => setFormData({ ...formData, image_value: v })}
                     />
 
-                    {/* Media Gallery Preview */}
                     {formData.mediaList && formData.mediaList.length > 0 && (
                       <div className="space-y-3 pt-4">
                         <div className="flex items-center justify-between">
@@ -613,35 +668,24 @@ export default function AdminNews() {
                             className="h-6 text-xs text-destructive"
                             onClick={() => setFormData({ ...formData, mediaList: [] })}
                           >
-                            <X className="w-3 h-3 mr-1" />
-                            Очистить все
+                            <Trash2 className="w-3 h-3" />
                           </Button>
                         </div>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                          {formData.mediaList.map((item, idx) => (
-                            <div key={idx} className="relative group">
-                              <div className="aspect-square rounded-lg overflow-hidden bg-muted border border-border flex items-center justify-center">
-                                {item.type === "image" ? (
-                                  <img
-                                    src={item.url}
-                                    alt={`Изображение ${idx + 1}`}
-                                    className="w-full h-full object-cover"
-                                    onError={(e) => {
-                                      (e.target as HTMLImageElement).src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect fill="%23ddd" width="100" height="100"/><text x="50%" y="50%" text-anchor="middle" dy=".3em" fill="%23999">Ошибка</text></svg>';
-                                    }}
-                                  />
-                                ) : (
-                                  <div className="w-full h-full p-3 flex flex-col items-center justify-center text-center gap-2">
-                                    <Film className="w-6 h-6 text-muted-foreground" />
-                                    <div className="text-[10px] text-muted-foreground break-all line-clamp-3">{item.url}</div>
-                                  </div>
-                                )}
-                              </div>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                          {formData.mediaList.map((media, idx) => (
+                            <Card key={idx} className="relative group overflow-hidden">
+                              {media.type === "image" ? (
+                                <img src={media.url} alt={`Media ${idx}`} className="w-full h-24 object-cover" />
+                              ) : (
+                                <div className="w-full h-24 bg-muted flex items-center justify-center">
+                                  <Video className="w-8 h-8 text-muted-foreground" />
+                                </div>
+                              )}
                               <Button
                                 type="button"
                                 variant="destructive"
                                 size="icon"
-                                className="absolute -top-2 -right-2 h-6 w-6 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                                className="absolute top-1 right-1 w-6 h-6 opacity-0 group-hover:opacity-100 transition-opacity"
                                 onClick={() => {
                                   const newList = formData.mediaList?.filter((_, i) => i !== idx) || [];
                                   setFormData({ ...formData, mediaList: newList });
@@ -649,105 +693,64 @@ export default function AdminNews() {
                               >
                                 <X className="w-3 h-3" />
                               </Button>
-                              <div className="absolute bottom-1 left-1 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded">
-                                #{idx + 1}
-                              </div>
-                            </div>
+                            </Card>
                           ))}
                         </div>
-                        <p className="text-xs text-muted-foreground">
-                          💡 Первое изображение используется как обложка. Остальные добавлены в текст новости.
-                        </p>
                       </div>
                     )}
                   </div>
                 </div>
-              </div>
-              <div className="flex justify-end items-center gap-3 pt-6 border-t mt-4">
-                <Button variant="ghost" onClick={() => setIsCreateOpen(false)}>
-                  Отмена
-                </Button>
-                <Button
-                  onClick={() => upsertMutation.mutate(formData)}
-                  disabled={upsertMutation.isPending}
-                  className="px-8"
-                >
-                  {upsertMutation.isPending ? "Сохранение..." : "Сохранить"}
-                </Button>
+
+                <div className="flex items-center justify-end gap-2 pt-4 border-t">
+                  <Button variant="outline" onClick={() => setIsCreateOpen(false)}>
+                    Отмена
+                  </Button>
+                  <Button onClick={handleSubmit} disabled={createMutation.isPending || updateMutation.isPending}>
+                    {createMutation.isPending || updateMutation.isPending ? "Сохранение..." : "Сохранить"}
+                  </Button>
+                </div>
               </div>
             </DialogContent>
           </Dialog>
         </div>
       </div>
 
-      <div className="rounded-xl border border-border shadow-sm overflow-hidden bg-card">
+      <Card>
         <Table>
-          <TableHeader className="bg-muted/50">
+          <TableHeader>
             <TableRow>
-              <TableHead className="font-semibold px-6 w-[140px]">Дата</TableHead>
-              <TableHead className="font-semibold px-6">Заголовок</TableHead>
-              <TableHead className="font-semibold px-6 text-center">Статус</TableHead>
-              <TableHead className="font-semibold px-6 text-center">Категория</TableHead>
-              <TableHead className="w-[100px] px-6"></TableHead>
+              <TableHead>Заголовок</TableHead>
+              <TableHead>Категория</TableHead>
+              <TableHead>Дата</TableHead>
+              <TableHead>Статус</TableHead>
+              <TableHead className="text-right">Действия</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {paginatedPosts.map((post) => (
-              <TableRow key={post.id} className="hover:bg-muted/30 transition-colors">
-                <TableCell className="px-6 py-4 text-muted-foreground text-sm">
-                  {format(new Date(post.published_at), "dd.MM.yyyy")}
-                  <div className="text-[10px] opacity-70">{format(new Date(post.published_at), "HH:mm")}</div>
-                </TableCell>
-                <TableCell className="px-6 py-4">
-                  <div className="font-semibold text-foreground line-clamp-1">{post.title}</div>
-                  <div className="text-xs text-muted-foreground font-mono mt-0.5 line-clamp-1 opacity-70">/{post.slug}</div>
-                </TableCell>
-                <TableCell className="px-6 py-4 text-center">
-                  {getPostStatus(post.published_at)}
-                </TableCell>
-                <TableCell className="px-6 py-4 text-center">
-                  <Badge variant="outline" className="font-normal bg-primary/5 border-primary/10">
-                    {post.category}
-                  </Badge>
-                </TableCell>
-                <TableCell className="px-6 py-4">
-                  <div className="flex items-center justify-end gap-1">
-                    <Button variant="ghost" size="icon" onClick={() => handleEdit(post)} className="h-8 w-8 text-muted-foreground hover:text-foreground">
+              <TableRow key={post.id}>
+                <TableCell className="font-medium">{post.title}</TableCell>
+                <TableCell>{post.category}</TableCell>
+                <TableCell>{format(new Date(post.published_at), "dd.MM.yyyy HH:mm")}</TableCell>
+                <TableCell>{getPostStatus(post.published_at)}</TableCell>
+                <TableCell className="text-right">
+                  <div className="flex items-center justify-end gap-2">
+                    <Button variant="ghost" size="icon" onClick={() => handleEdit(post.id)}>
                       <Edit2 className="w-4 h-4" />
                     </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-muted-foreground hover:text-destructive transition-colors"
-                      onClick={() => {
-                        if (confirm("Вы уверены?")) deleteMutation.mutate(post.id);
-                      }}
-                    >
+                    <Button variant="ghost" size="icon" onClick={() => handleDelete(post.id)}>
                       <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>
                 </TableCell>
               </TableRow>
             ))}
-            {!isLoading && filteredPosts.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={5} className="text-center py-16 text-muted-foreground">
-                  <div className="flex flex-col items-center gap-2">
-                    <Share2 className="w-8 h-8 opacity-20" />
-                    <p>
-                      {searchTerm ? "Ничего не найдено по вашему запросу." : "Нет новостей. Создайте первую!"}
-                    </p>
-                  </div>
-                </TableCell>
-              </TableRow>
-            )}
           </TableBody>
         </Table>
-      </div>
+      </Card>
 
-      {/* PAGINATION CONTROLS */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-2 pt-4">
+        <div className="flex items-center justify-center gap-2">
           <Button
             variant="outline"
             size="sm"
@@ -756,7 +759,7 @@ export default function AdminNews() {
           >
             Назад
           </Button>
-          <span className="text-sm font-medium text-muted-foreground">
+          <span className="text-sm text-muted-foreground">
             Страница {currentPage} из {totalPages}
           </span>
           <Button
@@ -765,7 +768,7 @@ export default function AdminNews() {
             onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
             disabled={currentPage === totalPages}
           >
-            Вперед
+            Вперёд
           </Button>
         </div>
       )}
