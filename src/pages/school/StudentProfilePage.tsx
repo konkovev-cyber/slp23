@@ -339,13 +339,14 @@ export default function StudentProfilePage() {
                                     🎉 Доступно обновление v{latestVersion}!
                                 </p>
                                 <a
-                                    href="https://github.com/konkovev-cyber/slp23/releases"
+                                    href="https://slp23.ru/slp23.apk"
                                     target="_blank"
                                     rel="noopener noreferrer"
+                                    download
                                     className="inline-flex items-center text-xs font-bold text-emerald-600 hover:text-emerald-700 underline"
                                 >
                                     <Github className="w-3.5 h-3.5 mr-2" />
-                                    Скачать на GitHub
+                                    Скачать APK (v{latestVersion})
                                 </a>
                             </div>
                         )}
