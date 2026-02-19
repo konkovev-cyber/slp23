@@ -61,12 +61,12 @@ export default function SchoolLoginPage() {
     };
 
     return (
-        <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-primary/10 via-background to-accent/10 p-4">
+        <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-primary/10 via-background to-accent/10 p-4 sm:p-6">
             <Helmet>
                 <title>Вход | Электронный дневник</title>
             </Helmet>
 
-            <Card className="w-full max-w-sm border-2 border-border rounded-2xl shadow-xl bg-background">
+            <Card className="w-full max-w-sm mx-auto border-2 border-border rounded-2xl shadow-xl bg-background">
                 <CardHeader className="pb-4 text-center">
                     <div className="mx-auto mb-3 w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shadow-md shadow-primary/20">
                         <BookOpen className="w-6 h-6 text-primary" />
@@ -79,7 +79,7 @@ export default function SchoolLoginPage() {
                     </CardDescription>
                 </CardHeader>
 
-                <CardContent className="space-y-3 p-4">
+                <CardContent className="space-y-3 p-4 sm:p-6">
                     <form onSubmit={handleLogin} className="space-y-3">
                         <div className="space-y-1.5">
                             <Label htmlFor="email" className="text-xs font-bold text-muted-foreground pl-1">

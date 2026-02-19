@@ -71,7 +71,7 @@ export default function SignupPage() {
     };
 
     return (
-        <div className="min-h-screen bg-[#FAFBFF] flex flex-col items-center justify-center p-4">
+        <div className="min-h-screen bg-[#FAFBFF] flex flex-col items-center justify-center p-4 sm:p-6">
             <div className="mb-8 flex flex-col items-center">
                 <div className="w-20 h-20 bg-primary rounded-[32px] shadow-2xl shadow-primary/30 flex items-center justify-center text-white mb-4">
                     <GraduationCap className="w-10 h-10" />
@@ -80,7 +80,7 @@ export default function SignupPage() {
                 <p className="text-muted-foreground font-bold text-[10px] uppercase tracking-[0.3em] mt-1">Электронный портал</p>
             </div>
 
-            <Card className="w-full max-w-lg rounded-[40px] border-2 border-border shadow-2xl overflow-hidden bg-background">
+            <Card className="w-full max-w-lg mx-auto rounded-[40px] border-2 border-border shadow-2xl overflow-hidden bg-background">
                 <CardHeader className="bg-muted/50 p-10 pb-6 border-b-2 border-border">
                     <CardTitle className="text-3xl font-black">Регистрация</CardTitle>
                     <CardDescription className="text-muted-foreground font-bold">
