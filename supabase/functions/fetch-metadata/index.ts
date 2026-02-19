@@ -6,6 +6,10 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
+// VK API credentials (из .env)
+const VK_SERVICE_KEY = "bc15f23abc15f23abc15f23a7dbf2b05adbbc15bc15f23ad58326cf040249df893a4523";
+const VK_VERSION = "2024.01.01";
+
 const GARBAGE_PATTERNS = [
   /emoji/i, /icon/i, /favicon/i, /avatar/i, /logo/i, /pixel/i, /ads/i, /banner/i,
   /loading/i, /spinner/i, /marker/i, /sprite/i, /placeholder/i
@@ -54,13 +58,13 @@ function stripHtml(html: string): string {
 async function getTextWithEncoding(res: Response): Promise<string> {
   const contentEncoding = res.headers.get("content-encoding") || "";
   const contentType = res.headers.get("content-type") || "";
-  
+
   const text = await res.text();
-  
+
   console.log("DEBUG: Content-Type:", contentType);
   console.log("DEBUG: Content-Encoding:", contentEncoding);
   console.log("DEBUG: Text length:", text.length);
-  
+
   return text;
 }
 
@@ -148,6 +152,112 @@ function extractMedia(html: string) {
     }));
 }
 
+/**
+ * Извлечение данных из поста VK через API
+ */
+async function fetchVKPost(url: string): Promise<{
+  title: string;
+  description: string;
+  content: string;
+  image: string;
+  mediaList: Array<{ url: string; type: "image" | "video" }>;
+} | null> {
+  try {
+    // Парсим URL VK: https://vk.com/wall-226860244_207
+    const wallMatch = url.match(/vk\.com\/wall(-?\d+)_(\d+)/);
+    if (!wallMatch) {
+      console.log("DEBUG: Not a VK wall URL");
+      return null;
+    }
+
+    const ownerId = wallMatch[1]; // -226860244 (группа с минусом)
+    const postId = wallMatch[2]; // 207
+
+    console.log("DEBUG: VK URL parsed - owner:", ownerId, "post:", postId);
+
+    // Запрос к VK API
+    const apiUrl = `https://api.vk.com/method/wall.getById?posts=${ownerId}_${postId}&extended=1&v=${VK_VERSION}`;
+    
+    const response = await fetch(apiUrl, {
+      headers: {
+        "Authorization": `ServiceKey ${VK_SERVICE_KEY}`,
+      },
+    });
+
+    if (!response.ok) {
+      console.error("DEBUG: VK API error - HTTP", response.status);
+      return null;
+    }
+
+    const data = await response.json();
+    console.log("DEBUG: VK API response:", JSON.stringify(data, null, 2));
+
+    if (data.error) {
+      console.error("DEBUG: VK API error:", data.error);
+      return null;
+    }
+
+    const post = data.response?.items?.[0];
+    if (!post) {
+      console.error("DEBUG: Post not found");
+      return null;
+    }
+
+    // Извлекаем текст
+    const content = post.text ? stripHtml(decodeHtml(post.text)) : "";
+    
+    // Заголовок - первая строка или "Новости"
+    let title = "Новости";
+    if (content) {
+      const firstLine = content.split('\n').filter(l => l.trim().length > 0)[0];
+      if (firstLine) {
+        title = firstLine.slice(0, 100).trim();
+      }
+    }
+
+    // Извлекаем изображения
+    const mediaList: Array<{ url: string; type: "image" | "video" }> = [];
+    
+    if (post.attachments) {
+      for (const attachment of post.attachments) {
+        if (attachment.type === "photo" && attachment.photo) {
+          // Берём изображение в наилучшем качестве
+          const imageUrl = attachment.photo.sizes?.find((s: any) => s.type === "z" || s.type === "y" || s.type === "x")?.url 
+                         || attachment.photo.photo_604 
+                         || attachment.photo.photo_807 
+                         || attachment.photo.photo_1280;
+          if (imageUrl && !mediaList.find(m => m.url === imageUrl)) {
+            mediaList.push({ url: imageUrl, type: "image" });
+          }
+        }
+        
+        if (attachment.type === "video" && attachment.video) {
+          const videoUrl = attachment.video.player 
+                        || attachment.video.src 
+                        || `https://vk.com/video${attachment.video.owner_id}_${attachment.video.id}`;
+          if (videoUrl && !mediaList.find(m => m.url === videoUrl)) {
+            mediaList.push({ url: videoUrl, type: "video" });
+          }
+        }
+      }
+    }
+
+    // Главное изображение для обложки
+    const image = mediaList.find(m => m.type === "image")?.url || "";
+
+    return {
+      title,
+      description: content.slice(0, 255) + (content.length > 255 ? "..." : ""),
+      content,
+      image,
+      mediaList: mediaList.slice(0, 15),
+    };
+  } catch (error) {
+    console.error("DEBUG: VK fetch error:", error);
+    return null;
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
@@ -156,6 +266,25 @@ serve(async (req) => {
     if (!url) throw new Error("URL is required");
 
     let normalizedUrl = url.trim();
+
+    // Проверяем, это VK
+    if (normalizedUrl.includes("vk.com/wall-")) {
+      console.log("DEBUG: VK URL detected:", normalizedUrl);
+      const vkData = await fetchVKPost(normalizedUrl);
+      
+      if (vkData) {
+        console.log("DEBUG: VK data fetched successfully");
+        return new Response(
+          JSON.stringify({
+            ...vkData,
+            source: "vk",
+          }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json; charset=utf-8" } }
+        );
+      }
+      
+      console.log("DEBUG: VK API failed, falling back to HTML parsing");
+    }
 
     // Telegram
     let fetchUrl = normalizedUrl;
@@ -207,6 +336,19 @@ serve(async (req) => {
           break;
         }
       }
+    } else if (normalizedUrl.includes("vk.com")) {
+      // VK HTML fallback
+      const vkSelectors = [
+        /<div[^>]*class="[^"]*WallPostText[^"]*"[^>]*>([\s\S]*?)<\/div>/i,
+        /<div[^>]*class="[^"]*post__text[^"]*"[^>]*>([\s\S]*?)<\/div>/i,
+      ];
+      for (const selector of vkSelectors) {
+        const match = html.match(selector);
+        if (match && match[1].trim().length > 20) {
+          content = stripHtml(decodeHtml(match[1]));
+          break;
+        }
+      }
     } else {
       content = metadata.description || "";
     }
@@ -234,6 +376,7 @@ serve(async (req) => {
         image: mediaList.find(m => m.type === "image")?.url || "",
         mediaList: mediaList.slice(0, 15),
         source: normalizedUrl.includes("t.me") ? "telegram"
+                : normalizedUrl.includes("vk.com") ? "vk"
                 : normalizedUrl.includes("youtube.com") || normalizedUrl.includes("youtu.be") ? "youtube"
                 : normalizedUrl.includes("zen.yandex.ru") || normalizedUrl.includes("dzen.ru") ? "zen"
                 : "web",
@@ -241,6 +384,7 @@ serve(async (req) => {
       { headers: { ...corsHeaders, "Content-Type": "application/json; charset=utf-8" } }
     );
   } catch (e) {
+    console.error("ERROR:", e);
     return new Response(JSON.stringify({ error: String(e) }), { status: 500, headers: corsHeaders });
   }
 });
