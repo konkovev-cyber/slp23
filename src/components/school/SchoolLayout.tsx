@@ -29,9 +29,9 @@ export default function SchoolLayout({ title, children }: Props) {
         <SidebarProvider>
             <div className="min-h-screen flex w-full bg-background">
                 <SchoolSidebar />
-                <SidebarInset className="bg-transparent">
+                <SidebarInset className="bg-transparent w-full overflow-x-hidden">
                     <header className="sticky top-0 z-40 border-b border-border/40 bg-background/80 backdrop-blur-md">
-                        <div className="flex h-16 items-center justify-between px-4 md:px-6">
+                        <div className="flex h-16 items-center justify-between px-4 md:px-6 w-full">
                             <div className="flex items-center gap-3 md:gap-4">
                                 <SidebarTrigger className="hover:bg-primary/5 transition-colors md:flex hidden" />
                                 <div className="h-6 w-px bg-border/40 hidden md:block" />
@@ -66,8 +66,8 @@ export default function SchoolLayout({ title, children }: Props) {
                         </div>
                     </header>
 
-                    <main className="flex-1 p-4 md:p-6 lg:p-10 pb-24 md:pb-6">
-                        <div className="max-w-[1400px] mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700">
+                    <main className="flex-1 p-4 md:p-6 lg:p-10 pb-24 md:pb-6 w-full overflow-x-hidden">
+                        <div className="max-w-[1400px] mx-auto w-full animate-in fade-in slide-in-from-bottom-4 duration-700">
                             {children}
                         </div>
                         <footer className="mt-10 md:mt-20 pb-6 text-center hidden md:block">
