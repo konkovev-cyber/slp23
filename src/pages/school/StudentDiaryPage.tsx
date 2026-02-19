@@ -302,9 +302,9 @@ export default function StudentDiaryPage() {
                 <title>Дневник | {className}</title>
             </Helmet>
 
-            <div className="max-w-4xl mx-auto space-y-4 pb-20 overflow-x-hidden touch-none">
+            <div className="w-full max-w-4xl mx-auto space-y-4 pb-20 px-2 sm:px-4 overflow-x-hidden touch-none">
                 {/* Controls */}
-                <div className="flex flex-col md:flex-row items-center justify-between gap-4 bg-background p-4 rounded-[32px] border-2 border-border shadow-xl touch-none">
+                <div className="flex flex-col md:flex-row items-center justify-between gap-4 bg-background p-3 sm:p-4 rounded-[32px] border-2 border-border shadow-xl touch-none">
                     <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as 'day' | 'week' | 'month')} className="w-full md:w-auto">
                         <TabsList className="bg-muted/50 p-1 rounded-2xl h-12 w-full md:w-auto">
                             <TabsTrigger value="day" className="rounded-xl h-10 px-6 font-bold data-[state=active]:bg-background data-[state=active]:shadow-md">День</TabsTrigger>
@@ -366,8 +366,8 @@ export default function StudentDiaryPage() {
                         {/* HOMEWORK SUMMARY */}
                         {(viewMode === 'day' || viewMode === 'week') && upcomingHomework.length > 0 && (
                             <div className="grid gap-4 md:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] items-start">
-                                <div className="md:col-span-1 md:col-start-2 order-2 md:order-none">
-                                    <Card className="border-2 border-border rounded-3xl shadow-lg bg-background/90">
+                                <div className="md:col-span-1 md:col-start-2 order-2 md:order-none w-full">
+                                    <Card className="border-2 border-border rounded-3xl shadow-lg bg-background/90 w-full">
                                         <CardHeader className="pb-2">
                                             <div className="flex items-center justify-between gap-3">
                                                 <div className="flex items-center gap-3">
@@ -463,43 +463,43 @@ export default function StudentDiaryPage() {
 
                         {/* WEEK VIEW */}
                         {viewMode === 'week' && (
-                            <div className="space-y-8">
+                            <div className="space-y-6 w-full">
                                 {weekSchedule.map((day, dIdx) => (
-                                    <div key={dIdx} className="space-y-4">
+                                    <div key={dIdx} className="space-y-3 w-full">
                                         <div className={cn(
-                                            "flex items-center gap-3 px-4 py-2 rounded-2xl w-fit",
+                                            "flex items-center gap-3 px-3 py-2 rounded-2xl w-fit max-w-full",
                                             isToday(day.date) ? "bg-primary text-white shadow-lg shadow-primary/30" : "bg-muted text-muted-foreground"
                                         )}>
-                                            <span className="font-black uppercase tracking-widest text-xs">
+                                            <span className="font-black uppercase tracking-widest text-xs whitespace-nowrap">
                                                 {DAYS_RU[day.date.getDay()]}
                                             </span>
-                                            <span className="font-bold opacity-80 text-xs">
+                                            <span className="font-bold opacity-80 text-xs whitespace-nowrap">
                                                 {day.date.getDate()} {MONTHS_RU[day.date.getMonth()]}
                                             </span>
                                         </div>
 
-                                        <div className="grid grid-cols-1 gap-4 pl-4 border-l-2 border-border">
+                                        <div className="grid grid-cols-1 gap-3 w-full">
                                             {day.entries.length === 0 ? (
                                                 <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest italic py-2">Выходной день / Нет занятий</p>
                                             ) : (
                                                 day.entries.map((entry, idx) => (
-                                                    <div key={idx} className="bg-background rounded-2xl p-4 border-2 border-border shadow-sm flex flex-col md:flex-row md:items-center gap-4">
-                                                        <div className="flex items-center gap-3 min-w-[200px]">
+                                                    <div key={idx} className="bg-background rounded-2xl p-3 sm:p-4 border-2 border-border shadow-sm flex flex-col md:flex-row md:items-center gap-3 sm:gap-4 w-full overflow-hidden">
+                                                        <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-shrink-0">
                                                             <div
-                                                                className="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center font-black text-sm cursor-help"
+                                                                className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-primary text-white flex items-center justify-center font-black text-xs sm:text-sm flex-shrink-0"
                                                                 title={`Номер урока: ${entry.lesson_number}`}
                                                             >
                                                                 {entry.lesson_number}
                                                             </div>
-                                                            <div>
-                                                                <p className="font-bold text-foreground" title="Предмет">{entry.subject_name}</p>
-                                                                <p className="text-[10px] uppercase font-bold text-muted-foreground truncate max-w-[120px]" title={`Преподаватель: ${entry.teacher_name}`}>{entry.teacher_name}</p>
+                                                            <div className="min-w-0 flex-1">
+                                                                <p className="font-bold text-foreground text-xs sm:text-sm truncate" title="Предмет">{entry.subject_name}</p>
+                                                                <p className="text-[9px] sm:text-[10px] uppercase font-bold text-muted-foreground truncate max-w-full" title={`Преподаватель: ${entry.teacher_name}`}>{entry.teacher_name}</p>
                                                             </div>
                                                         </div>
 
-                                                        <div className="flex-1 border-t md:border-t-0 md:border-l border-border pt-2 md:pt-0 md:pl-4">
+                                                        <div className="flex-1 border-t md:border-t-0 md:border-l border-border pt-2 md:pt-0 md:pl-3 sm:md:pl-4 min-w-0">
                                                             {entry.homework ? (
-                                                                <p className="text-xs text-foreground font-medium">{entry.homework.description}</p>
+                                                                <p className="text-xs text-foreground font-medium break-words">{entry.homework.description}</p>
                                                             ) : (
                                                                 <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Нет задания</p>
                                                             )}
@@ -507,7 +507,7 @@ export default function StudentDiaryPage() {
 
                                                         {entry.grade && (
                                                             <div
-                                                                className={`w-10 h-10 rounded-xl flex items-center justify-center text-white font-black shadow-md cursor-help ${getGradeColor(entry.grade.grade)}`}
+                                                                className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center text-white font-black shadow-md flex-shrink-0 ${getGradeColor(entry.grade.grade)}`}
                                                                 title={entry.grade.comment ? `Оценка: ${entry.grade.grade}. Комментарий: ${entry.grade.comment}` : `Оценка: ${entry.grade.grade}`}
                                                             >
                                                                 {entry.grade.grade}
