@@ -99,6 +99,7 @@ async function fetchVKPost(url: string): Promise<{
   content: string;
   image: string;
   mediaList: Array<{ url: string; type: "image" | "video" }>;
+  published_at?: string;
 } | null> {
   try {
     // Loosen regex to match wall-ID_POSTID anywhere in URL
@@ -162,6 +163,7 @@ async function fetchVKPost(url: string): Promise<{
       content,
       image: coverImage || (mediaList.find(m => m.type === "image")?.url || ""),
       mediaList: mediaList.slice(0, 15),
+      published_at: post.date ? new Date(post.date * 1000).toISOString() : new Date().toISOString(),
     };
   } catch (error) {
     console.error("[fetch-metadata] VK fetch error:", error);

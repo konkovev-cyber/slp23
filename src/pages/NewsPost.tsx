@@ -13,7 +13,7 @@ import { useMemo, useState } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { toEmbedUrl, isDirectVideoFile } from "@/lib/video-embed";
-import { cn } from "@/lib/utils";
+import DOMPurify from 'dompurify';
 
 // Regex to find links in text
 const URL_REGEX = /(https?:\/\/[^\s]+)/g;
@@ -318,7 +318,14 @@ export default function NewsPost() {
                         />
                       </div>
                     )}
-                    <FormattedText text={cleanContent} />
+                    {/<[a-z][\s\S]*>/i.test(cleanContent) ? (
+                      <div
+                        className="prose prose-sm md:prose-base dark:prose-invert max-w-none pt-1 leading-relaxed text-foreground/90"
+                        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(cleanContent) }}
+                      />
+                    ) : (
+                      <FormattedText text={cleanContent} />
+                    )}
                     {/* Clearfix for short texts */}
                     <div className="clear-both" />
                   </div>

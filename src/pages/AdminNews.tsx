@@ -20,7 +20,8 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger
+  DialogTrigger,
+  DialogDescription
 } from "@/components/ui/dialog";
 import {
   Table,
@@ -34,8 +35,9 @@ import { useToast } from "@/hooks/use-toast";
 import ImageUploader, { ImageValue } from "@/components/admin/ImageUploader";
 import { format } from "date-fns";
 import { detectVideoProvider, isDirectVideoFile } from "@/lib/video-embed";
-import { Plus, Trash2, Edit2, Download, Share2, Globe, Calendar, Search, Wand2 as MagicWand, Image as ImageIcon, Video, X, Type, Film, Copy, Check } from "lucide-react";
+import { Plus, Trash2, Edit2, Download, Globe, Search, Wand2 as MagicWand, Image as ImageIcon, Video, X, Copy } from "lucide-react";
 import { VkBatchImportDialog } from "@/components/admin/VkBatchImportDialog";
+import RichTextEditor from "@/components/admin/RichTextEditor";
 
 type Post = {
   id: string;
@@ -166,20 +168,34 @@ export default function AdminNews() {
           importedMedia.push({ url: importUrl.trim(), type: "video" });
         }
 
+        const toHtml = (text: string) => {
+          if (!text) return "";
+          return text
+            .split("\n")
+            .map((line) => line.trim())
+            .filter((line) => line.length > 0)
+            .map((line) => `<p>${line}</p>`)
+            .join("");
+        };
+
         const importedContent = (data.content || data.description || "").trim();
+        const htmlContent = toHtml(importedContent);
         const newTitle = data.title || buildTitleFromText(importedContent) || formData.title;
         const newExcerpt = data.description || buildExcerptFromText(importedContent) || formData.excerpt;
         const coverImage = data.image || importedMedia.find(m => m.type === "image")?.url;
         const additionalMedia = importedMedia.filter(m => m.url !== coverImage);
-        let mediaGalleryText = "";
+
 
         setFormData(prev => ({
           ...prev,
           title: newTitle || "",
           slug: generateUniqueSlug(newTitle || "news"),
           category: data.source === "telegram" ? "Новости" : prev.category,
-          content: importedContent || "",
+          content: htmlContent || "",
           excerpt: newExcerpt || "",
+          published_at: data.published_at
+            ? data.published_at.slice(0, 16)
+            : prev.published_at,
           image_value: coverImage ? {
             publicUrl: coverImage,
             path: "imported",
@@ -219,11 +235,21 @@ export default function AdminNews() {
     const imageUrls = vkImages.split('\n').filter(url => url.trim().startsWith('http'));
     const mediaList: MediaItem[] = imageUrls.map(url => ({ url: url.trim(), type: "image" as const }));
 
+    const toHtml = (text: string) => {
+      if (!text) return "";
+      return text
+        .split("\n")
+        .map((line) => line.trim())
+        .filter((line) => line.length > 0)
+        .map((line) => `<p>${line}</p>`)
+        .join("");
+    };
+
     setFormData(prev => ({
       ...prev,
       title,
       slug: generateUniqueSlug(title),
-      content: vkText.trim(),
+      content: toHtml(vkText.trim()),
       excerpt: vkText.trim().slice(0, 255) + (vkText.length > 255 ? "..." : ""),
       image_value: mediaList.length > 0 ? {
         publicUrl: mediaList[0].url,
@@ -384,7 +410,7 @@ export default function AdminNews() {
   };
 
   /* --- EDIT LOGIC --- */
-  const [editingId, setEditingId] = useState<string | null>(null);
+
   const editMutation = useMutation({
     mutationFn: async (id: string) => {
       const { data, error } = await supabase.from("posts").select("*").eq("id", id).single();
@@ -400,14 +426,14 @@ export default function AdminNews() {
         category: post.category,
         excerpt: post.excerpt || "",
         content: post.content || "",
-        published_at: post.published_at,
+        published_at: post.published_at ? post.published_at.slice(0, 16) : new Date().toISOString().slice(0, 16),
         image_value: post.image_url ? {
           publicUrl: post.image_url,
           path: post.image_url,
           bucket: "news"
         } : null,
       });
-      setEditingId(post.id);
+
       setIsCreateOpen(true);
     },
   });
@@ -489,24 +515,20 @@ export default function AdminNews() {
                 <DialogTitle className="text-xl">
                   {formData.id ? "Редактировать новость" : "Новая новость"}
                 </DialogTitle>
+                <DialogDescription className="text-sm text-muted-foreground pb-2">
+                  Заполните поля ниже или воспользуйтесь импортом для быстрого создания новости.
+                </DialogDescription>
               </DialogHeader>
 
               <div className="space-y-6 py-4">
                 {!formData.id && (
                   <div className="bg-primary/5 p-4 rounded-xl border border-primary/10 shadow-sm">
                     <div className="flex flex-col gap-2">
-                      <Label className="text-xs font-semibold text-primary/70 uppercase tracking-wider">
-                        🌐 Импорт из внешних источников
-                      </Label>
-                      <p className="text-xs text-muted-foreground mb-1">
-                        Поддерживаются: Telegram, YouTube, и сайты с Open Graph
-                      </p>
-
                       {/* VK Quick Import */}
                       <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-3 mb-2">
-                        <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center justify-between">
                           <p className="text-xs font-semibold text-yellow-700">
-                            ⚠️ VK: Ручной импорт
+                            ⚠️ VK: Быстрый импорт текста и фото
                           </p>
                           <Button
                             type="button"
@@ -520,33 +542,33 @@ export default function AdminNews() {
                         </div>
 
                         {showVkManualImport && (
-                          <div className="space-y-3 mt-2">
+                          <div className="space-y-3 mt-3">
                             <div>
-                              <Label className="text-xs">Текст из поста</Label>
+                              <Label className="text-[10px] uppercase font-bold text-yellow-800/60">Текст из поста</Label>
                               <Textarea
                                 value={vkText}
                                 onChange={(e) => setVkText(e.target.value)}
                                 placeholder="Вставьте текст из поста VK..."
-                                className="h-24 mt-1"
+                                className="h-24 mt-1 bg-white/50"
                               />
                             </div>
                             <div>
-                              <Label className="text-xs">URL изображений (по одному в строке)</Label>
+                              <Label className="text-[10px] uppercase font-bold text-yellow-800/60">URL изображений (по одному в строке)</Label>
                               <Textarea
                                 value={vkImages}
                                 onChange={(e) => setVkImages(e.target.value)}
                                 placeholder="https://sun9-1.userapi.com/...&#10;https://sun9-2.userapi.com/..."
-                                className="h-20 mt-1 font-mono text-xs"
+                                className="h-20 mt-1 font-mono text-[10px] bg-white/50"
                               />
                             </div>
                             <Button
                               type="button"
                               size="sm"
                               onClick={handleVkQuickImport}
-                              className="w-full"
+                              className="w-full bg-yellow-600 hover:bg-yellow-700 text-white"
                             >
                               <Copy className="w-3 h-3 mr-2" />
-                              Вставить в форму
+                              Заполнить форму
                             </Button>
                           </div>
                         )}
@@ -558,18 +580,18 @@ export default function AdminNews() {
                           <Input
                             value={importUrl}
                             onChange={(e) => setImportUrl(e.target.value)}
-                            placeholder="Вставьте ссылку на пост (Telegram, VK) или статью..."
+                            placeholder="Ссылка на пост (Telegram, VK, Web)..."
                             className="bg-background h-10 pl-9"
                           />
                         </div>
                         <Button
-                          variant="default"
+                          variant="secondary"
                           onClick={handleFetchMetadata}
                           disabled={isFetchingInfo || !importUrl}
-                          className="shrink-0 gap-2"
+                          className="shrink-0 gap-2 font-bold"
                         >
                           <Download className="w-4 h-4" />
-                          {isFetchingInfo ? "Загрузка..." : "Импорт"}
+                          {isFetchingInfo ? "..." : "Импорт"}
                         </Button>
                       </div>
                     </div>
@@ -627,10 +649,9 @@ export default function AdminNews() {
 
                   <div className="md:col-span-2 space-y-2">
                     <Label className="font-medium">Полный текст (content)</Label>
-                    <Textarea
+                    <RichTextEditor
                       value={formData.content}
-                      onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                      rows={8}
+                      onChange={(val) => setFormData({ ...formData, content: val })}
                       placeholder="Основной текст новости..."
                     />
                   </div>
