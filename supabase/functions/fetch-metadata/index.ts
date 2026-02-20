@@ -32,6 +32,46 @@ function stripHtml(html: string): string {
     .trim();
 }
 
+/**
+ * Robustly get text from response with encoding detection
+ */
+async function getTextWithEncoding(res: Response): Promise<string> {
+  const buffer = await res.arrayBuffer();
+  const contentType = res.headers.get("content-type") || "";
+
+  // 1. Try to get charset from header
+  let charset = "utf-8";
+  const charsetMatch = contentType.match(/charset=([^;]+)/i);
+  if (charsetMatch) {
+    charset = charsetMatch[1].toLowerCase().trim();
+  }
+
+  try {
+    const decoder = new TextDecoder(charset);
+    const text = decoder.decode(buffer);
+
+    // 2. If we see replacement characters, try fallback
+    if (text.includes("") || text.includes("\uFFFD")) {
+      // Common Russian encodings if UTF-8 fails
+      const fallbacks = ["windows-1251", "koi8-r"];
+      for (const fb of fallbacks) {
+        if (fb === charset) continue;
+        try {
+          const fbDecoder = new TextDecoder(fb);
+          const fbText = fbDecoder.decode(buffer);
+          if (!fbText.includes("") && !fbText.includes("\uFFFD")) {
+            return fbText;
+          }
+        } catch { /* ignore */ }
+      }
+    }
+    return text;
+  } catch {
+    // Last resort
+    return new TextDecoder("utf-8").decode(buffer);
+  }
+}
+
 function extractMetadata(html: string) {
   const getMeta = (property: string): string => {
     const patterns = [
@@ -61,12 +101,14 @@ async function fetchVKPost(url: string): Promise<{
   mediaList: Array<{ url: string; type: "image" | "video" }>;
 } | null> {
   try {
-    const wallMatch = url.match(/vk\.com\/wall(-?\d+)_(\d+)/);
+    // Loosen regex to match wall-ID_POSTID anywhere in URL
+    const wallMatch = url.match(/wall(-?\d+)_(\d+)/);
     if (!wallMatch) return null;
 
     const posts = `${wallMatch[1]}_${wallMatch[2]}`;
     const apiUrl = `https://api.vk.com/method/wall.getById?posts=${posts}&extended=1&v=${VK_VERSION}&access_token=${VK_SERVICE_KEY}`;
 
+    console.log(`[fetch-metadata] Fetching VK API: ${posts}`);
     const response = await fetch(apiUrl);
     if (!response.ok) return null;
 
@@ -122,7 +164,7 @@ async function fetchVKPost(url: string): Promise<{
       mediaList: mediaList.slice(0, 15),
     };
   } catch (error) {
-    console.error("VK fetch error:", error);
+    console.error("[fetch-metadata] VK fetch error:", error);
     return null;
   }
 }
@@ -131,12 +173,14 @@ serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
-    const { url } = await req.json();
+    const body = await req.json().catch(() => ({}));
+    const { url } = body;
     if (!url) throw new Error("URL is required");
 
     let normalizedUrl = url.trim();
 
-    if (normalizedUrl.includes("vk.com/wall")) {
+    // Try VK API first if it looks like a VK URL
+    if (normalizedUrl.includes("vk.com")) {
       const vkData = await fetchVKPost(normalizedUrl);
       if (vkData) {
         return new Response(
@@ -146,13 +190,14 @@ serve(async (req: Request) => {
       }
     }
 
+    // Fallback to HTML scraping with encoding detection
     const res = await fetch(normalizedUrl, {
       headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36" }
     });
 
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-    const html = await res.text();
+    const html = await getTextWithEncoding(res);
     const metadata = extractMetadata(html);
 
     return new Response(
