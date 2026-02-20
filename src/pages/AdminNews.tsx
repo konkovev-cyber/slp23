@@ -35,6 +35,7 @@ import ImageUploader, { ImageValue } from "@/components/admin/ImageUploader";
 import { format } from "date-fns";
 import { detectVideoProvider, isDirectVideoFile } from "@/lib/video-embed";
 import { Plus, Trash2, Edit2, Download, Share2, Globe, Calendar, Search, Wand2 as MagicWand, Image as ImageIcon, Video, X, Type, Film, Copy, Check } from "lucide-react";
+import { VkBatchImportDialog } from "@/components/admin/VkBatchImportDialog";
 
 type Post = {
   id: string;
@@ -209,7 +210,7 @@ export default function AdminNews() {
 
     const lines = vkText.trim().split('\n').filter(l => l.trim().length > 0);
     const title = lines[0]?.slice(0, 100).trim() || "Новости";
-    
+
     // Парсим изображения из текста (если вставили с URL)
     const imageUrls = vkImages.split('\n').filter(url => url.trim().startsWith('http'));
     const mediaList: MediaItem[] = imageUrls.map(url => ({ url: url.trim(), type: "image" as const }));
@@ -227,7 +228,7 @@ export default function AdminNews() {
     setShowVkManualImport(false);
     setVkText("");
     setVkImages("");
-    
+
     toast({ title: "Готово", description: "Данные вставлены в форму" });
   };
 
@@ -460,6 +461,8 @@ export default function AdminNews() {
             />
           </div>
 
+          <VkBatchImportDialog onImportSuccess={() => queryClient.invalidateQueries({ queryKey: ["posts"] })} />
+
           <Dialog open={isCreateOpen} onOpenChange={(open) => {
             setIsCreateOpen(open);
             if (!open) resetForm();
@@ -486,7 +489,7 @@ export default function AdminNews() {
                       <p className="text-xs text-muted-foreground mb-1">
                         Поддерживаются: Telegram, YouTube, и сайты с Open Graph
                       </p>
-                      
+
                       {/* VK Quick Import */}
                       <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-3 mb-2">
                         <div className="flex items-center justify-between mb-2">
@@ -503,7 +506,7 @@ export default function AdminNews() {
                             {showVkManualImport ? "Скрыть" : "Открыть"}
                           </Button>
                         </div>
-                        
+
                         {showVkManualImport && (
                           <div className="space-y-3 mt-2">
                             <div>
