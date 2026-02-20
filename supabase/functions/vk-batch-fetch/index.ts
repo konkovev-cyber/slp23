@@ -7,6 +7,7 @@ const corsHeaders = {
 };
 
 const VK_SERVICE_KEY = Deno.env.get("VK_ACCESS_TOKEN") || "bc15f23abc15f23abc15f23a7dbf2b05adbbc15bc15f23ad58326cf040249df893a4523";
+const VK_SECURE_KEY = Deno.env.get("VK_SECURE_KEY") || "FaYx6PMdo2ceIPi4Tj91";
 const VK_VERSION = "5.199"; // Updated to recent version, or "5.131"
 // Actually, using 5.131 as it's safe
 

@@ -6,8 +6,9 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-// VK API credentials (из .env)
-const VK_SERVICE_KEY = "bc15f23abc15f23abc15f23a7dbf2b05adbbc15bc15f23ad58326cf040249df893a4523";
+// VK API credentials
+const VK_SERVICE_KEY = Deno.env.get("VK_ACCESS_TOKEN") || "bc15f23abc15f23abc15f23a7dbf2b05adbbc15bc15f23ad58326cf040249df893a4523";
+const VK_SECURE_KEY = Deno.env.get("VK_SECURE_KEY") || "FaYx6PMdo2ceIPi4Tj91";
 const VK_VERSION = "2024.01.01";
 
 const GARBAGE_PATTERNS = [
@@ -177,7 +178,7 @@ async function fetchVKPost(url: string): Promise<{
 
     // Запрос к VK API
     const apiUrl = `https://api.vk.com/method/wall.getById?posts=${ownerId}_${postId}&extended=1&v=${VK_VERSION}`;
-    
+
     const response = await fetch(apiUrl, {
       headers: {
         "Authorization": `ServiceKey ${VK_SERVICE_KEY}`,
@@ -205,7 +206,7 @@ async function fetchVKPost(url: string): Promise<{
 
     // Извлекаем текст
     const content = post.text ? stripHtml(decodeHtml(post.text)) : "";
-    
+
     // Заголовок - первая строка или "Новости"
     let title = "Новости";
     if (content) {
@@ -217,24 +218,24 @@ async function fetchVKPost(url: string): Promise<{
 
     // Извлекаем изображения
     const mediaList: Array<{ url: string; type: "image" | "video" }> = [];
-    
+
     if (post.attachments) {
       for (const attachment of post.attachments) {
         if (attachment.type === "photo" && attachment.photo) {
           // Берём изображение в наилучшем качестве
-          const imageUrl = attachment.photo.sizes?.find((s: any) => s.type === "z" || s.type === "y" || s.type === "x")?.url 
-                         || attachment.photo.photo_604 
-                         || attachment.photo.photo_807 
-                         || attachment.photo.photo_1280;
+          const imageUrl = attachment.photo.sizes?.find((s: any) => s.type === "z" || s.type === "y" || s.type === "x")?.url
+            || attachment.photo.photo_604
+            || attachment.photo.photo_807
+            || attachment.photo.photo_1280;
           if (imageUrl && !mediaList.find(m => m.url === imageUrl)) {
             mediaList.push({ url: imageUrl, type: "image" });
           }
         }
-        
+
         if (attachment.type === "video" && attachment.video) {
-          const videoUrl = attachment.video.player 
-                        || attachment.video.src 
-                        || `https://vk.com/video${attachment.video.owner_id}_${attachment.video.id}`;
+          const videoUrl = attachment.video.player
+            || attachment.video.src
+            || `https://vk.com/video${attachment.video.owner_id}_${attachment.video.id}`;
           if (videoUrl && !mediaList.find(m => m.url === videoUrl)) {
             mediaList.push({ url: videoUrl, type: "video" });
           }
@@ -271,7 +272,7 @@ serve(async (req) => {
     if (normalizedUrl.includes("vk.com/wall-")) {
       console.log("DEBUG: VK URL detected:", normalizedUrl);
       const vkData = await fetchVKPost(normalizedUrl);
-      
+
       if (vkData) {
         console.log("DEBUG: VK data fetched successfully");
         return new Response(
@@ -282,7 +283,7 @@ serve(async (req) => {
           { headers: { ...corsHeaders, "Content-Type": "application/json; charset=utf-8" } }
         );
       }
-      
+
       console.log("DEBUG: VK API failed, falling back to HTML parsing");
     }
 
@@ -376,9 +377,9 @@ serve(async (req) => {
         image: mediaList.find(m => m.type === "image")?.url || "",
         mediaList: mediaList.slice(0, 15),
         source: normalizedUrl.includes("t.me") ? "telegram"
-                : normalizedUrl.includes("vk.com") ? "vk"
-                : normalizedUrl.includes("youtube.com") || normalizedUrl.includes("youtu.be") ? "youtube"
-                : normalizedUrl.includes("zen.yandex.ru") || normalizedUrl.includes("dzen.ru") ? "zen"
+          : normalizedUrl.includes("vk.com") ? "vk"
+            : normalizedUrl.includes("youtube.com") || normalizedUrl.includes("youtu.be") ? "youtube"
+              : normalizedUrl.includes("zen.yandex.ru") || normalizedUrl.includes("dzen.ru") ? "zen"
                 : "web",
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json; charset=utf-8" } }
