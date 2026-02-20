@@ -7,32 +7,8 @@ const corsHeaders = {
 };
 
 // VK API credentials
-const VK_SERVICE_KEY = Deno.env.get("VK_ACCESS_TOKEN") || "bc15f23abc15f23abc15f23a7dbf2b05adbbc15bc15f23ad58326cf040249df893a4523";
+const VK_SERVICE_KEY = "bc15f23abc15f23abc15f23a7dbf2b05adbbc15bc15f23ad58326cf040249df893a4523";
 const VK_VERSION = "5.199";
-
-const GARBAGE_PATTERNS = [
-  /emoji/i, /icon/i, /favicon/i, /avatar/i, /logo/i, /pixel/i, /ads/i, /banner/i,
-  /loading/i, /spinner/i, /marker/i, /sprite/i, /placeholder/i
-];
-
-const GENERIC_TITLES = [
-  /telegram\s*widget/i, /telegram\s*:\s*contact/i, /vkontakte/i, /вконтакте/i, /wall\s*post/i, /запись\s*на\s*стене/i
-];
-
-const VIDEO_PATTERNS = [
-  /youtube\.com\/watch/i, /youtu\.be\//i, /vimeo\.com\//i,
-  /vk\.com\/video/i, /vk\.com\/clip/i,
-  /t\.me\/[^\/]+\/\d+\?video=1/i, /mp4$/i, /webm$/i
-];
-
-function isGarbageImage(url: string): boolean {
-  return GARBAGE_PATTERNS.some(pattern => pattern.test(url));
-}
-
-function detectType(url: string): "image" | "video" {
-  if (VIDEO_PATTERNS.some(pattern => pattern.test(url))) return "video";
-  return "image";
-}
 
 function decodeHtml(str: string): string {
   if (!str) return "";
@@ -48,15 +24,12 @@ function decodeHtml(str: string): string {
 }
 
 function stripHtml(html: string): string {
+  if (!html) return "";
   return html
     .replace(/<br\s*\/?>/gi, "\n")
     .replace(/<\/p>/gi, "\n\n")
     .replace(/<[^>]*>/g, "")
     .trim();
-}
-
-async function getTextWithEncoding(res: Response): Promise<string> {
-  return await res.text();
 }
 
 function extractMetadata(html: string) {
@@ -73,36 +46,13 @@ function extractMetadata(html: string) {
   };
 
   const title = decodeHtml(getMeta("og:title") || (html.match(/<title[^>]*>([^<]+)<\/title>/i)?.[1] || "").trim());
-  const isGeneric = GENERIC_TITLES.some(p => p.test(title));
-
   return {
-    title: isGeneric ? "" : title,
+    title,
     description: decodeHtml(getMeta("og:description") || getMeta("description") || ""),
     image: getMeta("og:image") || getMeta("twitter:image") || "",
   };
 }
 
-function extractMedia(html: string) {
-  const urls: string[] = [];
-  const ogImage = html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i)?.[1];
-  if (ogImage) urls.push(ogImage);
-
-  const imgTags = html.matchAll(/<img[^>]+src=["']([^"']+)["']/gi);
-  for (const match of imgTags) {
-    if (match[1].startsWith("http") && !urls.includes(match[1])) urls.push(match[1]);
-  }
-
-  return urls
-    .filter(url => !isGarbageImage(url))
-    .map(url => ({
-      url,
-      type: detectType(url)
-    }));
-}
-
-/**
- * Извлечение данных из поста VK через API
- */
 async function fetchVKPost(url: string): Promise<{
   title: string;
   description: string;
@@ -114,21 +64,16 @@ async function fetchVKPost(url: string): Promise<{
     const wallMatch = url.match(/vk\.com\/wall(-?\d+)_(\d+)/);
     if (!wallMatch) return null;
 
-    const ownerId = wallMatch[1];
-    const postId = wallMatch[2];
-
-    const apiUrl = `https://api.vk.ru/method/wall.getById?posts=${ownerId}_${postId}&extended=1&v=${VK_VERSION}&access_token=${VK_SERVICE_KEY}`;
+    const posts = `${wallMatch[1]}_${wallMatch[2]}`;
+    const apiUrl = `https://api.vk.com/method/wall.getById?posts=${posts}&extended=1&v=${VK_VERSION}&access_token=${VK_SERVICE_KEY}`;
 
     const response = await fetch(apiUrl);
     if (!response.ok) return null;
 
     const data = await response.json();
-    if (data.error) return null;
+    if (data.error || !data.response?.items?.[0]) return null;
 
-    const post = data.response?.items?.[0];
-    if (!post) return null;
-
-    // Текст и ссылка на оригинал
+    const post = data.response.items[0];
     const contentText = post.text ? stripHtml(decodeHtml(post.text)) : "";
     const sourceUrl = `https://vk.com/wall${post.owner_id}_${post.id}`;
     const content = contentText + `\n\nИсточник: ${sourceUrl}`;
@@ -141,18 +86,20 @@ async function fetchVKPost(url: string): Promise<{
       }
     }
 
+    const forceHttps = (u: string) => u ? u.replace(/^http:\/\//i, 'https://') : "";
     const mediaList: Array<{ url: string; type: "image" | "video" }> = [];
     let coverImage = "";
 
     if (post.attachments) {
       for (const attachment of post.attachments) {
         if (attachment.type === "photo" && attachment.photo) {
-          const imageUrl = attachment.photo.sizes?.find((s: any) => s.type === "w" || s.type === "z" || s.type === "y")?.url
+          const imageUrl = attachment.photo.sizes?.find((s: any) => s.type === "w" || s.type === "z" || s.type === "y" || s.type === "x")?.url
             || attachment.photo.sizes?.[attachment.photo.sizes.length - 1]?.url
             || attachment.photo.photo_1280;
           if (imageUrl) {
-            mediaList.push({ url: imageUrl, type: "image" });
-            if (!coverImage) coverImage = imageUrl;
+            const httpsUrl = forceHttps(imageUrl);
+            mediaList.push({ url: httpsUrl, type: "image" });
+            if (!coverImage) coverImage = httpsUrl;
           }
         }
 
@@ -162,7 +109,7 @@ async function fetchVKPost(url: string): Promise<{
             || attachment.video.image?.[attachment.video.image.length - 1]?.url;
 
           mediaList.push({ url: videoLink, type: "video" });
-          if (!coverImage && videoThumb) coverImage = videoThumb;
+          if (!coverImage && videoThumb) coverImage = forceHttps(videoThumb);
         }
       }
     }
@@ -205,17 +152,16 @@ serve(async (req: Request) => {
 
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-    const html = await getTextWithEncoding(res);
+    const html = await res.text();
     const metadata = extractMetadata(html);
-    const mediaList = extractMedia(html);
 
     return new Response(
       JSON.stringify({
         title: metadata.title || "Новости",
         description: metadata.description,
         content: metadata.description,
-        image: metadata.image || mediaList.find(m => m.type === "image")?.url || "",
-        mediaList: mediaList.slice(0, 15),
+        image: metadata.image ? metadata.image.replace(/^http:\/\//i, 'https://') : "",
+        mediaList: [],
         source: normalizedUrl.includes("t.me") ? "telegram" : "web",
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json; charset=utf-8" } }

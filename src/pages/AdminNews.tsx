@@ -175,14 +175,18 @@ export default function AdminNews() {
 
         setFormData(prev => ({
           ...prev,
-          title: newTitle,
-          slug: generateUniqueSlug(newTitle),
+          title: newTitle || "",
+          slug: generateUniqueSlug(newTitle || "news"),
           category: data.source === "telegram" ? "Новости" : prev.category,
-          content: importedContent,
-          excerpt: newExcerpt,
-          image_value: coverImage ? { url: coverImage, name: "imported" } : prev.image_value,
-          mediaList: additionalMedia,
-          source: data.source,
+          content: importedContent || "",
+          excerpt: newExcerpt || "",
+          image_value: coverImage ? {
+            publicUrl: coverImage,
+            path: "imported",
+            bucket: "news"
+          } : prev.image_value,
+          mediaList: additionalMedia || [],
+          source: data.source || "",
         }));
 
         toast({
@@ -221,7 +225,11 @@ export default function AdminNews() {
       slug: generateUniqueSlug(title),
       content: vkText.trim(),
       excerpt: vkText.trim().slice(0, 255) + (vkText.length > 255 ? "..." : ""),
-      image_value: mediaList.length > 0 ? { url: mediaList[0].url, name: "imported" } : prev.image_value,
+      image_value: mediaList.length > 0 ? {
+        publicUrl: mediaList[0].url,
+        path: "imported",
+        bucket: "news"
+      } : prev.image_value,
       mediaList: mediaList.slice(1),
     }));
 
@@ -271,7 +279,7 @@ export default function AdminNews() {
           category: data.category,
           excerpt: data.excerpt,
           content: data.content,
-          image_url: data.image_value?.url || null,
+          image_url: data.image_value?.publicUrl || null,
           published_at: data.published_at,
           source: data.source || null,
           source_id: data.source_id || null,
@@ -311,7 +319,7 @@ export default function AdminNews() {
           category: data.category,
           excerpt: data.excerpt,
           content: data.content,
-          image_url: data.image_value?.url || null,
+          image_url: data.image_value?.publicUrl || null,
           published_at: data.published_at,
         })
         .eq("id", id);
@@ -393,7 +401,11 @@ export default function AdminNews() {
         excerpt: post.excerpt || "",
         content: post.content || "",
         published_at: post.published_at,
-        image_value: post.image_url ? { url: post.image_url, name: "existing" } : null,
+        image_value: post.image_url ? {
+          publicUrl: post.image_url,
+          path: post.image_url,
+          bucket: "news"
+        } : null,
       });
       setEditingId(post.id);
       setIsCreateOpen(true);

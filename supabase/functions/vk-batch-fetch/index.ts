@@ -6,6 +6,7 @@ const corsHeaders = {
     "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
+// VK Service Key
 const VK_SERVICE_KEY = "bc15f23abc15f23abc15f23a7dbf2b05adbbc15bc15f23ad58326cf040249df893a4523";
 const VK_VERSION = "5.199";
 
@@ -35,36 +36,43 @@ serve(async (req) => {
     if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
     try {
-        const { url, count = 10, offset = 0 } = await req.json();
+        const body = await req.json();
+        const { url, count = 10, offset = 0 } = body;
+
         if (!url) throw new Error("URL is required");
 
         console.log(`[VK Import] Processing URL: ${url}`);
 
         let normalizedUrl = url.trim();
-        let queryParam = "";
+        let queryParams = new URLSearchParams();
+        queryParams.set("count", String(count));
+        queryParams.set("offset", String(offset));
+        queryParams.set("extended", "1");
+        queryParams.set("v", VK_VERSION);
+        queryParams.set("access_token", VK_SERVICE_KEY);
 
         const wallMatch = normalizedUrl.match(/vk\.com\/wall(-?\d+)/);
         const domainMatch = normalizedUrl.match(/vk\.com\/([a-zA-Z0-9_\.]+)/);
 
         if (wallMatch) {
-            queryParam = `owner_id=${wallMatch[1]}`;
+            queryParams.set("owner_id", wallMatch[1]);
         } else if (domainMatch) {
             const domain = domainMatch[1];
             if (domain.startsWith("public")) {
-                queryParam = `owner_id=-${domain.replace("public", "")}`;
+                queryParams.set("owner_id", "-" + domain.replace("public", ""));
             } else if (domain.startsWith("club")) {
-                queryParam = `owner_id=-${domain.replace("club", "")}`;
+                queryParams.set("owner_id", "-" + domain.replace("club", ""));
             } else {
-                queryParam = `domain=${domain}`;
+                queryParams.set("domain", domain);
             }
         } else {
-            queryParam = `domain=slp23`;
+            queryParams.set("domain", "slp23");
         }
 
-        // Используем api.vk.ru согласно новой документации
-        const apiUrl = `https://api.vk.ru/method/wall.get?${queryParam}&count=${count}&offset=${offset}&extended=1&v=${VK_VERSION}&access_token=${VK_SERVICE_KEY}`;
+        // Вернулся на api.vk.com для надежности
+        const apiUrl = `https://api.vk.com/method/wall.get?${queryParams.toString()}`;
 
-        console.log(`[VK Import] Fetching from VK API: wall.get for ${queryParam}`);
+        console.log(`[VK Import] Fetching from VK API: ${apiUrl.replace(VK_SERVICE_KEY, "HIDDEN")}`);
         const response = await fetch(apiUrl);
 
         if (!response.ok) {
@@ -80,11 +88,11 @@ serve(async (req) => {
         const posts = data.response?.items || [];
         console.log(`[VK Import] Found ${posts.length} posts`);
 
+        const forceHttps = (u: string) => u ? u.replace(/^http:\/\//i, 'https://') : "";
+
         const parsedPosts = posts.map((post: any) => {
             const contentText = post.text ? stripHtml(decodeHtml(post.text)) : "";
             const sourceUrl = `https://vk.com/wall${post.owner_id}_${post.id}`;
-
-            // Добавляем ссылку на источник в текст
             const content = contentText + `\n\nИсточник: ${sourceUrl}`;
 
             let title = "Новости VK";
@@ -100,27 +108,24 @@ serve(async (req) => {
 
             if (post.attachments) {
                 for (const attachment of post.attachments) {
-                    // Обработка ФОТО
                     if (attachment.type === "photo" && attachment.photo) {
-                        const imageUrl = attachment.photo.sizes?.find((s: any) => s.type === "w" || s.type === "z" || s.type === "y")?.url
+                        const imageUrl = attachment.photo.sizes?.find((s: any) => s.type === "w" || s.type === "z" || s.type === "y" || s.type === "x")?.url
                             || attachment.photo.sizes?.[attachment.photo.sizes.length - 1]?.url
-                            || attachment.photo.photo_1280
-                            || attachment.photo.photo_807;
+                            || attachment.photo.photo_1280;
                         if (imageUrl) {
-                            mediaList.push({ url: imageUrl, type: "image" });
-                            if (!coverImage) coverImage = imageUrl;
+                            const httpsUrl = forceHttps(imageUrl);
+                            mediaList.push({ url: httpsUrl, type: "image" });
+                            if (!coverImage) coverImage = httpsUrl;
                         }
                     }
 
-                    // Обработка ВИДЕО
                     if (attachment.type === "video" && attachment.video) {
                         const videoLink = `https://vk.com/video${attachment.video.owner_id}_${attachment.video.id}`;
                         const videoThumb = attachment.video.image?.find((s: any) => s.width >= 1280 || s.width >= 800)?.url
                             || attachment.video.image?.[attachment.video.image.length - 1]?.url;
 
                         mediaList.push({ url: videoLink, type: "video" });
-                        // Если нет обложки от фото, используем обложку видео
-                        if (!coverImage && videoThumb) coverImage = videoThumb;
+                        if (!coverImage && videoThumb) coverImage = forceHttps(videoThumb);
                     }
                 }
             }
@@ -142,7 +147,7 @@ serve(async (req) => {
             JSON.stringify({ totalCount: data.response?.count || 0, items: parsedPosts }),
             { headers: { ...corsHeaders, "Content-Type": "application/json; charset=utf-8" } }
         );
-    } catch (e) {
+    } catch (e: any) {
         console.error(`[VK Import] Runtime Error:`, e.message);
         return new Response(JSON.stringify({ error: e.message }), { status: 400, headers: corsHeaders });
     }
