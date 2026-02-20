@@ -8,8 +8,7 @@ const corsHeaders = {
 
 // VK API credentials
 const VK_SERVICE_KEY = Deno.env.get("VK_ACCESS_TOKEN") || "bc15f23abc15f23abc15f23a7dbf2b05adbbc15bc15f23ad58326cf040249df893a4523";
-const VK_SECURE_KEY = Deno.env.get("VK_SECURE_KEY") || "FaYx6PMdo2ceIPi4Tj91";
-const VK_VERSION = "2024.01.01";
+const VK_VERSION = "5.199";
 
 const GARBAGE_PATTERNS = [
   /emoji/i, /icon/i, /favicon/i, /avatar/i, /logo/i, /pixel/i, /ads/i, /banner/i,
@@ -57,16 +56,7 @@ function stripHtml(html: string): string {
 }
 
 async function getTextWithEncoding(res: Response): Promise<string> {
-  const contentEncoding = res.headers.get("content-encoding") || "";
-  const contentType = res.headers.get("content-type") || "";
-
-  const text = await res.text();
-
-  console.log("DEBUG: Content-Type:", contentType);
-  console.log("DEBUG: Content-Encoding:", contentEncoding);
-  console.log("DEBUG: Text length:", text.length);
-
-  return text;
+  return await res.text();
 }
 
 function extractMetadata(html: string) {
@@ -94,55 +84,12 @@ function extractMetadata(html: string) {
 
 function extractMedia(html: string) {
   const urls: string[] = [];
-
   const ogImage = html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i)?.[1];
   if (ogImage) urls.push(ogImage);
-
-  const bgMatches = html.matchAll(/background-image:url\(['"]?([^'"]+)['"]?\)/gi);
-  for (const match of bgMatches) {
-    if (match[1] && !urls.includes(match[1])) urls.push(match[1]);
-  }
 
   const imgTags = html.matchAll(/<img[^>]+src=["']([^"']+)["']/gi);
   for (const match of imgTags) {
     if (match[1].startsWith("http") && !urls.includes(match[1])) urls.push(match[1]);
-  }
-
-  const videoLinks = html.matchAll(/href=["'](https?:\/\/(?:www\.)?(?:youtube\.com|youtu\.be|vimeo\.com|vk\.com\/video)[^"']+)["']/gi);
-  for (const match of videoLinks) {
-    if (match[1] && !urls.includes(match[1])) urls.push(match[1]);
-  }
-
-  const dataSrcMatches = html.matchAll(/data-src=["']([^"']+)["']/gi);
-  for (const match of dataSrcMatches) {
-    if (match[1] && match[1].startsWith("http") && !urls.includes(match[1])) urls.push(match[1]);
-  }
-
-  const srcsetMatches = html.matchAll(/srcset=["']([^"']+)["']/gi);
-  for (const match of srcsetMatches) {
-    const urlsFromSrcset = match[1].split(",").map(u => u.trim().split(/\s+/)[0]);
-    for (const u of urlsFromSrcset) {
-      if (u && u.startsWith("http") && !urls.includes(u)) urls.push(u);
-    }
-  }
-
-  const dataWebpMatches = html.matchAll(/data-webp=["']([^"']+)["']/gi);
-  for (const match of dataWebpMatches) {
-    if (match[1] && match[1].startsWith("http") && !urls.includes(match[1])) urls.push(match[1]);
-  }
-
-  const dataSrcsetMatches = html.matchAll(/data-srcset=["']([^"']+)["']/gi);
-  for (const match of dataSrcsetMatches) {
-    const urlsFromSrcset = match[1].split(",").map(u => u.trim().split(/\s+/)[0]);
-    for (const u of urlsFromSrcset) {
-      if (u && u.startsWith("http") && !urls.includes(u)) urls.push(u);
-    }
-  }
-
-  const telegraMatches = html.matchAll(/https:\/\/telegra\.ph\/file\/[^\s"'<>]+/gi);
-  for (const match of telegraMatches) {
-    const url = match[0].replace(/["')]$/, "");
-    if (url && !urls.includes(url)) urls.push(url);
   }
 
   return urls
@@ -164,102 +111,76 @@ async function fetchVKPost(url: string): Promise<{
   mediaList: Array<{ url: string; type: "image" | "video" }>;
 } | null> {
   try {
-    // Парсим URL VK: https://vk.com/wall-226860244_207
     const wallMatch = url.match(/vk\.com\/wall(-?\d+)_(\d+)/);
-    if (!wallMatch) {
-      console.log("DEBUG: Not a VK wall URL");
-      return null;
-    }
+    if (!wallMatch) return null;
 
-    const ownerId = wallMatch[1]; // -226860244 (группа с минусом)
-    const postId = wallMatch[2]; // 207
+    const ownerId = wallMatch[1];
+    const postId = wallMatch[2];
 
-    console.log("DEBUG: VK URL parsed - owner:", ownerId, "post:", postId);
+    const apiUrl = `https://api.vk.ru/method/wall.getById?posts=${ownerId}_${postId}&extended=1&v=${VK_VERSION}&access_token=${VK_SERVICE_KEY}`;
 
-    // Запрос к VK API
-    const apiUrl = `https://api.vk.com/method/wall.getById?posts=${ownerId}_${postId}&extended=1&v=${VK_VERSION}`;
-
-    const response = await fetch(apiUrl, {
-      headers: {
-        "Authorization": `ServiceKey ${VK_SERVICE_KEY}`,
-      },
-    });
-
-    if (!response.ok) {
-      console.error("DEBUG: VK API error - HTTP", response.status);
-      return null;
-    }
+    const response = await fetch(apiUrl);
+    if (!response.ok) return null;
 
     const data = await response.json();
-    console.log("DEBUG: VK API response:", JSON.stringify(data, null, 2));
-
-    if (data.error) {
-      console.error("DEBUG: VK API error:", data.error);
-      return null;
-    }
+    if (data.error) return null;
 
     const post = data.response?.items?.[0];
-    if (!post) {
-      console.error("DEBUG: Post not found");
-      return null;
-    }
+    if (!post) return null;
 
-    // Извлекаем текст
-    const content = post.text ? stripHtml(decodeHtml(post.text)) : "";
+    // Текст и ссылка на оригинал
+    const contentText = post.text ? stripHtml(decodeHtml(post.text)) : "";
+    const sourceUrl = `https://vk.com/wall${post.owner_id}_${post.id}`;
+    const content = contentText + `\n\nИсточник: ${sourceUrl}`;
 
-    // Заголовок - первая строка или "Новости"
-    let title = "Новости";
-    if (content) {
-      const firstLine = content.split('\n').filter(l => l.trim().length > 0)[0];
+    let title = "Новости VK";
+    if (contentText) {
+      const firstLine = contentText.split('\n').filter(l => l.trim().length > 0)[0];
       if (firstLine) {
         title = firstLine.slice(0, 100).trim();
       }
     }
 
-    // Извлекаем изображения
     const mediaList: Array<{ url: string; type: "image" | "video" }> = [];
+    let coverImage = "";
 
     if (post.attachments) {
       for (const attachment of post.attachments) {
         if (attachment.type === "photo" && attachment.photo) {
-          // Берём изображение в наилучшем качестве
-          const imageUrl = attachment.photo.sizes?.find((s: any) => s.type === "z" || s.type === "y" || s.type === "x")?.url
-            || attachment.photo.photo_604
-            || attachment.photo.photo_807
+          const imageUrl = attachment.photo.sizes?.find((s: any) => s.type === "w" || s.type === "z" || s.type === "y")?.url
+            || attachment.photo.sizes?.[attachment.photo.sizes.length - 1]?.url
             || attachment.photo.photo_1280;
-          if (imageUrl && !mediaList.find(m => m.url === imageUrl)) {
+          if (imageUrl) {
             mediaList.push({ url: imageUrl, type: "image" });
+            if (!coverImage) coverImage = imageUrl;
           }
         }
 
         if (attachment.type === "video" && attachment.video) {
-          const videoUrl = attachment.video.player
-            || attachment.video.src
-            || `https://vk.com/video${attachment.video.owner_id}_${attachment.video.id}`;
-          if (videoUrl && !mediaList.find(m => m.url === videoUrl)) {
-            mediaList.push({ url: videoUrl, type: "video" });
-          }
+          const videoLink = `https://vk.com/video${attachment.video.owner_id}_${attachment.video.id}`;
+          const videoThumb = attachment.video.image?.find((s: any) => s.width >= 1280 || s.width >= 800)?.url
+            || attachment.video.image?.[attachment.video.image.length - 1]?.url;
+
+          mediaList.push({ url: videoLink, type: "video" });
+          if (!coverImage && videoThumb) coverImage = videoThumb;
         }
       }
     }
 
-    // Главное изображение для обложки
-    const image = mediaList.find(m => m.type === "image")?.url || "";
-
     return {
       title,
-      description: content.slice(0, 255) + (content.length > 255 ? "..." : ""),
+      description: contentText.slice(0, 255) + (contentText.length > 255 ? "..." : ""),
       content,
-      image,
+      image: coverImage || (mediaList.find(m => m.type === "image")?.url || ""),
       mediaList: mediaList.slice(0, 15),
     };
   } catch (error) {
-    console.error("DEBUG: VK fetch error:", error);
+    console.error("VK fetch error:", error);
     return null;
   }
 }
 
-serve(async (req) => {
+serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
@@ -268,124 +189,38 @@ serve(async (req) => {
 
     let normalizedUrl = url.trim();
 
-    // Проверяем, это VK
-    if (normalizedUrl.includes("vk.com/wall-")) {
-      console.log("DEBUG: VK URL detected:", normalizedUrl);
+    if (normalizedUrl.includes("vk.com/wall")) {
       const vkData = await fetchVKPost(normalizedUrl);
-
       if (vkData) {
-        console.log("DEBUG: VK data fetched successfully");
         return new Response(
-          JSON.stringify({
-            ...vkData,
-            source: "vk",
-          }),
+          JSON.stringify({ ...vkData, source: "vk" }),
           { headers: { ...corsHeaders, "Content-Type": "application/json; charset=utf-8" } }
         );
       }
-
-      console.log("DEBUG: VK API failed, falling back to HTML parsing");
     }
 
-    // Telegram
-    let fetchUrl = normalizedUrl;
-    if (normalizedUrl.includes("t.me/")) {
-      fetchUrl = normalizedUrl.replace("?single", "");
-      if (!fetchUrl.includes("/s/") && !fetchUrl.includes("/embed/")) {
-        const parts = fetchUrl.split("/");
-        const channelOrPost = parts[parts.length - 1];
-        if (/^\d+$/.test(channelOrPost)) {
-          const channel = parts[parts.length - 2];
-          fetchUrl = `https://t.me/${channel}/${channelOrPost}?embed=1`;
-        } else {
-          fetchUrl = `${fetchUrl}?embed=1`;
-        }
-      }
-    }
-
-    const res = await fetch(fetchUrl, {
-      headers: {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
-        "Accept-Language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
-        "Accept-Encoding": "gzip, deflate, br",
-        "Connection": "keep-alive",
-        "Upgrade-Insecure-Requests": "1",
-        "Sec-Fetch-Dest": "document",
-        "Sec-Fetch-Mode": "navigate",
-        "Sec-Fetch-Site": "none",
-        "Cache-Control": "no-cache",
-      },
+    const res = await fetch(normalizedUrl, {
+      headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36" }
     });
 
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
     const html = await getTextWithEncoding(res);
     const metadata = extractMetadata(html);
-
-    let content = "";
-    if (normalizedUrl.includes("t.me")) {
-      const telegramSelectors = [
-        /<div[^>]*class="[^"]*tgme_widget_message_text[^"]*"[^>]*>([\s\S]*?)<\/div>/i,
-        /<div[^>]*class="[^"]*tgme_widget_message_bubble[^"]*"[^>]*>([\s\S]*?)<\/div>/i,
-        /<div[^>]*class="[^"]*message-text[^"]*"[^>]*>([\s\S]*?)<\/div>/i,
-      ];
-      for (const selector of telegramSelectors) {
-        const match = html.match(selector);
-        if (match && match[1].trim().length > 20) {
-          content = stripHtml(decodeHtml(match[1]));
-          break;
-        }
-      }
-    } else if (normalizedUrl.includes("vk.com")) {
-      // VK HTML fallback
-      const vkSelectors = [
-        /<div[^>]*class="[^"]*WallPostText[^"]*"[^>]*>([\s\S]*?)<\/div>/i,
-        /<div[^>]*class="[^"]*post__text[^"]*"[^>]*>([\s\S]*?)<\/div>/i,
-      ];
-      for (const selector of vkSelectors) {
-        const match = html.match(selector);
-        if (match && match[1].trim().length > 20) {
-          content = stripHtml(decodeHtml(match[1]));
-          break;
-        }
-      }
-    } else {
-      content = metadata.description || "";
-    }
-
     const mediaList = extractMedia(html);
-
-    let finalTitle = metadata.title;
-    if (!finalTitle && content) {
-      const lines = content.split('\n').filter(l => l.trim().length > 0);
-      if (lines.length > 0) {
-        finalTitle = lines[0].slice(0, 100).trim();
-      }
-    }
-
-    const mainImage = metadata.image;
-    if (mainImage && !isGarbageImage(mainImage) && !mediaList.find(m => m.url === mainImage)) {
-      mediaList.unshift({ url: mainImage, type: "image" });
-    }
 
     return new Response(
       JSON.stringify({
-        title: finalTitle || "Новости",
+        title: metadata.title || "Новости",
         description: metadata.description,
-        content: content || metadata.description,
-        image: mediaList.find(m => m.type === "image")?.url || "",
+        content: metadata.description,
+        image: metadata.image || mediaList.find(m => m.type === "image")?.url || "",
         mediaList: mediaList.slice(0, 15),
-        source: normalizedUrl.includes("t.me") ? "telegram"
-          : normalizedUrl.includes("vk.com") ? "vk"
-            : normalizedUrl.includes("youtube.com") || normalizedUrl.includes("youtu.be") ? "youtube"
-              : normalizedUrl.includes("zen.yandex.ru") || normalizedUrl.includes("dzen.ru") ? "zen"
-                : "web",
+        source: normalizedUrl.includes("t.me") ? "telegram" : "web",
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json; charset=utf-8" } }
     );
-  } catch (e) {
-    console.error("ERROR:", e);
-    return new Response(JSON.stringify({ error: String(e) }), { status: 500, headers: corsHeaders });
+  } catch (e: any) {
+    return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: corsHeaders });
   }
 });

@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.fetch-metadata]
 verify_jwt = false
+
+[functions.vk-batch-fetch]
+verify_jwt = false

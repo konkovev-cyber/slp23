@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,6 +21,7 @@ type VkPost = {
     image_url: string | null;
     mediaList: Array<{ url: string; type: "image" | "video" }>;
     source: string;
+    source_url: string;
 };
 
 type VkBatchImportDialogProps = {
@@ -51,19 +52,30 @@ export function VkBatchImportDialog({ onImportSuccess }: VkBatchImportDialogProp
             const { data, error } = await supabase.functions.invoke("vk-batch-fetch", {
                 body: { url, count, offset: 0 }
             });
-            if (error) throw error;
+
+            // Если функция вернула ошибку в поле data.error (наш формат)
             if (data?.error) throw new Error(data.error);
+            // Если supabase вернул ошибку выполнения (например 401, 400)
+            if (error) {
+                console.error("Supabase function error:", error);
+                throw error;
+            }
 
             const items = data.items || [];
             if (items.length === 0) {
-                toast({ title: "Пусто", description: "Посты не найдены" });
+                toast({ title: "Пусто", description: "Посты не найдены. Проверьте правильность ссылки.", variant: "default" });
             } else {
                 setPosts(items);
                 setSelectedIds(new Set(items.map((p: VkPost) => p.source_id)));
                 toast({ title: "Загружено", description: `Найдено постов: ${items.length}` });
             }
         } catch (err: any) {
-            toast({ title: "Ошибка", description: err?.message || "Не удалось загрузить данные", variant: "destructive" });
+            console.error("Batch fetch error:", err);
+            toast({
+                title: "Ошибка",
+                description: err?.message || "Не удалось загрузить данные. Проверьте консоль браузера.",
+                variant: "destructive"
+            });
         } finally {
             setIsLoading(false);
         }
@@ -167,6 +179,9 @@ export function VkBatchImportDialog({ onImportSuccess }: VkBatchImportDialogProp
             <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col p-4 sm:p-6">
                 <DialogHeader>
                     <DialogTitle className="text-xl">Массовый импорт со стены VK</DialogTitle>
+                    <DialogDescription>
+                        Загрузите посты из сообщества или профиля ВКонтакте, выберите необходимые и импортируйте их в базу данных новостей.
+                    </DialogDescription>
                 </DialogHeader>
 
                 <div className="flex flex-col gap-4 py-4 min-h-0">
@@ -244,12 +259,21 @@ export function VkBatchImportDialog({ onImportSuccess }: VkBatchImportDialogProp
                                             <span className="text-xs font-semibold text-muted-foreground">
                                                 {format(new Date(post.published_at), 'd MMM yyyy, HH:mm', { locale: ru })}
                                             </span>
-                                            <div className="flex gap-1">
-                                                {post.mediaList.map(m => m.type).filter(t => t === 'image').length > 0 && (
-                                                    <Badge variant="outline" className="text-[10px] px-1 py-0 h-4 bg-muted"><ImageIcon className="w-3 h-3 mr-0.5" /> {post.mediaList.filter(t => t.type === 'image').length}</Badge>
-                                                )}
+                                            <div className="flex gap-1 items-center">
+                                                <a
+                                                    href={post.source_url}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="text-[10px] text-blue-500 hover:underline mr-2"
+                                                    onClick={(e) => e.stopPropagation()}
+                                                >
+                                                    Открыть в VK
+                                                </a>
                                                 {post.mediaList.map(m => m.type).filter(t => t === 'video').length > 0 && (
                                                     <Badge variant="outline" className="text-[10px] px-1 py-0 h-4 bg-muted"><Video className="w-3 h-3 mr-0.5" /> {post.mediaList.filter(t => t.type === 'video').length}</Badge>
+                                                )}
+                                                {post.mediaList.map(m => m.type).filter(t => t === 'image').length > 0 && (
+                                                    <Badge variant="outline" className="text-[10px] px-1 py-0 h-4 bg-muted"><ImageIcon className="w-3 h-3 mr-0.5" /> {post.mediaList.filter(t => t.type === 'image').length}</Badge>
                                                 )}
                                             </div>
                                         </div>
