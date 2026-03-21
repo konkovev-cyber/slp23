@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Calendar, Clock, Loader2, Plus, Users, Save, Trash2, GraduationCap, MapPin } from "lucide-react";
+import { Calendar, Clock, Loader2, Plus, Users, Save, Trash2, GraduationCap, MapPin, Edit2 } from "lucide-react";
 import SchoolLayout from "@/components/school/SchoolLayout";
 import { toast } from "sonner";
 
@@ -37,6 +37,7 @@ export default function AdminSchedulePage() {
     const [selectedClassId, setSelectedClassId] = useState<string>("");
     const [schedule, setSchedule] = useState<any[]>([]);
     const [isAddOpen, setIsAddOpen] = useState(false);
+    const [editingLessonId, setEditingLessonId] = useState<number | null>(null);
 
     // Form state
     const [formDay, setFormDay] = useState("1");
@@ -89,33 +90,62 @@ export default function AdminSchedulePage() {
         setLoading(false);
     };
 
-    const handleAddLesson = async () => {
+    const handleSaveLesson = async () => {
         if (!formSubjectId || !formTeacherId) {
             toast.error("Выберите предмет и учителя");
             return;
         }
 
         try {
-            const { error } = await supabase.from("schedule").insert({
+            const lessonData = {
                 class_id: parseInt(selectedClassId),
                 subject_id: parseInt(formSubjectId),
                 teacher_id: formTeacherId,
                 day_of_week: parseInt(formDay),
                 lesson_number: parseInt(formNum),
                 room: formRoom
-            });
+            };
+
+            let error;
+            if (editingLessonId) {
+                const res = await supabase.from("schedule").update(lessonData).eq("id", editingLessonId);
+                error = res.error;
+            } else {
+                const res = await supabase.from("schedule").insert(lessonData);
+                error = res.error;
+            }
 
             if (error) {
                 if (error.code === '23505') throw new Error("Этот номер урока уже занят в этот день");
                 throw error;
             }
 
-            toast.success("Урок успешно добавлен");
+            toast.success(editingLessonId ? "Урок успешно обновлен" : "Урок успешно добавлен");
             setIsAddOpen(false);
             fetchSchedule();
         } catch (error: any) {
             toast.error(error.message);
         }
+    };
+
+    const handleEditLesson = (lesson: any) => {
+        setEditingLessonId(lesson.id);
+        setFormDay(lesson.day_of_week.toString());
+        setFormNum(lesson.lesson_number.toString());
+        setFormSubjectId(lesson.subject_id.toString());
+        setFormTeacherId(lesson.teacher_id);
+        setFormRoom(lesson.room || "");
+        setIsAddOpen(true);
+    };
+
+    const handleAddNewClick = () => {
+        setEditingLessonId(null);
+        setFormDay("1");
+        setFormNum("1");
+        setFormSubjectId("");
+        setFormTeacherId("");
+        setFormRoom("");
+        setIsAddOpen(true);
     };
 
     const handleDeleteLesson = async (id: number) => {
@@ -153,16 +183,16 @@ export default function AdminSchedulePage() {
                         </Select>
                     </div>
 
-                    <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
+                    <Dialog open={isAddOpen} onOpenChange={(open) => { setIsAddOpen(open); if(!open) setEditingLessonId(null); }}>
                         <DialogTrigger asChild>
-                            <Button className="h-10 rounded-xl gap-2 font-bold px-5 bg-foreground shadow-md hover:translate-y-[-1px] transition-all text-sm">
+                            <Button onClick={handleAddNewClick} className="h-10 rounded-xl gap-2 font-bold px-5 bg-foreground shadow-md hover:translate-y-[-1px] transition-all text-sm">
                                 <Plus className="w-4 h-4" /> Добавить урок
                             </Button>
                         </DialogTrigger>
                         <DialogContent className="rounded-[24px] border max-w-md p-6">
                             <DialogHeader>
-                                <DialogTitle className="text-2xl font-black tracking-tight">Новый урок</DialogTitle>
-                                <CardDescription className="font-bold">Добавление занятия в расписание класса</CardDescription>
+                                <DialogTitle className="text-2xl font-black tracking-tight">{editingLessonId ? "Редактировать урок" : "Новый урок"}</DialogTitle>
+                                <CardDescription className="font-bold">{editingLessonId ? "Редактирование параметров урока" : "Добавление занятия в расписание класса"}</CardDescription>
                             </DialogHeader>
 
                             <div className="space-y-5 py-6">
@@ -209,8 +239,8 @@ export default function AdminSchedulePage() {
                             </div>
 
                             <DialogFooter>
-                                <Button onClick={handleAddLesson} className="w-full h-14 rounded-2xl font-black bg-primary shadow-lg shadow-primary/20 text-lg">
-                                    Создать запись
+                                <Button onClick={handleSaveLesson} className="w-full h-14 rounded-2xl font-black bg-primary shadow-lg shadow-primary/20 text-lg">
+                                    {editingLessonId ? "Сохранить изменения" : "Создать запись"}
                                 </Button>
                             </DialogFooter>
                         </DialogContent>
@@ -257,14 +287,24 @@ export default function AdminSchedulePage() {
                                                         </span>
                                                     </div>
                                                 </div>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    onClick={() => handleDeleteLesson(lesson.id)}
-                                                    className="h-8 w-8 rounded-lg text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-rose-500 hover:bg-rose-50 transition-all"
-                                                >
-                                                    <Trash2 className="w-4 h-4" />
-                                                </Button>
+                                                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        onClick={() => handleEditLesson(lesson)}
+                                                        className="h-8 w-8 rounded-lg text-muted-foreground hover:text-blue-500 hover:bg-blue-50 transition-all"
+                                                    >
+                                                        <Edit2 className="w-4 h-4" />
+                                                    </Button>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        onClick={() => handleDeleteLesson(lesson.id)}
+                                                        className="h-8 w-8 rounded-lg text-muted-foreground hover:text-rose-500 hover:bg-rose-50 transition-all"
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </Button>
+                                                </div>
                                             </div>
                                         ))
                                     )}

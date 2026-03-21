@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,19 +24,15 @@ import {
 import { Badge } from "@/components/ui/badge";
 import {
     ClipboardList,
-    Search,
     Plus,
     Loader2,
     Users,
     BookOpen,
-    GraduationCap,
     CheckCircle2,
     Calendar,
-    Award,
     TrendingUp,
     MessageSquare,
     History,
-    ChevronRight,
     ArrowUpRight,
     X
 } from "lucide-react";
@@ -70,7 +66,13 @@ export default function TeacherJournalPage() {
     const [assignments, setAssignments] = useState<Assignment[]>([]);
     const [selectedAssignmentId, setSelectedAssignmentId] = useState<string>("");
     const [students, setStudents] = useState<Student[]>([]);
-    const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+    const [selectedDate, setSelectedDate] = useState(() => {
+        const d = new Date();
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const dStr = String(d.getDate()).padStart(2, '0');
+        return `${y}-${m}-${dStr}`;
+    });
 
     // Grade Form
     const [isGradeOpen, setIsGradeOpen] = useState(false);
@@ -93,11 +95,24 @@ export default function TeacherJournalPage() {
     }, [selectedAssignmentId, selectedDate]);
 
     const fetchAssignments = async () => {
+        if (!userId) return;
         try {
-            const { data, error } = await supabase
+            // Check if user is admin
+            const { data: profile } = await supabase
+                .from("profiles")
+                .select("role")
+                .eq("auth_id", userId)
+                .single();
+
+            let query = supabase
                 .from("teacher_assignments")
-                .select("id, class_id, subject_id, school_classes(name), subjects(name)")
-                .eq("teacher_id", userId);
+                .select("id, class_id, subject_id, school_classes(name), subjects(name)");
+
+            if ((profile as any)?.role !== 'admin') {
+                query = query.eq("teacher_id", userId);
+            }
+
+            const { data, error } = await query;
 
             if (error) throw error;
             setAssignments(data as any[] || []);
@@ -152,7 +167,7 @@ export default function TeacherJournalPage() {
                 grades: grdData?.filter(g => g.student_id === s.auth_id) || []
             }));
 
-            setStudents(results);
+            setStudents(results as any[]);
         } catch (error: any) {
             toast.error(error.message);
         } finally {
@@ -223,6 +238,8 @@ export default function TeacherJournalPage() {
     };
 
     const getGradeColor = (grade: string) => {
+        if (grade === "Зч" || grade === "З") return "bg-emerald-600 shadow-emerald-100";
+        if (grade === "Нз" || grade === "Н/З") return "bg-rose-600 shadow-rose-100";
         const val = parseInt(grade);
         if (val === 5) return "bg-emerald-500 shadow-emerald-100";
         if (val === 4) return "bg-primary/50 shadow-primary/10";
@@ -362,7 +379,7 @@ export default function TeacherJournalPage() {
                                                                 title={g.comment || "Без комментария"}
                                                                 onClick={() => fetchHistory(student)}
                                                             >
-                                                                {g.grade}
+                                                                {g.grade === "З" ? "Зч" : g.grade === "Н/З" ? "Нз" : g.grade}
                                                             </div>
                                                         ))}
                                                         <Button
@@ -409,12 +426,12 @@ export default function TeacherJournalPage() {
                     <div className="space-y-6 py-4">
                         <div className="space-y-3 text-center">
                             <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Выберите результат</Label>
-                            <div className="flex justify-between gap-3">
-                                {["5", "4", "3", "2"].map(num => (
+                            <div className="grid grid-cols-3 gap-3">
+                                {["5", "4", "3", "2", "Зч", "Нз"].map(num => (
                                     <button
                                         key={num}
                                         onClick={() => setNewGrade(num)}
-                                        className={`w-12 h-12 rounded-xl font-black text-xl transition-all shadow-sm ${newGrade === num
+                                        className={`h-12 rounded-xl font-black text-xl transition-all shadow-sm ${newGrade === num
                                             ? `${getGradeColor(num)} text-white scale-110 ring-[3px] ring-primary/10`
                                             : "bg-muted text-muted-foreground hover:bg-muted hover:scale-105"
                                             }`}

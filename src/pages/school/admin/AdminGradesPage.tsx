@@ -20,7 +20,10 @@ import {
     GraduationCap,
     Clock,
     X,
-    ExternalLink
+    ExternalLink,
+    Plus,
+    Trash2,
+    Edit2
 } from "lucide-react";
 import SchoolLayout from "@/components/school/SchoolLayout";
 import { Input } from "@/components/ui/input";
@@ -32,6 +35,7 @@ import {
     DialogHeader,
     DialogTitle,
     DialogFooter,
+    DialogDescription
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import {
@@ -56,6 +60,178 @@ export default function AdminGradesPage() {
         fetchMetadata();
         fetchGrades();
     }, []);
+
+    // Create/Edit Grade Form State
+    const [isCreateOpen, setIsCreateOpen] = useState(false);
+    const [editMode, setEditMode] = useState<{ id: number } | null>(null);
+    const [createLoading, setCreateLoading] = useState(false);
+    const [selectedStudentId, setSelectedStudentId] = useState("");
+    const [selectedAssignmentId, setSelectedAssignmentId] = useState("");
+    const [newGradeValue, setNewGradeValue] = useState("5");
+    const [newComment, setNewComment] = useState("");
+    const [newDate, setNewDate] = useState(() => new Date().toISOString().split('T')[0]);
+
+    // Data for selectors
+    const [classStudents, setClassStudents] = useState<any[]>([]);
+    const [classAssignments, setClassAssignments] = useState<any[]>([]);
+    const [createDialogClass, setCreateDialogClass] = useState("");
+
+    useEffect(() => {
+        if (createDialogClass) {
+            fetchClassDetails(createDialogClass);
+        }
+    }, [createDialogClass]);
+
+    const fetchClassDetails = async (classId: string) => {
+        try {
+            // 1. Fetch Students
+            const { data: stdRows, error: stdErr } = await supabase
+                .from("students_info")
+                .select("student_id")
+                .eq("class_id", parseInt(classId));
+
+            if (stdErr) throw stdErr;
+
+            if (stdRows && stdRows.length > 0) {
+                const studentIds = stdRows.map(r => r.student_id);
+                const { data: profiles, error: pErr } = await supabase
+                    .from("profiles")
+                    .select("auth_id, full_name")
+                    .in("auth_id", studentIds);
+
+                if (pErr) throw pErr;
+                setClassStudents(profiles || []);
+            } else {
+                setClassStudents([]);
+                toast.warning("В этом классе нет учеников");
+            }
+
+            // 2. Fetch Assignments
+            const { data: assignRows, error: aErr } = await supabase
+                .from("teacher_assignments")
+                .select("id, subject_id, teacher_id")
+                .eq("class_id", parseInt(classId));
+
+            if (aErr) throw aErr;
+
+            if (assignRows && assignRows.length > 0) {
+                const subIds = [...new Set(assignRows.map(a => a.subject_id))];
+                const teacherIds = [...new Set(assignRows.map(a => a.teacher_id))];
+
+                const [subsResult, profsResult] = await Promise.all([
+                    supabase.from("subjects").select("id, name").in("id", subIds),
+                    supabase.from("profiles").select("auth_id, full_name").in("auth_id", teacherIds)
+                ]);
+
+                const subMap = (subsResult.data || []).reduce((acc: any, s) => ({ ...acc, [s.id.toString()]: s.name }), {});
+                const teacherMap = (profsResult.data || []).reduce((acc: any, p) => ({ ...acc, [p.auth_id as string]: p.full_name }), {});
+
+                const merged = assignRows.map(a => ({
+                    id: a.id,
+                    subject_name: subMap[a.subject_id] || "Предмет #" + a.subject_id,
+                    teacher_name: teacherMap[a.teacher_id] || "Учитель #" + a.teacher_id
+                }));
+
+                setClassAssignments(merged);
+            } else {
+                setClassAssignments([]);
+            }
+        } catch (error: any) {
+            toast.error("Ошибка загрузки данных класса: " + error.message);
+        }
+    };
+
+    const handleCreateGrade = async () => {
+        if (!selectedStudentId || !selectedAssignmentId || !newGradeValue) {
+            toast.error("Заполните все обязательные поля");
+            return;
+        }
+
+        try {
+            setCreateLoading(true);
+
+            if (editMode) {
+                const { error } = await supabase
+                    .from("grades")
+                    .update({
+                        student_id: selectedStudentId,
+                        teacher_assignment_id: parseInt(selectedAssignmentId),
+                        grade: newGradeValue,
+                        comment: newComment,
+                        date: newDate
+                    })
+                    .eq("id", editMode.id);
+                if (error) throw error;
+                toast.success("Оценка обновлена");
+            } else {
+                const { error } = await supabase.from("grades").insert({
+                    student_id: selectedStudentId,
+                    teacher_assignment_id: parseInt(selectedAssignmentId),
+                    grade: newGradeValue,
+                    comment: newComment,
+                    date: newDate
+                });
+                if (error) throw error;
+                toast.success("Оценка добавлена");
+            }
+
+            setIsCreateOpen(false);
+            resetCreateForm();
+            fetchGrades();
+        } catch (error: any) {
+            toast.error("Ошибка: " + error.message);
+        } finally {
+            setCreateLoading(false);
+        }
+    };
+
+    const handleDeleteGrade = async (id: number) => {
+        if (!confirm("Вы уверены, что хотите удалить эту оценку?")) return;
+
+        try {
+            const { error } = await supabase.from("grades").delete().eq("id", id);
+            if (error) throw error;
+
+            toast.success("Оценка удалена");
+            fetchGrades();
+        } catch (error: any) {
+            toast.error("Ошибка при удалении: " + error.message);
+        }
+    };
+
+    const handleEditGrade = async (grade: any) => {
+        // We need class_id to fill selectors
+        const { data: stdInfo } = await supabase
+            .from("students_info")
+            .select("class_id")
+            .eq("student_id", grade.student_id)
+            .maybeSingle();
+
+        if (stdInfo?.class_id) {
+            setCreateDialogClass(stdInfo.class_id.toString());
+            // wait for data fetch
+            await fetchClassDetails(stdInfo.class_id.toString());
+        }
+
+        setSelectedStudentId(grade.student_id);
+        setSelectedAssignmentId(grade.teacher_assignment_id.toString());
+        setNewGradeValue(grade.grade);
+        setNewComment(grade.comment || "");
+        setNewDate(grade.date);
+        setEditMode({ id: grade.id });
+        setIsCreateOpen(true);
+    };
+
+    const resetCreateForm = () => {
+        setSelectedStudentId("");
+        setSelectedAssignmentId("");
+        setNewGradeValue("5");
+        setNewComment("");
+        setCreateDialogClass("");
+        setClassStudents([]);
+        setClassAssignments([]);
+        setEditMode(null);
+    };
 
     const fetchMetadata = async () => {
         const { data } = await supabase.from("school_classes").select("*").order("name");
@@ -145,6 +321,8 @@ export default function AdminGradesPage() {
     });
 
     const getGradeColor = (grade: string) => {
+        if (grade === "Зч" || grade === "З") return "bg-emerald-600 shadow-emerald-100";
+        if (grade === "Нз" || grade === "Н/З") return "bg-rose-600 shadow-rose-100";
         const val = parseInt(grade);
         if (val === 5) return "bg-emerald-500 shadow-emerald-100";
         if (val === 4) return "bg-primary/50 shadow-primary/10";
@@ -158,171 +336,6 @@ export default function AdminGradesPage() {
         setIsDetailsOpen(true);
     };
 
-    const handleSeedData = async () => {
-        try {
-            setLoading(true);
-            toast.loading("Создание тестовых данных...");
-
-            // 1. Ensure Class '9-А' exists
-            let classId;
-            const { data: cls } = await supabase.from("school_classes").select("id").eq("name", "9-А").maybeSingle();
-            if (cls) {
-                classId = cls.id;
-            } else {
-                const { data: newCls } = await supabase.from("school_classes").insert({ name: "9-А" }).select("id").single();
-                classId = newCls?.id;
-            }
-
-            // 2. Ensure Subjects
-            const subjectsList = ["Математика", "Русский язык", "Литература", "История", "Физика", "Информатика"];
-            const subjectIds: Record<string, number> = {};
-
-            for (const name of subjectsList) {
-                const { data: sub } = await supabase.from("subjects").select("id").eq("name", name).maybeSingle();
-                if (sub) {
-                    subjectIds[name] = sub.id;
-                } else {
-                    const { data: newSub } = await supabase.from("subjects").insert({ name }).select("id").single();
-                    if (newSub) subjectIds[name] = newSub.id;
-                }
-            }
-
-            // 3. Get Teacher & Student
-            // NOTE: role is stored in public.user_roles (not in profiles). Using user_roles avoids TS deep instantiation issues
-            // and matches the actual schema.
-            const { data: teacherRole } = await supabase
-                .from("user_roles")
-                .select("user_id")
-                .eq("role", "teacher")
-                .limit(1)
-                .maybeSingle();
-            let teacherId = (teacherRole as any)?.user_id as string | undefined;
-
-            // Fallback: find ANY user
-            if (!teacherId) {
-                const { data: anyUser } = await supabase.from("profiles").select("auth_id").limit(1).single();
-                teacherId = (anyUser as any)?.auth_id;
-            }
-
-            const { data: studentRole } = await supabase
-                .from("user_roles")
-                .select("user_id")
-                .eq("role", "student")
-                .limit(1)
-                .maybeSingle();
-            let studentId = (studentRole as any)?.user_id as string | undefined;
-
-            if (!studentId) {
-                const { data: anyUser } = await supabase
-                    .from("profiles")
-                    .select("auth_id")
-                    .order("created_at", { ascending: false })
-                    .limit(1)
-                    .single();
-                studentId = (anyUser as any)?.auth_id;
-            }
-
-            if (!classId || !teacherId || !studentId) {
-                toast.error("Не удалось определить базовые ID (класс, учитель или ученик)");
-                return;
-            }
-
-            // 4. Link Student to Class
-            await supabase.from("students_info").upsert({ student_id: studentId, class_id: classId });
-
-            // 5. Create Teacher Assignments
-            const assignments: Record<string, number> = {};
-            for (const name of subjectsList) {
-                const subId = subjectIds[name];
-                if (!subId) continue;
-
-                // Check existing
-                const { data: exist } = await supabase.from("teacher_assignments")
-                    .select("id")
-                    .eq("class_id", classId)
-                    .eq("subject_id", subId)
-                    .maybeSingle();
-
-                if (exist) {
-                    assignments[name] = exist.id;
-                } else {
-                    const { data: newAssign } = await supabase.from("teacher_assignments")
-                        .insert({ teacher_id: teacherId, class_id: classId, subject_id: subId })
-                        .select("id")
-                        .single();
-                    if (newAssign) assignments[name] = newAssign.id;
-                }
-            }
-
-            // 6. Create Schedule
-            await supabase.from("schedule").delete().eq("class_id", classId);
-            const scheduleData = [
-                { day: 1, num: 1, sub: "Математика", room: "101" },
-                { day: 1, num: 2, sub: "История", room: "205" },
-                { day: 1, num: 3, sub: "Физика", room: "301" },
-                { day: 2, num: 1, sub: "Русский язык", room: "102" },
-                { day: 2, num: 2, sub: "Математика", room: "101" },
-                { day: 2, num: 3, sub: "Информатика", room: "Comp-1" },
-                { day: 3, num: 1, sub: "Физика", room: "301" },
-                { day: 3, num: 2, sub: "История", room: "205" },
-                { day: 4, num: 1, sub: "Математика", room: "101" },
-                { day: 4, num: 2, sub: "Русский язык", room: "102" },
-                { day: 5, num: 1, sub: "Информатика", room: "Comp-1" },
-                { day: 5, num: 2, sub: "Математика", room: "101" },
-            ];
-
-            for (const s of scheduleData) {
-                const subId = subjectIds[s.sub];
-                if (subId) {
-                    await supabase.from("schedule").insert({
-                        class_id: classId,
-                        day_of_week: s.day,
-                        lesson_number: s.num,
-                        subject_id: subId,
-                        teacher_id: teacherId,
-                        room: s.room // This might fail if 'room' column doesn't exist, checking schema... user said "room doesn't exist" before? 
-                        // Wait, previous error said "room does not exist on schedule". 
-                        // I removed 'room' from query, but schema *should* have it.
-                        // Let's assume schema has it or ignore it if not.
-                        // If schema doesn't have room, this insert will fail. 
-                        // Checking migrations: 20260131200000_diary_schema.sql HAS "room text".
-                        // So insert should be fine.  
-                    });
-                }
-            }
-
-            // 7. Insert Grades
-            // Clean recent grades to avoid dups for demo
-            const today = new Date().toISOString().slice(0, 10);
-
-            if (assignments["Математика"]) {
-                await supabase.from("grades").insert({
-                    student_id: studentId,
-                    teacher_assignment_id: assignments["Математика"],
-                    grade: "5",
-                    date: today,
-                    comment: "Отличная работа (Тест)"
-                });
-            }
-            if (assignments["Русский язык"]) {
-                await supabase.from("grades").insert({
-                    student_id: studentId,
-                    teacher_assignment_id: assignments["Русский язык"],
-                    grade: "4",
-                    date: today,
-                    comment: "Хорошо"
-                });
-            }
-
-            toast.dismiss();
-            toast.success("Тестовые данные созданы! Обновите страницу.");
-            fetchGrades(); // Refresh
-        } catch (e: any) {
-            toast.error("Ошибка (Seed): " + e.message);
-        } finally {
-            setLoading(false);
-        }
-    };
 
     return (
         <SchoolLayout title="Журнал успеваемости">
@@ -363,11 +376,10 @@ export default function AdminGradesPage() {
 
                     <div className="flex gap-3">
                         <Button
-                            variant="outline"
-                            className="h-10 px-6 rounded-xl border font-bold hover:bg-muted border-dashed border-border text-muted-foreground text-sm"
-                            onClick={handleSeedData}
+                            className="h-10 rounded-xl gap-2 font-bold px-6 bg-primary shadow-md hover:translate-y-[-1px] transition-all text-sm"
+                            onClick={() => setIsCreateOpen(true)}
                         >
-                            🛠️ Заполнить
+                            <Plus className="w-4 h-4" /> Поставить оценку
                         </Button>
                         <Button className="h-10 rounded-xl gap-2 font-bold px-6 bg-foreground shadow-md hover:translate-y-[-1px] transition-all text-sm">
                             <Download className="w-4 h-4" /> Экспорт
@@ -468,7 +480,7 @@ export default function AdminGradesPage() {
                                                     </TableCell>
                                                     <TableCell className="py-4 px-6 text-center">
                                                         <div className={`inline-flex w-9 h-9 items-center justify-center rounded-lg text-white font-bold text-sm shadow-md transition-transform group-hover:scale-110 ${getGradeColor(grade.grade)}`}>
-                                                            {grade.grade}
+                                                            {grade.grade === "З" ? "Зч" : grade.grade === "Н/З" ? "Нз" : grade.grade}
                                                         </div>
                                                     </TableCell>
                                                     <TableCell className="py-4 px-6 text-right">
@@ -480,6 +492,22 @@ export default function AdminGradesPage() {
                                                                 onClick={() => showDetails(grade)}
                                                             >
                                                                 <Eye className="w-4 h-4" />
+                                                            </Button>
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                className="h-8 w-8 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground"
+                                                                onClick={() => handleEditGrade(grade)}
+                                                            >
+                                                                <Edit2 className="w-4 h-4" />
+                                                            </Button>
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                className="h-8 w-8 rounded-lg hover:bg-rose-50 text-rose-500 hover:text-rose-600"
+                                                                onClick={() => handleDeleteGrade(grade.id)}
+                                                            >
+                                                                <Trash2 className="w-4 h-4" />
                                                             </Button>
                                                         </div>
                                                     </TableCell>
@@ -577,6 +605,123 @@ export default function AdminGradesPage() {
                     </div>
                 </DialogContent>
             </Dialog>
+            {/* Create Grade Dialog */}
+            <Dialog open={isCreateOpen} onOpenChange={(open) => { setIsCreateOpen(open); if (!open) resetCreateForm(); }}>
+                <DialogContent className="rounded-[24px] border p-0 max-w-lg bg-background overflow-hidden shadow-2xl">
+                    <div className="h-20 bg-muted flex items-center px-8 relative overflow-hidden">
+                        <div className="absolute top-0 right-0 p-4 text-4xl font-black text-slate-100/50 select-none">
+                            {editMode ? "EDIT" : "NEW"}
+                        </div>
+                        <CardTitle className="text-xl font-black tracking-tight text-foreground">
+                            {editMode ? "Редактировать оценку" : "Выставить оценку"}
+                        </CardTitle>
+                    </div>
+
+                    <div className="p-8 space-y-5">
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider pl-1">Класс</Label>
+                                <Select value={createDialogClass} onValueChange={setCreateDialogClass}>
+                                    <SelectTrigger className="h-10 rounded-xl border-border bg-muted/30 font-semibold text-sm">
+                                        <SelectValue placeholder="Класс..." />
+                                    </SelectTrigger>
+                                    <SelectContent className="rounded-xl">
+                                        {classes.map(c => (
+                                            <SelectItem key={c.id} value={c.id.toString()}>{c.name}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2">
+                                <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider pl-1">Дата</Label>
+                                <Input
+                                    type="date"
+                                    value={newDate}
+                                    onChange={e => setNewDate(e.target.value)}
+                                    className="h-10 rounded-xl border-border bg-muted/30 font-semibold text-sm"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider pl-1">Ученик</Label>
+                            <Select value={selectedStudentId} onValueChange={setSelectedStudentId} disabled={!createDialogClass}>
+                                <SelectTrigger className="h-10 rounded-xl border-border bg-muted/30 font-semibold text-sm">
+                                    <SelectValue placeholder={createDialogClass ? "Выберите ученика..." : "Сначала выберите класс"} />
+                                </SelectTrigger>
+                                <SelectContent className="rounded-xl">
+                                    {classStudents.map(s => (
+                                        <SelectItem key={s.auth_id} value={s.auth_id}>{s.full_name}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider pl-1">Предмет и Преподаватель</Label>
+                            <Select value={selectedAssignmentId} onValueChange={setSelectedAssignmentId} disabled={!createDialogClass}>
+                                <SelectTrigger className="h-10 rounded-xl border-border bg-muted/30 font-semibold text-sm">
+                                    <SelectValue placeholder={createDialogClass ? "Выберите предмет..." : "Сначала выберите класс"} />
+                                </SelectTrigger>
+                                <SelectContent className="rounded-xl">
+                                    {classAssignments.map(a => (
+                                        <SelectItem key={a.id} value={a.id.toString()}>
+                                            {a.subject_name} ({a.teacher_name})
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        <div className="space-y-3">
+                            <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider pl-1 text-center block">Оценка</Label>
+                            <div className="grid grid-cols-6 gap-2">
+                                {["5", "4", "3", "2", "Зч", "Нз"].map(num => (
+                                    <button
+                                        key={num}
+                                        type="button"
+                                        onClick={() => setNewGradeValue(num)}
+                                        className={`h-12 rounded-xl font-black text-sm transition-all shadow-sm ${newGradeValue === num
+                                            ? `${getGradeColor(num)} text-white scale-110 ring-4 ring-primary/10`
+                                            : "bg-muted text-muted-foreground hover:bg-muted/70 hover:scale-105"
+                                            }`}
+                                    >
+                                        {num === "З" ? "ЗАЧ" : num === "Н/З" ? "Н/З" : num}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider pl-1">Комментарий (необязательно)</Label>
+                            <div className="relative">
+                                <MessageSquare className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
+                                <Input
+                                    placeholder="Например: Ответ у доски..."
+                                    value={newComment}
+                                    onChange={e => setNewComment(e.target.value)}
+                                    className="pl-10 h-10 rounded-xl border-border bg-muted/30 font-medium text-sm"
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="bg-muted p-6 border-t border-border flex gap-3">
+                        <Button variant="ghost" className="flex-1 h-12 rounded-xl font-bold text-muted-foreground uppercase tracking-wider text-[11px]" onClick={() => setIsCreateOpen(false)}>
+                            Отмена
+                        </Button>
+                        <Button
+                            className="flex-1 h-12 rounded-xl bg-primary text-white font-bold uppercase tracking-wider text-[11px] shadow-lg hover:translate-y-[-1px] transition-all"
+                            onClick={handleCreateGrade}
+                            disabled={createLoading}
+                        >
+                            {createLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Сохранить"}
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
         </SchoolLayout>
+
     );
 }

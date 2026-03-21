@@ -20,16 +20,37 @@ import { supabase } from "@/integrations/supabase/client";
 
 export default function AdminDashboard() {
   // Fetch some stats for the dashboard
-  const { data: stats } = useQuery({
+    const { data: stats } = useQuery({
     queryKey: ["admin_stats"],
     queryFn: async () => {
       const { count: postsCount } = await supabase.from("posts" as any).select("*", { count: 'exact', head: true });
       const { count: teachersCount } = await supabase.from("teachers" as any).select("*", { count: 'exact', head: true });
       const { count: honorCount } = await supabase.from("honor_board" as any).select("*", { count: 'exact', head: true });
+      
+      // School stats
+      const { count: sysTeachersCount } = await supabase.from("profiles").select("*", { count: 'exact', head: true }).eq("role", "teacher");
+      const { count: studentsCount } = await supabase.from("profiles").select("*", { count: 'exact', head: true }).eq("role", "student");
+      const { count: classesCount } = await supabase.from("school_classes").select("*", { count: 'exact', head: true });
+      const { count: lessonsCount } = await supabase.from("schedule").select("*", { count: 'exact', head: true });
+      
+      const { data: gradesData } = await supabase.from("grades").select("grade");
+      let avg = "Н/Д";
+      if (gradesData && gradesData.length > 0) {
+        const numbers = gradesData.map(g => parseInt(g.grade)).filter(n => !isNaN(n));
+        if (numbers.length > 0) {
+            avg = (numbers.reduce((a, b) => a + b, 0) / numbers.length).toFixed(2);
+        }
+      }
+
       return {
         posts: postsCount || 0,
         teachers: teachersCount || 0,
         honor: honorCount || 0,
+        sysTeachers: sysTeachersCount || 0,
+        students: studentsCount || 0,
+        classes: classesCount || 0,
+        lessons: lessonsCount || 0,
+        avgGrade: avg,
       };
     },
   });
@@ -104,9 +125,67 @@ export default function AdminDashboard() {
             Дашборд
           </h1>
           <p className="text-muted-foreground mt-2">
-            Добро пожаловать в систему управления сайтом slp23.
+            Отличный день для управления школой. Вот краткая сводка на сегодня:
           </p>
         </div>
+      </div>
+
+      {/* School Stats Grid */}
+      <div className="grid gap-4 md:grid-cols-5">
+        <Card className="bg-blue-500/5 border-blue-500/20 shadow-sm hover:shadow-md transition-shadow">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xs font-black uppercase tracking-widest text-blue-600 flex items-center gap-2">
+              <Users className="w-4 h-4" /> Ученики
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-blue-950">{stats?.students ?? <Activity className="w-5 h-5 animate-spin"/>}</div>
+          </CardContent>
+        </Card>
+        
+        <Card className="bg-emerald-500/5 border-emerald-500/20 shadow-sm hover:shadow-md transition-shadow">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xs font-black uppercase tracking-widest text-emerald-600 flex items-center gap-2">
+              <UserPlus className="w-4 h-4" /> Педагоги
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-emerald-950">{stats?.sysTeachers ?? <Activity className="w-5 h-5 animate-spin"/>}</div>
+          </CardContent>
+        </Card>
+        
+        <Card className="bg-purple-500/5 border-purple-500/20 shadow-sm hover:shadow-md transition-shadow">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xs font-black uppercase tracking-widest text-purple-600 flex items-center gap-2">
+              <BookOpen className="w-4 h-4" /> Классы
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-purple-950">{stats?.classes ?? <Activity className="w-5 h-5 animate-spin"/>}</div>
+          </CardContent>
+        </Card>
+        
+        <Card className="bg-orange-500/5 border-orange-500/20 shadow-sm hover:shadow-md transition-shadow">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xs font-black uppercase tracking-widest text-orange-600 flex items-center gap-2">
+              <LayoutDashboard className="w-4 h-4" /> Уроки в сетке
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-orange-950">{stats?.lessons ?? <Activity className="w-5 h-5 animate-spin"/>}</div>
+          </CardContent>
+        </Card>
+        
+        <Card className="bg-rose-500/5 border-rose-500/20 shadow-sm hover:shadow-md transition-shadow">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xs font-black uppercase tracking-widest text-rose-600 flex items-center gap-2">
+              <Trophy className="w-4 h-4" /> Средний балл
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-rose-950">{stats?.avgGrade ?? <Activity className="w-5 h-5 animate-spin"/>}</div>
+          </CardContent>
+        </Card>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">

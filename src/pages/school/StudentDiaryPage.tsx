@@ -12,16 +12,8 @@ import {
     ChevronRight,
     Loader2,
     CheckCircle2,
-    Clock,
-    MapPin,
     GraduationCap,
     FileText,
-    Award,
-    ClipboardCheck,
-    TrendingUp,
-    Filter,
-    LayoutList,
-    LayoutGrid,
     CalendarDays
 } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -37,34 +29,34 @@ const DAYS_RU = ["Воскресенье", "Понедельник", "Вторн
 const MONTHS_RU = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
 
 interface StudentInfoData {
-  class_id: number;
-  school_classes?: { name: string };
+    class_id: number;
+    school_classes?: { name: string };
 }
 
 interface TeacherData {
-  auth_id: string;
-  full_name: string;
+    auth_id: string;
+    full_name: string;
 }
 
 interface ScheduleTemplate {
-  day_of_week: number;
-  lesson_number: number;
-  teacher_id: string;
-  subjects?: { name: string };
+    day_of_week: number;
+    lesson_number: number;
+    teacher_id: string;
+    subjects?: { name: string };
 }
 
 interface GradeData {
-  grade: string;
-  comment: string | null;
-  date: string;
-  assignment?: { subjects?: { name: string } };
+    grade: string;
+    comment: string | null;
+    date: string;
+    assignment?: { subjects?: { name: string } };
 }
 
 interface HomeworkData {
-  title: string;
-  description: string;
-  due_date: string;
-  assignment?: { subjects?: { name: string } };
+    title: string;
+    description: string;
+    due_date: string;
+    assignment?: { subjects?: { name: string } };
 }
 
 export default function StudentDiaryPage() {
@@ -196,9 +188,17 @@ export default function StudentDiaryPage() {
 
         const days: DaySchedule[] = [];
         const current = new Date(start);
+
+        const getDateString = (date: Date) => {
+            const y = date.getFullYear();
+            const m = String(date.getMonth() + 1).padStart(2, '0');
+            const d = String(date.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        };
+
         while (current <= end) {
-            const dateStr = current.toISOString().slice(0, 10);
-            const dayOfWeek = current.getDay();
+            const dateStr = getDateString(current);
+            const dayOfWeek = current.getDay() || 7;
 
             const dailyLessons = (scheduleTemplates || []).filter(s => s.day_of_week === dayOfWeek);
 
@@ -234,7 +234,7 @@ export default function StudentDiaryPage() {
             current.setDate(current.getDate() + 1);
         }
 
-        setWeekSchedule(days);
+        setWeekSchedule(days as any[]);
     };
 
     // Navigation
@@ -267,6 +267,8 @@ export default function StudentDiaryPage() {
     };
 
     const getGradeColor = (grade: string) => {
+        if (grade === "Зч" || grade === "З") return "bg-emerald-600 shadow-emerald-100";
+        if (grade === "Нз" || grade === "Н/З") return "bg-rose-600 shadow-rose-100";
         const val = parseInt(grade);
         if (val === 5) return "bg-emerald-500 shadow-emerald-100";
         if (val === 4) return "bg-primary/50 shadow-primary/10";
@@ -510,7 +512,7 @@ export default function StudentDiaryPage() {
                                                                 className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center text-white font-black shadow-md flex-shrink-0 ${getGradeColor(entry.grade.grade)}`}
                                                                 title={entry.grade.comment ? `Оценка: ${entry.grade.grade}. Комментарий: ${entry.grade.comment}` : `Оценка: ${entry.grade.grade}`}
                                                             >
-                                                                {entry.grade.grade}
+                                                                {entry.grade.grade === "З" ? "Зч" : entry.grade.grade === "Н/З" ? "Нз" : entry.grade.grade}
                                                             </div>
                                                         )}
                                                     </div>

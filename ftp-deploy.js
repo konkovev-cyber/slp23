@@ -83,7 +83,14 @@ async function deploy() {
         const remoteFull = CONFIG.remotePath + CONFIG.zipFileName;
         console.log(`📤 Загрузка в ${remoteFull}...`);
         await client.uploadFrom(zipPath, remoteFull);
-        console.log("✅ Загрузка завершена");
+        console.log("✅ Загрузка архива завершена");
+
+        const remoteUnzip = CONFIG.remotePath + "_unzip.php";
+        if (fs.existsSync("_unzip.php")) {
+            console.log(`📤 Загрузка _unzip.php в ${remoteUnzip}...`);
+            await client.uploadFrom("_unzip.php", remoteUnzip);
+            console.log("✅ _unzip.php загружен");
+        }
 
         fs.unlinkSync(zipPath);
         console.log("🗑️  Локальный архив удалён");

@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Plus, Trash2, Trophy, Star, Medal, Award } from "lucide-react";
 import { useState } from "react";
 import ImageUploader from "@/components/admin/ImageUploader";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 type HonorItem = {
     id: string;
@@ -52,6 +53,19 @@ export default function AdminHonor() {
                 .order("created_at", { ascending: false });
             if (error) throw error;
             return (data ?? []) as any[];
+        },
+    });
+
+    const { data: students = [] } = useQuery({
+        queryKey: ["admin_students_list"],
+        queryFn: async () => {
+            const { data, error } = await supabase
+                .from("profiles")
+                .select("auth_id, full_name, avatar_url")
+                .eq("role", "student")
+                .order("full_name");
+            if (error) throw error;
+            return data || [];
         },
     });
 
@@ -101,12 +115,22 @@ export default function AdminHonor() {
                 <Card className="p-6 space-y-4 border-primary/50 bg-primary/[0.02]">
                     <div className="grid gap-4 md:grid-cols-2">
                         <div className="space-y-2">
-                            <Label>Имя и Фамилия</Label>
-                            <Input
+                            <Label>Ученик</Label>
+                            <Select
                                 value={formData.name}
-                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                placeholder="Иван Иванов"
-                            />
+                                onValueChange={(val) => setFormData({ ...formData, name: val })}
+                            >
+                                <SelectTrigger className="flex h-10 w-full">
+                                    <SelectValue placeholder="Выберите ученика из базы" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {students.map((student) => (
+                                        <SelectItem key={student.auth_id} value={student.full_name}>
+                                            {student.full_name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                         </div>
                         <div className="space-y-2">
                             <Label>Достижение</Label>

@@ -53,7 +53,10 @@ export default function StudentSchedulePage() {
         const day = curr.getDay() || 7;
         curr.setDate(curr.getDate() - day + 1);
         for (let i = 1; i <= 6; i++) {
-            dates[i] = curr.toISOString().slice(0, 10);
+            const y = curr.getFullYear();
+            const m = String(curr.getMonth() + 1).padStart(2, '0');
+            const dStr = String(curr.getDate()).padStart(2, '0');
+            dates[i] = `${y}-${m}-${dStr}`;
             curr.setDate(curr.getDate() + 1);
         }
         return dates;

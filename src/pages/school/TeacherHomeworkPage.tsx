@@ -70,7 +70,13 @@ export default function TeacherHomeworkPage() {
     const [formAssignmentId, setFormAssignmentId] = useState("");
     const [formTitle, setFormTitle] = useState("");
     const [formDesc, setFormDesc] = useState("");
-    const [formDueDate, setFormDueDate] = useState(new Date(Date.now() + 86400000).toISOString().split('T')[0]);
+    const [formDueDate, setFormDueDate] = useState(() => {
+        const d = new Date(Date.now() + 86400000);
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const dStr = String(d.getDate()).padStart(2, '0');
+        return `${y}-${m}-${dStr}`;
+    });
 
     useEffect(() => {
         if (userId) fetchData();

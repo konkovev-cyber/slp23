@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -15,7 +15,7 @@ import {
     TableRow
 } from "@/components/ui/table";
 import { toast } from "sonner";
-import { CheckCircle, XCircle, Clock, User, Mail, Shield, Loader2, RefreshCw } from "lucide-react";
+import { CheckCircle, XCircle, Clock, User, Shield, Loader2, RefreshCw, Edit2, Trash2 } from "lucide-react";
 import SchoolLayout from "@/components/school/SchoolLayout";
 import {
     Select,
@@ -24,6 +24,9 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 type Profile = {
     auth_id: string;
@@ -37,6 +40,88 @@ type Profile = {
 export default function AdminUsersPage() {
     const qc = useQueryClient();
     const [filter, setFilter] = useState<"all" | "pending" | "approved">("pending");
+    const [editingUser, setEditingUser] = useState<any | null>(null);
+    const [classes, setClasses] = useState<any[]>([]);
+    const [selectedUserClass, setSelectedUserClass] = useState<string>("");
+
+    useEffect(() => {
+        const fetchClasses = async () => {
+            const { data } = await supabase.from("school_classes").select("*").order("name");
+            setClasses(data || []);
+        };
+        fetchClasses();
+    }, []);
+
+    const handleEditUser = async (user: Profile) => {
+        setEditingUser(user);
+        if (user.role === 'student') {
+            const { data } = await supabase
+                .from("students_info")
+                .select("class_id")
+                .eq("student_id", user.auth_id)
+                .maybeSingle();
+            setSelectedUserClass(data?.class_id?.toString() || "");
+        } else {
+            setSelectedUserClass("");
+        }
+    };
+
+    const updateProfileMutation = useMutation({
+        mutationFn: async (payload: { user: Profile; class_id?: string }) => {
+            // 1. Update Profile
+            const { error: pErr } = await supabase
+                .from("profiles")
+                .update({ full_name: payload.user.full_name, role: payload.user.role })
+                .eq("auth_id", payload.user.auth_id);
+            if (pErr) throw pErr;
+
+            // 2. Update Class if student
+            if (payload.user.role === 'student' && payload.class_id) {
+                const classId = parseInt(payload.class_id);
+                // Check if exists
+                const { data: existing } = await supabase
+                    .from("students_info")
+                    .select("id")
+                    .eq("student_id", payload.user.auth_id)
+                    .maybeSingle();
+
+                if (existing) {
+                    const { error: sErr } = await supabase
+                        .from("students_info")
+                        .update({ class_id: classId })
+                        .eq("student_id", payload.user.auth_id);
+                    if (sErr) throw sErr;
+                } else {
+                    const { error: sErr } = await supabase
+                        .from("students_info")
+                        .insert({ student_id: payload.user.auth_id, class_id: classId });
+                    if (sErr) throw sErr;
+                }
+            }
+        },
+        onSuccess: () => {
+            toast.success("Профиль сохранен");
+            qc.invalidateQueries({ queryKey: ["admin_users"] });
+            setEditingUser(null);
+        },
+        onError: (error: any) => toast.error(error.message),
+    });
+
+    const deleteUserMutation = useMutation({
+        mutationFn: async (userId: string) => {
+            const { error } = await supabase.auth.admin.deleteUser(userId);
+            if (error) {
+                const { error: pErr } = await supabase.from("profiles").delete().eq("auth_id", userId);
+                if (pErr) throw pErr;
+            }
+        },
+        onSuccess: () => {
+            toast.success("Пользователь удален");
+            qc.invalidateQueries({ queryKey: ["admin_users"] });
+            setEditingUser(null);
+        },
+        onError: (error: any) => toast.error(error.message),
+    });
 
     const { data: users = [], isLoading, refetch } = useQuery({
         queryKey: ["admin_users", filter],
@@ -54,7 +139,7 @@ export default function AdminUsersPage() {
 
             const { data, error } = await query;
             if (error) throw error;
-            return (data || []) as Profile[];
+            return (data || []) as any[];
         },
     });
 
@@ -256,6 +341,17 @@ export default function AdminUsersPage() {
                                                 </TableCell>
                                                 <TableCell className="text-right">
                                                     <div className="flex items-center justify-end gap-2">
+                                                        {user.is_approved && (
+                                                            <Button
+                                                                size="icon"
+                                                                variant="outline"
+                                                                onClick={() => handleEditUser(user)}
+                                                                className="h-9 w-9 rounded-xl hover:text-primary"
+                                                                title="Редактировать профиль"
+                                                            >
+                                                                <Edit2 className="w-4 h-4" />
+                                                            </Button>
+                                                        )}
                                                         {!user.is_approved && (
                                                             <>
                                                                 <Button
@@ -333,6 +429,85 @@ export default function AdminUsersPage() {
                     </Card>
                 </div>
             </div>
+
+            {/* Edit User Modal */}
+            <Dialog open={!!editingUser} onOpenChange={(v) => !v && setEditingUser(null)}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>Редактирование профиля</DialogTitle>
+                    </DialogHeader>
+                    {editingUser && (
+                        <div className="space-y-4 py-4">
+                            <div className="space-y-2">
+                                <Label>ФИО</Label>
+                                <Input
+                                    value={editingUser.full_name}
+                                    onChange={(e) => setEditingUser({ ...editingUser, full_name: e.target.value })}
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Роль</Label>
+                                <Select
+                                    value={editingUser.role}
+                                    onValueChange={(val) => setEditingUser({ ...editingUser, role: val })}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="student">Ученик</SelectItem>
+                                        <SelectItem value="teacher">Учитель</SelectItem>
+                                        <SelectItem value="parent">Родитель</SelectItem>
+                                        <SelectItem value="admin">Администратор</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            {editingUser.role === 'student' && (
+                                <div className="space-y-2">
+                                    <Label>Класс обучения</Label>
+                                    <Select
+                                        value={selectedUserClass}
+                                        onValueChange={setSelectedUserClass}
+                                    >
+                                        <SelectTrigger className="rounded-xl border-2 font-bold">
+                                            <SelectValue placeholder="Выберите класс..." />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {classes.map(c => (
+                                                <SelectItem key={c.id} value={c.id.toString()}>{c.name}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            )}
+                        </div>
+                    )}
+                    <DialogFooter className="flex flex-row justify-between w-full sm:justify-between items-center mt-6">
+                        <Button
+                            variant="destructive"
+                            onClick={() => {
+                                if (confirm("Удалить пользователя из системы? (Это действие нельзя отменить)")) {
+                                    deleteUserMutation.mutate(editingUser!.auth_id);
+                                }
+                            }}
+                            disabled={deleteUserMutation.isPending}
+                        >
+                            <Trash2 className="w-4 h-4 mr-2" />
+                            Удалить
+                        </Button>
+                        <div className="flex gap-2">
+                            <Button variant="outline" onClick={() => setEditingUser(null)}>Отмена</Button>
+                            <Button
+                                onClick={() => updateProfileMutation.mutate({ user: editingUser!, class_id: selectedUserClass })}
+                                disabled={updateProfileMutation.isPending}
+                            >
+                                {updateProfileMutation.isPending ? "Сохранение..." : "Сохранить"}
+                            </Button>
+                        </div>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </SchoolLayout>
     );
 }

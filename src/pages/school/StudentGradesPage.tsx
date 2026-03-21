@@ -6,10 +6,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { BookOpen, Calendar, Clock, Loader2, Info, GraduationCap, MapPin, User, Award, ClipboardCheck, TrendingUp, Filter } from "lucide-react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { BookOpen, Calendar, Clock, Loader2, Award, ClipboardCheck, TrendingUp, Filter } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
 import SchoolLayout from "@/components/school/SchoolLayout";
 import { toast } from "sonner";
 
@@ -35,7 +34,7 @@ export default function StudentGradesPage() {
 
     const [loading, setLoading] = useState(true);
     const [subjectGrades, setSubjectGrades] = useState<SubjectGrades[]>([]);
-  const [selectedSubject, setSelectedSubject] = useState<string>("all");
+    const [selectedSubject, setSelectedSubject] = useState<string>("all");
 
     useEffect(() => {
         if (studentId) {
@@ -51,7 +50,7 @@ export default function StudentGradesPage() {
             const { data: studentInfo } = await supabase
                 .from("students_info")
                 .select("class_id")
-                .eq("student_id", studentId)
+                .eq("student_id", studentId as string)
                 .maybeSingle();
 
             if (!studentInfo?.class_id) {
@@ -128,12 +127,14 @@ export default function StudentGradesPage() {
     };
 
     const getGradeStyle = (grade: string) => {
+        if (grade === "Зч" || grade === "З") return "bg-emerald-600 text-white border-emerald-700 shadow-emerald-100 hover:bg-emerald-700";
+        if (grade === "Нз" || grade === "Н/З") return "bg-rose-600 text-white border-rose-700 shadow-rose-100 hover:bg-rose-700";
         const val = parseInt(grade);
         if (val === 5) return "bg-emerald-500 text-white border-emerald-600 shadow-emerald-100 hover:bg-emerald-600";
         if (val === 4) return "bg-primary/50 text-white border-blue-600 shadow-primary/10 hover:bg-blue-600";
         if (val === 3) return "bg-amber-500 text-white border-amber-600 shadow-amber-100 hover:bg-amber-600";
         if (val === 2) return "bg-rose-500 text-white border-rose-600 shadow-rose-100 hover:bg-rose-600";
-        return "bg-muted0 text-white border-slate-600 shadow-muted/10 hover:bg-slate-600";
+        return "bg-slate-400 text-white border-slate-500 shadow-muted/10 hover:bg-slate-500";
     };
 
     const filteredSubjects = useMemo(() => {
@@ -237,33 +238,33 @@ export default function StudentGradesPage() {
                                 Текущие оценки и показатели среднего балла по предметам
                             </CardDescription>
                         </div>
-                                <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
-                                    <Select
-                                        value={selectedSubject}
-                                        onValueChange={setSelectedSubject}
-                                    >
-                                        <SelectTrigger className="h-10 w-full sm:w-48 rounded-xl border-2 font-bold text-xs uppercase tracking-widest">
-                                            <SelectValue placeholder="Все предметы" />
-                                        </SelectTrigger>
-                                        <SelectContent className="rounded-xl">
-                                            <SelectItem value="all" className="text-xs font-bold uppercase tracking-widest">
-                                                Все предметы
-                                            </SelectItem>
-                                            {subjectGrades.map((s) => (
-                                                <SelectItem
-                                                    key={s.subjectName}
-                                                    value={s.subjectName}
-                                                    className="text-xs font-bold uppercase tracking-widest"
-                                                >
-                                                    {s.subjectName}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    <Button variant="outline" size="sm" className="rounded-xl font-bold gap-2">
-                                        <Filter className="w-4 h-4" /> Период
-                                    </Button>
-                                </div>
+                        <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
+                            <Select
+                                value={selectedSubject}
+                                onValueChange={setSelectedSubject}
+                            >
+                                <SelectTrigger className="h-10 w-full sm:w-48 rounded-xl border-2 font-bold text-xs uppercase tracking-widest">
+                                    <SelectValue placeholder="Все предметы" />
+                                </SelectTrigger>
+                                <SelectContent className="rounded-xl">
+                                    <SelectItem value="all" className="text-xs font-bold uppercase tracking-widest">
+                                        Все предметы
+                                    </SelectItem>
+                                    {subjectGrades.map((s) => (
+                                        <SelectItem
+                                            key={s.subjectName}
+                                            value={s.subjectName}
+                                            className="text-xs font-bold uppercase tracking-widest"
+                                        >
+                                            {s.subjectName}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <Button variant="outline" size="sm" className="rounded-xl font-bold gap-2">
+                                <Filter className="w-4 h-4" /> Период
+                            </Button>
+                        </div>
                     </div>
                 </CardHeader>
                 <CardContent className="p-0">
@@ -276,15 +277,15 @@ export default function StudentGradesPage() {
                                     <TableHead className="py-6 px-8 text-center font-black text-[11px] uppercase tracking-[0.2em] text-muted-foreground w-32">Средний</TableHead>
                                 </TableRow>
                             </TableHeader>
-                                    <TableBody>
-                                        {filteredSubjects.length === 0 ? (
+                            <TableBody>
+                                {filteredSubjects.length === 0 ? (
                                     <TableRow>
                                         <TableCell colSpan={3} className="py-20 text-center">
                                             <p className="text-muted-foreground font-bold">Оценки еще не выставлены</p>
                                         </TableCell>
                                     </TableRow>
                                 ) : (
-                                            filteredSubjects.map((item) => (
+                                    filteredSubjects.map((item) => (
                                         <TableRow key={item.subjectName} className="hover:bg-primary/[0.02] transition-colors border-b last:border-0 group">
                                             <TableCell className="py-8 px-8 align-middle">
                                                 <span className="font-black text-foreground text-lg group-hover:text-primary transition-colors">
@@ -300,7 +301,7 @@ export default function StudentGradesPage() {
                                                                 className={`w-10 h-10 flex items-center justify-center rounded-2xl font-black text-sm border-2 shadow-lg transition-all hover:scale-110 hover:-rotate-3 cursor-help ${getGradeStyle(g.grade)}`}
                                                                 title={`${new Date(g.date).toLocaleDateString()} ${g.comment ? `: ${g.comment}` : ''}`}
                                                             >
-                                                                {g.grade}
+                                                                {g.grade === "З" ? "Зч" : g.grade === "Н/З" ? "Нз" : g.grade}
                                                             </div>
                                                         ))
                                                     ) : (
