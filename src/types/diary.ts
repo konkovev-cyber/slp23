@@ -7,7 +7,7 @@ export interface DiaryEntry {
   room: string | null;
   homework?: {
     title: string;
-    description: string;
+    description: string | null;
   };
   grade?: {
     grade: string;

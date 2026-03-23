@@ -11,6 +11,7 @@ import { BookOpen, Calendar, Clock, Loader2, Award, ClipboardCheck, TrendingUp, 
 import { useSearchParams } from "react-router-dom";
 import SchoolLayout from "@/components/school/SchoolLayout";
 import { toast } from "sonner";
+import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 
 type GradeEntry = {
     id: number;
@@ -129,6 +130,8 @@ export default function StudentGradesPage() {
     const getGradeStyle = (grade: string) => {
         if (grade === "Зч" || grade === "З") return "bg-emerald-600 text-white border-emerald-700 shadow-emerald-100 hover:bg-emerald-700";
         if (grade === "Нз" || grade === "Н/З") return "bg-rose-600 text-white border-rose-700 shadow-rose-100 hover:bg-rose-700";
+        if (grade === "Н") return "bg-rose-500 text-white border-rose-600 shadow-rose-100 hover:bg-rose-600";
+        if (grade === "О") return "bg-amber-400 text-white border-amber-500 shadow-amber-100 hover:bg-amber-500";
         const val = parseInt(grade);
         if (val === 5) return "bg-emerald-500 text-white border-emerald-600 shadow-emerald-100 hover:bg-emerald-600";
         if (val === 4) return "bg-primary/50 text-white border-blue-600 shadow-primary/10 hover:bg-blue-600";
@@ -158,6 +161,39 @@ export default function StudentGradesPage() {
         const sum = allNumeric.reduce((a, b) => a + b, 0);
         return sum / allNumeric.length;
     }, [filteredSubjects]);
+
+    const performanceData = useMemo(() => {
+        const allGrades = subjectGrades.flatMap(s => 
+            s.grades
+                .map(g => ({
+                    date: new Date(g.date),
+                    val: parseInt(g.grade)
+                }))
+                .filter(v => !isNaN(v.val))
+        ).sort((a, b) => a.date.getTime() - b.date.getTime());
+
+        if (allGrades.length < 2) return [];
+
+        const points: { date: string, avg: number }[] = [];
+        let sum = 0;
+        let count = 0;
+
+        allGrades.forEach(g => {
+            sum += g.val;
+            count++;
+            points.push({
+                date: g.date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' }),
+                avg: parseFloat((sum / count).toFixed(2))
+            });
+        });
+
+        // Reduce points if too many (to keep chart clean)
+        if (points.length > 20) {
+            return points.filter((_, i) => i % Math.ceil(points.length / 20) === 0);
+        }
+
+        return points;
+    }, [subjectGrades]);
 
     if (loading) {
         return (
@@ -223,6 +259,59 @@ export default function StudentGradesPage() {
                     </CardContent>
                 </Card>
             </div>
+
+            {performanceData.length > 0 && (
+                <Card className="border-2 border-border shadow-2xl overflow-hidden rounded-[32px] bg-background mb-8">
+                    <CardHeader className="p-8 pb-4">
+                        <CardTitle className="text-xl font-black text-foreground flex items-center gap-3">
+                            <div className="w-10 h-10 bg-emerald-500/10 rounded-xl flex items-center justify-center text-emerald-600">
+                                <TrendingUp className="w-6 h-6" />
+                            </div>
+                            Динамика успеваемости
+                        </CardTitle>
+                        <CardDescription className="font-bold text-muted-foreground">
+                            Ваш средний балл за текущий период
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="p-8 pt-0 h-[300px]">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <AreaChart data={performanceData}>
+                                <defs>
+                                    <linearGradient id="colorAvg" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
+                                        <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                                    </linearGradient>
+                                </defs>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                                <XAxis 
+                                    dataKey="date" 
+                                    axisLine={false} 
+                                    tickLine={false} 
+                                    tick={{fontSize: 10, fontWeight: 'bold', fill: '#64748B'}} 
+                                    dy={10}
+                                />
+                                <YAxis 
+                                    domain={[2, 5]} 
+                                    axisLine={false} 
+                                    tickLine={false} 
+                                    tick={{fontSize: 10, fontWeight: 'bold', fill: '#64748B'}}
+                                />
+                                <Tooltip 
+                                    contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', fontWeight: 'bold' }}
+                                />
+                                <Area 
+                                    type="monotone" 
+                                    dataKey="avg" 
+                                    stroke="#10b981" 
+                                    strokeWidth={4} 
+                                    fillOpacity={1} 
+                                    fill="url(#colorAvg)" 
+                                />
+                            </AreaChart>
+                        </ResponsiveContainer>
+                    </CardContent>
+                </Card>
+            )}
 
             <Card className="border-2 border-border shadow-2xl overflow-hidden rounded-[32px] bg-background">
                 <CardHeader className="border-b bg-muted/50 p-8">

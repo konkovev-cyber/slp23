@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Helmet } from "react-helmet-async";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -14,50 +14,33 @@ import {
     CheckCircle2,
     GraduationCap,
     FileText,
-    CalendarDays
+    CalendarDays,
+    TrendingUp
 } from "lucide-react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import SchoolLayout from "@/components/school/SchoolLayout";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar } from "@/components/ui/calendar";
-import { ru } from "date-fns/locale";
+import {
+    LineChart,
+    Line,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    Tooltip as RechartsTooltip,
+    ResponsiveContainer
+} from "recharts";
 import type { DiaryEntry, DaySchedule, UpcomingHomeworkItem } from "@/types/diary";
 
 const DAYS_RU = ["Воскресенье", "Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота"];
 const MONTHS_RU = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
-
-interface StudentInfoData {
-    class_id: number;
-    school_classes?: { name: string };
-}
-
-interface TeacherData {
-    auth_id: string;
-    full_name: string;
-}
-
-interface ScheduleTemplate {
-    day_of_week: number;
-    lesson_number: number;
-    teacher_id: string;
-    subjects?: { name: string };
-}
-
-interface GradeData {
-    grade: string;
-    comment: string | null;
-    date: string;
-    assignment?: { subjects?: { name: string } };
-}
-
-interface HomeworkData {
-    title: string;
-    description: string;
-    due_date: string;
-    assignment?: { subjects?: { name: string } };
-}
 
 export default function StudentDiaryPage() {
     const { userId: currentUserId } = useAuth();
@@ -74,6 +57,26 @@ export default function StudentDiaryPage() {
     // Data states
     const [weekSchedule, setWeekSchedule] = useState<DaySchedule[]>([]);
     const [className, setClassName] = useState("");
+    const [allGrades, setAllGrades] = useState<any[]>([]);
+
+    useEffect(() => {
+        if (studentId) {
+            fetchAllGrades(studentId as string);
+        }
+    }, [studentId]);
+
+    const fetchAllGrades = async (uid: string) => {
+        try {
+            const { data } = await supabase
+                .from("grades")
+                .select("grade, date")
+                .eq("student_id", uid as string)
+                .order("date", { ascending: true });
+            setAllGrades(data || []);
+        } catch (e) {
+            console.error("Error fetching all grades:", e);
+        }
+    };
 
     // Helpers to get start/end of week (Monday to Sunday)
     const getWeekRange = (date: Date) => {
@@ -100,7 +103,7 @@ export default function StudentDiaryPage() {
             const { data: studentInfo } = await supabase
                 .from("students_info")
                 .select("class_id, school_classes(name)")
-                .eq("student_id", studentId)
+                .eq("student_id", studentId as string)
                 .maybeSingle();
 
             if (!studentInfo) {
@@ -110,8 +113,8 @@ export default function StudentDiaryPage() {
                 setLoading(false);
                 return;
             }
-            setClassName((studentInfo as StudentInfoData).school_classes?.name || "");
-            const classId = (studentInfo as StudentInfoData).class_id;
+            setClassName((studentInfo as any).school_classes?.name || "");
+            const classId = (studentInfo as any).class_id;
 
             // Define fetch range based on ViewMode
             let startDate = new Date(selectedDate);
@@ -173,7 +176,7 @@ export default function StudentDiaryPage() {
                 grade, comment, date,
                 assignment:teacher_assignments(subjects(name))
             `)
-            .eq("student_id", studentId)
+            .eq("student_id", studentId as string)
             .gte("date", startStr)
             .lte("date", endStr);
 
@@ -269,6 +272,8 @@ export default function StudentDiaryPage() {
     const getGradeColor = (grade: string) => {
         if (grade === "Зч" || grade === "З") return "bg-emerald-600 shadow-emerald-100";
         if (grade === "Нз" || grade === "Н/З") return "bg-rose-600 shadow-rose-100";
+        if (grade === "Н") return "bg-rose-500 shadow-rose-100";
+        if (grade === "О") return "bg-amber-400 shadow-amber-100";
         const val = parseInt(grade);
         if (val === 5) return "bg-emerald-500 shadow-emerald-100";
         if (val === 4) return "bg-primary/50 shadow-primary/10";
@@ -287,7 +292,7 @@ export default function StudentDiaryPage() {
                         date: day.date,
                         subject: entry.subject_name,
                         title: entry.homework.title,
-                        description: entry.homework.description,
+                        description: entry.homework.description || undefined,
                     });
                 }
             });
@@ -298,269 +303,337 @@ export default function StudentDiaryPage() {
             .slice(0, 8);
     }, [weekSchedule]);
 
+    const gradeLabels: Record<string, string> = {
+        "5": "Отлично",
+        "4": "Хорошо",
+        "3": "Удовлетворительно",
+        "2": "Неудовлетворительно",
+        "Зч": "Зачет",
+        "З": "Зачет",
+        "Нз": "Незачет",
+        "Н/З": "Незачет",
+        "Н": "Отсутствие",
+        "О": "Опоздание"
+    };
+
     return (
-        <SchoolLayout title="Электронный дневник">
-            <Helmet>
-                <title>Дневник | {className}</title>
-            </Helmet>
+        <TooltipProvider>
+            <SchoolLayout title="Электронный дневник">
+                <Helmet>
+                    <title>Дневник | {className}</title>
+                </Helmet>
 
-            <div className="max-w-4xl mx-auto space-y-4 pb-20 px-4 sm:px-6 overflow-x-hidden touch-none">
-                {/* Controls */}
-                <div className="flex flex-col md:flex-row items-center justify-between gap-4 bg-background p-3 sm:p-4 rounded-[32px] border-2 border-border shadow-xl touch-none w-full">
-                    <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as 'day' | 'week' | 'month')} className="w-full md:w-auto">
-                        <TabsList className="bg-muted/50 p-1 rounded-2xl h-12 w-full md:w-auto">
-                            <TabsTrigger value="day" className="rounded-xl h-10 px-6 font-bold data-[state=active]:bg-background data-[state=active]:shadow-md">День</TabsTrigger>
-                            <TabsTrigger value="week" className="rounded-xl h-10 px-6 font-bold data-[state=active]:bg-background data-[state=active]:shadow-md">Неделя</TabsTrigger>
-                            <TabsTrigger value="month" className="rounded-xl h-10 px-6 font-bold data-[state=active]:bg-background data-[state=active]:shadow-md">Месяц</TabsTrigger>
-                        </TabsList>
-                    </Tabs>
+                <div className="max-w-4xl mx-auto space-y-4 pb-20 px-4 sm:px-6 overflow-x-hidden touch-none">
+                    {/* Controls */}
+                    <div className="flex flex-col md:flex-row items-center justify-between gap-4 bg-background p-3 sm:p-4 rounded-[32px] border-2 border-border shadow-xl touch-none w-full">
+                        <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as 'day' | 'week' | 'month')} className="w-full md:w-auto">
+                            <TabsList className="bg-muted/50 p-1 rounded-2xl h-12 w-full md:w-auto">
+                                <TabsTrigger value="day" className="rounded-xl h-10 px-6 font-bold data-[state=active]:bg-background data-[state=active]:shadow-md">День</TabsTrigger>
+                                <TabsTrigger value="week" className="rounded-xl h-10 px-6 font-bold data-[state=active]:bg-background data-[state=active]:shadow-md">Неделя</TabsTrigger>
+                                <TabsTrigger value="month" className="rounded-xl h-10 px-6 font-bold data-[state=active]:bg-background data-[state=active]:shadow-md">Месяц</TabsTrigger>
+                            </TabsList>
+                        </Tabs>
 
-                    <div className="flex items-center gap-4">
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={handlePrev}
-                            className="rounded-2xl h-12 w-12 hover:bg-muted text-muted-foreground hover:text-primary"
-                            title={viewMode === 'day' ? "Предыдущий день" : viewMode === 'week' ? "Предыдущая неделя" : "Предыдущий месяц"}
-                        >
-                            <ChevronLeft className="w-6 h-6" />
-                        </Button>
-                        <div className="text-center min-w-[200px]">
-                            <h2 className="text-lg font-black uppercase tracking-tight text-foreground">
-                                {viewMode === 'day' && `${selectedDate.getDate()} ${MONTHS_RU[selectedDate.getMonth()]}`}
-                                {viewMode === 'week' && getWeekLabel()}
-                                {viewMode === 'month' && `${MONTHS_RU[selectedDate.getMonth()]} ${selectedDate.getFullYear()}`}
-                            </h2>
-                            {viewMode === 'day' && (
-                                <p className="text-xs font-bold text-muted-foreground mt-0.5">{DAYS_RU[selectedDate.getDay()]}</p>
-                            )}
-                        </div>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={handleNext}
-                            className="rounded-2xl h-12 w-12 hover:bg-muted text-muted-foreground hover:text-primary"
-                            title={viewMode === 'day' ? "Следующий день" : viewMode === 'week' ? "Следующая неделя" : "Следующий месяц"}
-                        >
-                            <ChevronRight className="w-6 h-6" />
-                        </Button>
-                    </div>
-                </div>
-
-                {loading ? (
-                    <div className="flex flex-col items-center justify-center py-20">
-                        <Loader2 className="w-10 h-10 animate-spin text-primary" />
-                    </div>
-                ) : (
-                    <>
-                        {weekSchedule.length === 0 && (
-                            <div className="flex flex-col items-center justify-center py-20 text-center space-y-4 opacity-50">
-                                <CalendarIcon className="w-16 h-16 text-muted-foreground" />
-                                <h3 className="text-xl font-bold text-foreground">Данные отсутствуют</h3>
-                                <p className="text-muted-foreground max-w-md">
-                                    Ученик не привязан к классу или расписание не заполнено.
-                                    <br />
-                                    Администратор может заполнить тестовые данные в разделе "Все оценки".
-                                </p>
+                        <div className="flex items-center gap-4">
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={handlePrev}
+                                className="rounded-2xl h-12 w-12 hover:bg-muted text-muted-foreground hover:text-primary"
+                                title={viewMode === 'day' ? "Предыдущий день" : viewMode === 'week' ? "Предыдущая неделя" : "Предыдущий месяц"}
+                            >
+                                <ChevronLeft className="w-6 h-6" />
+                            </Button>
+                            <div className="text-center min-w-[200px]">
+                                <h2 className="text-lg font-black uppercase tracking-tight text-foreground">
+                                    {viewMode === 'day' && `${selectedDate.getDate()} ${MONTHS_RU[selectedDate.getMonth()]}`}
+                                    {viewMode === 'week' && getWeekLabel()}
+                                    {viewMode === 'month' && `${MONTHS_RU[selectedDate.getMonth()]} ${selectedDate.getFullYear()}`}
+                                </h2>
+                                {viewMode === 'day' && (
+                                    <p className="text-xs font-bold text-muted-foreground mt-0.5">{DAYS_RU[selectedDate.getDay()]}</p>
+                                )}
                             </div>
-                        )}
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={handleNext}
+                                className="rounded-2xl h-12 w-12 hover:bg-muted text-muted-foreground hover:text-primary"
+                                title={viewMode === 'day' ? "Следующий день" : viewMode === 'week' ? "Следующая неделя" : "Следующий месяц"}
+                            >
+                                <ChevronRight className="w-6 h-6" />
+                            </Button>
+                        </div>
+                    </div>
 
-                        {/* HOMEWORK SUMMARY */}
-                        {(viewMode === 'day' || viewMode === 'week') && upcomingHomework.length > 0 && (
-                            <div className="grid gap-4 md:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] items-start">
-                                <div className="md:col-span-1 md:col-start-2 order-2 md:order-none w-full">
-                                    <Card className="border-2 border-border rounded-3xl shadow-lg bg-background/90 w-full">
-                                        <CardHeader className="pb-2">
-                                            <div className="flex items-center justify-between gap-3">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-9 h-9 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
-                                                        <BookOpen className="w-4 h-4" />
-                                                    </div>
-                                                    <div>
-                                                        <CardTitle className="text-base font-black tracking-tight">
-                                                            Ближайшие домашние задания
-                                                        </CardTitle>
-                                                        <CardDescription className="text-[11px] font-bold uppercase tracking-[0.2em]">
-                                                            {upcomingHomework.length} заданий
-                                                        </CardDescription>
+                    {loading ? (
+                        <div className="flex flex-col items-center justify-center py-20">
+                            <Loader2 className="w-10 h-10 animate-spin text-primary" />
+                        </div>
+                    ) : (
+                        <>
+                            {weekSchedule.length === 0 && (
+                                <div className="flex flex-col items-center justify-center py-20 text-center space-y-4 opacity-50">
+                                    <CalendarIcon className="w-16 h-16 text-muted-foreground" />
+                                    <h3 className="text-xl font-bold text-foreground">Данные отсутствуют</h3>
+                                    <p className="text-muted-foreground max-w-md">
+                                        Ученик не привязан к классу или расписание не заполнено.
+                                        <br />
+                                        Администратор может заполнить тестовые данные в разделе "Все оценки".
+                                    </p>
+                                </div>
+                            )}
+
+                            {/* TRENDS CHART */}
+                            {allGrades.length > 0 && (
+                                <Card className="border-2 border-border rounded-[32px] shadow-lg bg-background/90 overflow-hidden">
+                                    <CardHeader className="pb-2">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-600">
+                                                <TrendingUp className="w-5 h-5" />
+                                            </div>
+                                            <div>
+                                                <CardTitle className="text-base font-black tracking-tight">Тренды успеваемости</CardTitle>
+                                                <CardDescription className="text-[10px] font-bold uppercase tracking-wider">Динамика твоих оценок</CardDescription>
+                                            </div>
+                                        </div>
+                                    </CardHeader>
+                                    <CardContent className="h-[200px] pt-4 pr-6 pl-2">
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <LineChart data={allGrades.map(g => ({
+                                                date: new Date(g.date).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' }),
+                                                val: parseInt(g.grade)
+                                            })).filter(d => !isNaN(d.val))}>
+                                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                                                <XAxis dataKey="date" fontSize={10} fontWeight="bold" tickLine={false} axisLine={false} />
+                                                <YAxis domain={[1, 5]} fontSize={10} fontWeight="bold" tickLine={false} axisLine={false} />
+                                                <RechartsTooltip
+                                                    contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                                                />
+                                                <Line
+                                                    type="monotone"
+                                                    dataKey="val"
+                                                    stroke="hsl(var(--primary))"
+                                                    strokeWidth={4}
+                                                    dot={{ r: 4, strokeWidth: 2, fill: '#fff' }}
+                                                    activeDot={{ r: 6, strokeWidth: 0 }}
+                                                />
+                                            </LineChart>
+                                        </ResponsiveContainer>
+                                    </CardContent>
+                                </Card>
+                            )}
+
+                            {/* HOMEWORK SUMMARY */}
+                            {(viewMode === 'day' || viewMode === 'week') && upcomingHomework.length > 0 && (
+                                <div className="grid gap-4 md:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] items-start">
+                                    <div className="md:col-span-1 md:col-start-2 order-2 md:order-none w-full">
+                                        <Card className="border-2 border-border rounded-3xl shadow-lg bg-background/90 w-full">
+                                            <CardHeader className="pb-2">
+                                                <div className="flex items-center justify-between gap-3">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-9 h-9 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
+                                                            <BookOpen className="w-4 h-4" />
+                                                        </div>
+                                                        <div>
+                                                            <CardTitle className="text-base font-black tracking-tight">
+                                                                Ближайшие домашние задания
+                                                            </CardTitle>
+                                                            <CardDescription className="text-[11px] font-bold uppercase tracking-[0.2em]">
+                                                                {upcomingHomework.length} заданий
+                                                            </CardDescription>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        </CardHeader>
-                                        <CardContent className="pt-2 space-y-3 max-h-[260px] overflow-y-auto pr-1">
-                                            {upcomingHomework.map((item, idx) => {
-                                                const today = new Date();
-                                                const isSameDay =
-                                                    item.date.getDate() === today.getDate() &&
-                                                    item.date.getMonth() === today.getMonth() &&
-                                                    item.date.getFullYear() === today.getFullYear();
-                                                const isPast = item.date < new Date(today.getFullYear(), today.getMonth(), today.getDate());
+                                            </CardHeader>
+                                            <CardContent className="pt-2 space-y-3 max-h-[260px] overflow-y-auto pr-1">
+                                                {upcomingHomework.map((item, idx) => {
+                                                    const today = new Date();
+                                                    const isSameDay =
+                                                        item.date.getDate() === today.getDate() &&
+                                                        item.date.getMonth() === today.getMonth() &&
+                                                        item.date.getFullYear() === today.getFullYear();
+                                                    const isPast = item.date < new Date(today.getFullYear(), today.getMonth(), today.getDate());
 
-                                                const statusLabel = isSameDay
-                                                    ? 'Сегодня'
-                                                    : isPast
-                                                        ? 'Просрочено'
-                                                        : 'Скоро';
+                                                    const statusLabel = isSameDay
+                                                        ? 'Сегодня'
+                                                        : isPast
+                                                            ? 'Просрочено'
+                                                            : 'Скоро';
 
-                                                const statusClass = isPast
-                                                    ? 'bg-destructive/10 text-destructive border-destructive/20'
-                                                    : isSameDay
-                                                        ? 'bg-amber-500/10 text-amber-600 border-amber-500/20'
-                                                        : 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20';
+                                                    const statusClass = isPast
+                                                        ? 'bg-destructive/10 text-destructive border-destructive/20'
+                                                        : isSameDay
+                                                            ? 'bg-amber-500/10 text-amber-600 border-amber-500/20'
+                                                            : 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20';
 
-                                                return (
-                                                    <div
-                                                        key={idx}
-                                                        className="flex items-start gap-3 rounded-2xl border border-border bg-muted/30 px-3 py-2.5"
-                                                    >
-                                                        <div className="mt-0.5">
-                                                            <Badge
-                                                                variant="outline"
-                                                                className={`text-[9px] font-black uppercase tracking-[0.2em] rounded-full px-2.5 py-0.5 border ${statusClass}`}
-                                                            >
-                                                                {statusLabel}
-                                                            </Badge>
-                                                            <div className="mt-1 text-[11px] font-bold text-muted-foreground flex items-center gap-1">
-                                                                <CalendarDays className="w-3 h-3" />
-                                                                {item.date.toLocaleDateString('ru-RU', {
-                                                                    day: '2-digit',
-                                                                    month: 'short',
-                                                                })}
+                                                    return (
+                                                        <div
+                                                            key={idx}
+                                                            className="flex items-start gap-3 rounded-2xl border border-border bg-muted/30 px-3 py-2.5"
+                                                        >
+                                                            <div className="mt-0.5">
+                                                                <Badge
+                                                                    variant="outline"
+                                                                    className={`text-[9px] font-black uppercase tracking-[0.2em] rounded-full px-2.5 py-0.5 border ${statusClass}`}
+                                                                >
+                                                                    {statusLabel}
+                                                                </Badge>
+                                                                <div className="mt-1 text-[11px] font-bold text-muted-foreground flex items-center gap-1">
+                                                                    <CalendarDays className="w-3 h-3" />
+                                                                    {item.date.toLocaleDateString('ru-RU', {
+                                                                        day: '2-digit',
+                                                                        month: 'short',
+                                                                    })}
+                                                                </div>
+                                                            </div>
+                                                            <div className="flex-1 min-w-0">
+                                                                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-muted-foreground mb-0.5 line-clamp-1">
+                                                                    {item.subject}
+                                                                </p>
+                                                                <p className="text-sm font-semibold text-foreground line-clamp-2">
+                                                                    {item.title}
+                                                                </p>
+                                                                {item.description && (
+                                                                    <p className="mt-1 text-[11px] text-muted-foreground line-clamp-2">
+                                                                        {item.description}
+                                                                    </p>
+                                                                )}
                                                             </div>
                                                         </div>
-                                                        <div className="flex-1 min-w-0">
-                                                            <p className="text-[11px] font-black uppercase tracking-[0.18em] text-muted-foreground mb-0.5 line-clamp-1">
-                                                                {item.subject}
-                                                            </p>
-                                                            <p className="text-sm font-semibold text-foreground line-clamp-2">
-                                                                {item.title}
-                                                            </p>
-                                                            {item.description && (
-                                                                <p className="mt-1 text-[11px] text-muted-foreground line-clamp-2">
-                                                                    {item.description}
-                                                                </p>
+                                                    );
+                                                })}
+                                            </CardContent>
+                                        </Card>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* DAY VIEW */}
+                            {viewMode === 'day' && weekSchedule[0] && (
+                                <div className="space-y-6">
+                                    {weekSchedule[0].entries.length === 0 ? (
+                                        <EmptyState />
+                                    ) : (
+                                        weekSchedule[0].entries.map((entry, idx) => (
+                                            <DiaryCard key={idx} entry={entry} getGradeColor={getGradeColor} gradeLabels={gradeLabels} />
+                                        ))
+                                    )}
+                                </div>
+                            )}
+
+                            {/* WEEK VIEW */}
+                            {viewMode === 'week' && (
+                                <div className="space-y-6 w-full">
+                                    {weekSchedule.map((day, dIdx) => (
+                                        <div key={dIdx} className="space-y-3 w-full">
+                                            <div className={cn(
+                                                "flex items-center gap-3 px-3 py-2 rounded-2xl w-fit max-w-full",
+                                                isToday(day.date) ? "bg-primary text-white shadow-lg shadow-primary/30" : "bg-muted text-muted-foreground"
+                                            )}>
+                                                <span className="font-black uppercase tracking-widest text-xs whitespace-nowrap">
+                                                    {DAYS_RU[day.date.getDay()]}
+                                                </span>
+                                                <span className="font-bold opacity-80 text-xs whitespace-nowrap">
+                                                    {day.date.getDate()} {MONTHS_RU[day.date.getMonth()]}
+                                                </span>
+                                            </div>
+
+                                            <div className="grid grid-cols-1 gap-3 w-full">
+                                                {day.entries.length === 0 ? (
+                                                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest italic py-2">Выходной день / Нет занятий</p>
+                                                ) : (
+                                                    day.entries.map((entry, idx) => (
+                                                        <div key={idx} className="bg-background rounded-2xl p-3 sm:p-4 border-2 border-border shadow-sm flex flex-col md:flex-row md:items-center gap-3 sm:gap-4 w-full overflow-hidden">
+                                                            <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-shrink-0">
+                                                                <div
+                                                                    className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-primary text-white flex items-center justify-center font-black text-xs sm:text-sm flex-shrink-0"
+                                                                    title={`Номер урока: ${entry.lesson_number}`}
+                                                                >
+                                                                    {entry.lesson_number}
+                                                                </div>
+                                                                <div className="min-w-0 flex-1">
+                                                                    <p className="font-bold text-foreground text-xs sm:text-sm truncate" title="Предмет">{entry.subject_name}</p>
+                                                                    <p className="text-[9px] sm:text-[10px] uppercase font-bold text-muted-foreground truncate max-w-full" title={`Преподаватель: ${entry.teacher_name}`}>{entry.teacher_name}</p>
+                                                                </div>
+                                                            </div>
+
+                                                            <div className="flex-1 border-t md:border-t-0 md:border-l border-border pt-2 md:pt-0 md:pl-3 sm:md:pl-4 min-w-0">
+                                                                {entry.homework ? (
+                                                                    <p className="text-xs text-foreground font-medium break-words">{entry.homework.description}</p>
+                                                                ) : (
+                                                                    <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Нет задания</p>
+                                                                )}
+                                                            </div>
+
+                                                            {entry.grade && (
+                                                                <Tooltip>
+                                                                    <TooltipTrigger asChild>
+                                                                        <div
+                                                                            className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center text-white font-black shadow-md flex-shrink-0 cursor-help ${getGradeColor(entry.grade.grade)}`}
+                                                                        >
+                                                                            {entry.grade.grade === "З" ? "Зч" : entry.grade.grade === "Н/З" ? "Нз" : entry.grade.grade}
+                                                                        </div>
+                                                                    </TooltipTrigger>
+                                                                    <TooltipContent className="rounded-xl p-3 bg-foreground text-background border-0 shadow-2xl">
+                                                                        <div className="flex flex-col gap-1">
+                                                                            <span className="font-black text-xs">{gradeLabels[entry.grade.grade] || "Оценка"}</span>
+                                                                            {entry.grade.comment && (
+                                                                                <p className="text-[10px] font-medium opacity-80 border-t border-background/20 pt-1 mt-1">
+                                                                                    {entry.grade.comment}
+                                                                                </p>
+                                                                            )}
+                                                                        </div>
+                                                                    </TooltipContent>
+                                                                </Tooltip>
                                                             )}
                                                         </div>
+                                                    ))
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
+                            {/* MONTH VIEW */}
+                            {viewMode === 'month' && (
+                                <Card className="rounded-[40px] border-2 border-border bg-background overflow-hidden shadow-xl">
+                                    <div className="p-8">
+                                        <div className="grid grid-cols-7 gap-4 mb-4">
+                                            {["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"].map(day => (
+                                                <div key={day} className="text-center font-black text-muted-foreground uppercase text-xs tracking-widest">{day}</div>
+                                            ))}
+                                        </div>
+                                        <div className="grid grid-cols-7 gap-4">
+                                            {weekSchedule.length > 0 && Array.from({ length: (weekSchedule[0]?.date?.getDay() + 6) % 7 }).map((_, i) => (
+                                                <div key={`blank-${i}`} />
+                                            ))}
+                                            {weekSchedule.map((day, i) => {
+                                                const hasGrades = day.entries.some(e => e.grade);
+                                                const isTodayDate = isToday(day.date);
+                                                return (
+                                                    <div key={i} className={cn(
+                                                        "aspect-square rounded-2xl flex flex-col items-center justify-center gap-1 border-2 transition-all cursor-pointer hover:border-primary/50 hover:bg-primary/5",
+                                                        isTodayDate ? "border-primary bg-primary/10" : "border-border bg-muted/30"
+                                                    )} onClick={() => { setSelectedDate(day.date); setViewMode('day'); }}>
+                                                        <span className={cn(
+                                                            "text-sm font-black",
+                                                            isTodayDate ? "text-primary" : "text-foreground"
+                                                        )}>{day.date.getDate()}</span>
+                                                        {hasGrades && <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />}
                                                     </div>
                                                 );
                                             })}
-                                        </CardContent>
-                                    </Card>
-                                </div>
-                            </div>
-                        )}
-
-                        {/* DAY VIEW */}
-                        {viewMode === 'day' && weekSchedule[0] && (
-                            <div className="space-y-6">
-                                {weekSchedule[0].entries.length === 0 ? (
-                                    <EmptyState />
-                                ) : (
-                                    weekSchedule[0].entries.map((entry, idx) => (
-                                        <DiaryCard key={idx} entry={entry} getGradeColor={getGradeColor} />
-                                    ))
-                                )}
-                            </div>
-                        )}
-
-                        {/* WEEK VIEW */}
-                        {viewMode === 'week' && (
-                            <div className="space-y-6 w-full">
-                                {weekSchedule.map((day, dIdx) => (
-                                    <div key={dIdx} className="space-y-3 w-full">
-                                        <div className={cn(
-                                            "flex items-center gap-3 px-3 py-2 rounded-2xl w-fit max-w-full",
-                                            isToday(day.date) ? "bg-primary text-white shadow-lg shadow-primary/30" : "bg-muted text-muted-foreground"
-                                        )}>
-                                            <span className="font-black uppercase tracking-widest text-xs whitespace-nowrap">
-                                                {DAYS_RU[day.date.getDay()]}
-                                            </span>
-                                            <span className="font-bold opacity-80 text-xs whitespace-nowrap">
-                                                {day.date.getDate()} {MONTHS_RU[day.date.getMonth()]}
-                                            </span>
-                                        </div>
-
-                                        <div className="grid grid-cols-1 gap-3 w-full">
-                                            {day.entries.length === 0 ? (
-                                                <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest italic py-2">Выходной день / Нет занятий</p>
-                                            ) : (
-                                                day.entries.map((entry, idx) => (
-                                                    <div key={idx} className="bg-background rounded-2xl p-3 sm:p-4 border-2 border-border shadow-sm flex flex-col md:flex-row md:items-center gap-3 sm:gap-4 w-full overflow-hidden">
-                                                        <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-shrink-0">
-                                                            <div
-                                                                className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-primary text-white flex items-center justify-center font-black text-xs sm:text-sm flex-shrink-0"
-                                                                title={`Номер урока: ${entry.lesson_number}`}
-                                                            >
-                                                                {entry.lesson_number}
-                                                            </div>
-                                                            <div className="min-w-0 flex-1">
-                                                                <p className="font-bold text-foreground text-xs sm:text-sm truncate" title="Предмет">{entry.subject_name}</p>
-                                                                <p className="text-[9px] sm:text-[10px] uppercase font-bold text-muted-foreground truncate max-w-full" title={`Преподаватель: ${entry.teacher_name}`}>{entry.teacher_name}</p>
-                                                            </div>
-                                                        </div>
-
-                                                        <div className="flex-1 border-t md:border-t-0 md:border-l border-border pt-2 md:pt-0 md:pl-3 sm:md:pl-4 min-w-0">
-                                                            {entry.homework ? (
-                                                                <p className="text-xs text-foreground font-medium break-words">{entry.homework.description}</p>
-                                                            ) : (
-                                                                <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Нет задания</p>
-                                                            )}
-                                                        </div>
-
-                                                        {entry.grade && (
-                                                            <div
-                                                                className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center text-white font-black shadow-md flex-shrink-0 ${getGradeColor(entry.grade.grade)}`}
-                                                                title={entry.grade.comment ? `Оценка: ${entry.grade.grade}. Комментарий: ${entry.grade.comment}` : `Оценка: ${entry.grade.grade}`}
-                                                            >
-                                                                {entry.grade.grade === "З" ? "Зч" : entry.grade.grade === "Н/З" ? "Нз" : entry.grade.grade}
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                ))
-                                            )}
                                         </div>
                                     </div>
-                                ))}
-                            </div>
-                        )}
-
-                        {/* MONTH VIEW */}
-                        {viewMode === 'month' && (
-                            <Card className="rounded-[40px] border-2 border-border bg-background overflow-hidden shadow-xl">
-                                <div className="p-8">
-                                    <div className="grid grid-cols-7 gap-4 mb-4">
-                                        {["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"].map(day => (
-                                            <div key={day} className="text-center font-black text-muted-foreground uppercase text-xs tracking-widest">{day}</div>
-                                        ))}
-                                    </div>
-                                    <div className="grid grid-cols-7 gap-4">
-                                        {weekSchedule.length > 0 && Array.from({ length: (weekSchedule[0]?.date?.getDay() + 6) % 7 }).map((_, i) => (
-                                            <div key={`blank-${i}`} />
-                                        ))}
-                                        {weekSchedule.map((day, i) => {
-                                            const hasGrades = day.entries.some(e => e.grade);
-                                            const isTodayDate = isToday(day.date);
-                                            return (
-                                                <div key={i} className={cn(
-                                                    "aspect-square rounded-2xl flex flex-col items-center justify-center gap-1 border-2 transition-all cursor-pointer hover:border-primary/50 hover:bg-primary/5",
-                                                    isTodayDate ? "border-primary bg-primary/10" : "border-border bg-muted/30"
-                                                )} onClick={() => { setSelectedDate(day.date); setViewMode('day'); }}>
-                                                    <span className={cn(
-                                                        "text-sm font-black",
-                                                        isTodayDate ? "text-primary" : "text-foreground"
-                                                    )}>{day.date.getDate()}</span>
-                                                    {hasGrades && <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />}
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-                            </Card>
-                        )}
-                    </>
-                )}
-            </div>
-        </SchoolLayout>
+                                </Card>
+                            )}
+                        </>
+                    )}
+                </div>
+            </SchoolLayout>
+        </TooltipProvider>
     );
 }
 
@@ -580,7 +653,7 @@ function EmptyState() {
     );
 }
 
-function DiaryCard({ entry, getGradeColor }: { entry: DiaryEntry, getGradeColor: (g: string) => string }) {
+function DiaryCard({ entry, getGradeColor, gradeLabels }: { entry: DiaryEntry, getGradeColor: (g: string) => string, gradeLabels: Record<string, string> }) {
     return (
         <Card className="group overflow-hidden border border-border hover:border-primary/20 transition-all duration-300 rounded-[20px] bg-background shadow-sm hover:shadow-md">
             <CardContent className="p-0">
@@ -596,16 +669,10 @@ function DiaryCard({ entry, getGradeColor }: { entry: DiaryEntry, getGradeColor:
                             </div>
                             <div className="h-px flex-1 bg-border" />
                         </div>
-                        <h3
-                            className="text-base font-bold text-foreground mb-1 leading-tight group-hover:text-primary transition-colors cursor-help"
-                            title="Название предмета"
-                        >
+                        <h3 className="text-base font-bold text-foreground mb-1 leading-tight group-hover:text-primary transition-colors cursor-help">
                             {entry.subject_name}
                         </h3>
-                        <p
-                            className="text-[10px] font-semibold text-muted-foreground flex items-center gap-1.5 cursor-help uppercase tracking-wider"
-                            title="ФИО преподавателя"
-                        >
+                        <p className="text-[10px] font-semibold text-muted-foreground flex items-center gap-1.5 cursor-help uppercase tracking-wider">
                             <GraduationCap className="w-3 h-3" /> {entry.teacher_name}
                         </p>
                     </div>
@@ -641,20 +708,28 @@ function DiaryCard({ entry, getGradeColor }: { entry: DiaryEntry, getGradeColor:
                                     <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Итог</span>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    {entry.grade.comment && (
-                                        <span className="text-[10px] font-medium text-muted-foreground italic truncate max-w-[150px]" title={entry.grade.comment}>
-                                            "{entry.grade.comment}"
-                                        </span>
-                                    )}
-                                    <div
-                                        className={cn(
-                                            "w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-sm shadow-md cursor-help",
-                                            getGradeColor(entry.grade.grade)
-                                        )}
-                                        title={entry.grade.comment ? `Оценка: ${entry.grade.grade} (${entry.grade.comment})` : `Оценка: ${entry.grade.grade}`}
-                                    >
-                                        {entry.grade.grade}
-                                    </div>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <div
+                                                className={cn(
+                                                    "w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-sm shadow-md cursor-help",
+                                                    getGradeColor(entry.grade.grade)
+                                                )}
+                                            >
+                                                {entry.grade.grade === "З" ? "Зч" : entry.grade.grade === "Н/З" ? "Нз" : entry.grade.grade}
+                                            </div>
+                                        </TooltipTrigger>
+                                        <TooltipContent className="rounded-xl p-3 bg-foreground text-background border-0 shadow-2xl">
+                                            <div className="flex flex-col gap-1">
+                                                <span className="font-black text-xs">{gradeLabels[entry.grade.grade] || "Оценка"}</span>
+                                                {entry.grade.comment && (
+                                                    <p className="text-[10px] font-medium opacity-80 border-t border-background/20 pt-1 mt-1">
+                                                        {entry.grade.comment}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        </TooltipContent>
+                                    </Tooltip>
                                 </div>
                             </div>
                         )}

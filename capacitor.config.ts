@@ -6,11 +6,20 @@ const config: CapacitorConfig = {
   webDir: 'dist',
   server: {
     // APK запускается со страницы входа в дневник
-    launchPath: '/school/login'
+    appStartPath: '/school/login'
   },
   plugins: {
+    SplashScreen: {
+      launchShowDuration: 1000,
+      launchAutoHide: true,
+      backgroundColor: "#FAFBFF",
+      androidScaleType: "CENTER_CROP",
+      showSpinner: false,
+      splashFullScreen: true,
+      splashImmersive: true,
+    },
     Browser: {
-      openStyle: 'normal', // Открывать в обычном браузере, не in-app
+      openStyle: 'normal',
     },
   },
 };

@@ -35,9 +35,9 @@ export default function SchoolSidebar() {
     const isActive = (url: string) => pathname.startsWith(url);
 
     const getMenuItems = () => {
-        const baseItems = [
+        const baseItems = !userId ? [
             { title: "Вход", url: "/school/login", icon: Home },
-        ];
+        ] : [];
 
         if (isLoading) return baseItems;
 

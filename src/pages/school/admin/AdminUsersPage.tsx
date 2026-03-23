@@ -15,7 +15,7 @@ import {
     TableRow
 } from "@/components/ui/table";
 import { toast } from "sonner";
-import { CheckCircle, XCircle, Clock, User, Shield, Loader2, RefreshCw, Edit2, Trash2 } from "lucide-react";
+import { CheckCircle, XCircle, Clock, User, Shield, Loader2, RefreshCw, Edit2, Trash2, Key } from "lucide-react";
 import SchoolLayout from "@/components/school/SchoolLayout";
 import {
     Select,
@@ -43,6 +43,8 @@ export default function AdminUsersPage() {
     const [editingUser, setEditingUser] = useState<any | null>(null);
     const [classes, setClasses] = useState<any[]>([]);
     const [selectedUserClass, setSelectedUserClass] = useState<string>("");
+    const [changePasswordUser, setChangePasswordUser] = useState<any | null>(null);
+    const [newPassword, setNewPassword] = useState("");
 
     useEffect(() => {
         const fetchClasses = async () => {
@@ -189,6 +191,30 @@ export default function AdminUsersPage() {
         },
         onError: (error: any) => {
             toast.error("Ошибка: " + error.message);
+        },
+    });
+
+    const changePasswordMutation = useMutation({
+        mutationFn: async ({ userId, password }: { userId: string; password: string }) => {
+            if (password.length < 6) throw new Error("Пароль должен быть не менее 6 символов");
+            const { createClient } = await import("@supabase/supabase-js");
+            const adminClient = createClient(
+                import.meta.env.VITE_SUPABASE_URL,
+                import.meta.env.VITE_SUPABASE_SERVICE_ROLE_KEY
+            );
+            const { error } = await adminClient.auth.admin.updateUserById(userId, {
+                password: password,
+                email_confirm: true
+            });
+            if (error) throw error;
+        },
+        onSuccess: () => {
+            toast.success("Пароль успешно изменён");
+            setChangePasswordUser(null);
+            setNewPassword("");
+        },
+        onError: (error: any) => {
+            toast.error("Ошибка сброса: " + error.message);
         },
     });
 
@@ -342,15 +368,26 @@ export default function AdminUsersPage() {
                                                 <TableCell className="text-right">
                                                     <div className="flex items-center justify-end gap-2">
                                                         {user.is_approved && (
-                                                            <Button
-                                                                size="icon"
-                                                                variant="outline"
-                                                                onClick={() => handleEditUser(user)}
-                                                                className="h-9 w-9 rounded-xl hover:text-primary"
-                                                                title="Редактировать профиль"
-                                                            >
-                                                                <Edit2 className="w-4 h-4" />
-                                                            </Button>
+                                                            <>
+                                                                <Button
+                                                                    size="icon"
+                                                                    variant="outline"
+                                                                    onClick={() => handleEditUser(user)}
+                                                                    className="h-9 w-9 rounded-xl hover:text-primary"
+                                                                    title="Редактировать профиль"
+                                                                >
+                                                                    <Edit2 className="w-4 h-4" />
+                                                                </Button>
+                                                                <Button
+                                                                    size="icon"
+                                                                    variant="outline"
+                                                                    onClick={() => setChangePasswordUser(user)}
+                                                                    className="h-9 w-9 rounded-xl hover:text-amber-500"
+                                                                    title="Изменить пароль"
+                                                                >
+                                                                    <Key className="w-4 h-4" />
+                                                                </Button>
+                                                            </>
                                                         )}
                                                         {!user.is_approved && (
                                                             <>
@@ -505,6 +542,40 @@ export default function AdminUsersPage() {
                                 {updateProfileMutation.isPending ? "Сохранение..." : "Сохранить"}
                             </Button>
                         </div>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Change Password Modal */}
+            <Dialog open={!!changePasswordUser} onOpenChange={(v) => !v && setChangePasswordUser(null)}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>Смена пароля</DialogTitle>
+                        <CardDescription>
+                            Новый пароль для <b>{changePasswordUser?.full_name || changePasswordUser?.email}</b>
+                        </CardDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                            <Label>Новый пароль (минимум 6 символов)</Label>
+                            <Input
+                                type="text"
+                                value={newPassword}
+                                onChange={(e) => setNewPassword(e.target.value)}
+                                placeholder="Например: qwerty1234"
+                            />
+                        </div>
+                    </div>
+                    <DialogFooter className="flex gap-2 justify-end mt-4">
+                        <Button variant="outline" onClick={() => setChangePasswordUser(null)}>Отмена</Button>
+                        <Button
+                            onClick={() => changePasswordMutation.mutate({ userId: changePasswordUser!.auth_id, password: newPassword })}
+                            disabled={changePasswordMutation.isPending || newPassword.length < 6}
+                            className="bg-amber-500 hover:bg-amber-600 text-white"
+                        >
+                            {changePasswordMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Key className="w-4 h-4 mr-2" />}
+                            Сохранить пароль
+                        </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

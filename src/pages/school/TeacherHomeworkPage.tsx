@@ -3,7 +3,6 @@ import { Helmet } from "react-helmet-async";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,10 +29,8 @@ import {
     Loader2,
     Trash2,
     GraduationCap,
-    ClipboardCheck,
-    FileText,
     ChevronRight,
-    MapPin
+    FileText
 } from "lucide-react";
 import SchoolLayout from "@/components/school/SchoolLayout";
 import { toast } from "sonner";
@@ -85,20 +82,41 @@ export default function TeacherHomeworkPage() {
     const fetchData = async () => {
         try {
             setLoading(true);
-            const [asg, hw] = await Promise.all([
-                supabase.from("teacher_assignments").select("id, class_id, subject_id, school_classes(name), subjects(name)").eq("teacher_id", userId),
-                supabase.from("homework").select(`
+
+            // Check if user is admin
+            const { data: profile } = await supabase
+                .from("profiles")
+                .select("role")
+                .eq("auth_id", userId as string)
+                .single();
+
+            let asgQuery = supabase
+                .from("teacher_assignments")
+                .select("id, class_id, subject_id, school_classes(name), subjects(name)");
+
+            if ((profile as any)?.role !== 'admin') {
+                asgQuery = asgQuery.eq("teacher_id", userId as string);
+            }
+
+            const { data: assignmentsData } = await asgQuery;
+            const asgIds = assignmentsData?.map(a => a.id) || [];
+
+            const { data: homeworkData } = await supabase
+                .from("homework")
+                .select(`
                     id, title, description, due_date, teacher_assignment_id,
                     assignment:teacher_assignments(
                         school_classes(name),
                         subjects(name)
                     )
-                `).in("teacher_assignment_id", (await supabase.from("teacher_assignments").select("id").eq("teacher_id", userId)).data?.map(a => a.id) || [])
-            ]);
+                `)
+                .in("teacher_assignment_id", asgIds);
 
-            setAssignments(asg.data as any[] || []);
-            setHomeworkList(hw.data as any[] || []);
-            if (asg.data?.length) setFormAssignmentId(asg.data[0].id.toString());
+            setAssignments(assignmentsData as any[] || []);
+            setHomeworkList(homeworkData as any[] || []);
+            if (assignmentsData?.length && !formAssignmentId) {
+                setFormAssignmentId(assignmentsData[0].id.toString());
+            }
         } catch (error: any) {
             toast.error(error.message);
         } finally {

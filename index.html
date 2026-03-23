@@ -3,7 +3,8 @@
 
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content" />
   <title>Личность ПЛЮС — Частная школа в Горячем Ключе</title>
   <meta name="description"
     content="Частная школа «Личность ПЛЮС» в Горячем Ключе. Углубленное обучение, малые классы, всестороннее развитие ребенка и подготовка к жизни." />
@@ -15,7 +16,7 @@
 
   <!-- Инициализация темы -->
   <script>
-    (function() {
+    (function () {
       const theme = localStorage.getItem('theme');
       if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
         document.documentElement.classList.add('dark');
@@ -34,30 +35,26 @@
   <meta name="theme-color" content="#3b82f6" />
   <meta name="msapplication-TileColor" content="#3b82f6" />
   <meta name="msapplication-tap-highlight" content="no" />
-  
-  <!-- APK: всегда открываем school/login или school/schedule -->
+
+  <!-- Standalone App Strategy (APK/PWA) -->
   <script>
-    (function() {
-      // Проверяем, запущено ли как standalone приложение (APK/PWA)
-      var isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
-                         window.navigator.standalone === true;
-      
+    (function () {
+      const isStandalone = window.matchMedia('(display-mode: standalone)').matches ||
+        window.navigator.standalone === true;
+
       if (isStandalone) {
-        // Для APK: всегда проверяем авторизацию и открываем нужную страницу
+        document.documentElement.classList.add('is-standalone');
         try {
-          var session = localStorage.getItem('sb-qwuicyhadpesklhkjxpn-auth-token');
-          if (session) {
-            // Авторизован - открываем расписание
+          const session = localStorage.getItem('sb-qwuicyhadpesklhkjxpn-auth-token');
+          if (session && window.location.pathname === '/') {
             window.location.href = '/school/schedule';
-          } else {
-            // Не авторизован - открываем вход
+          } else if (!session && window.location.pathname !== '/school/login') {
             window.location.href = '/school/login';
           }
-        } catch(e) {
-          window.location.href = '/school/login';
+        } catch (e) {
+          console.error('Session error:', e);
         }
       }
-      // В обычном браузере (не standalone) - показываем главную страницу лендинга
     })();
   </script>
 
