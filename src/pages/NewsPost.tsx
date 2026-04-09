@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
 import { motion } from "framer-motion";
-import { ArrowLeft, Calendar, ChevronLeft, ChevronRight, X } from "lucide-react";
+import { ArrowLeft, Calendar, ChevronLeft, ChevronRight, X, Play } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -347,7 +347,8 @@ export default function NewsPost() {
                                 initial={{ opacity: 0, y: 10 }}
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true }}
-                                className="aspect-video rounded-xl overflow-hidden bg-muted border border-border/50 shadow-sm cursor-zoom-in"
+                                className={`rounded-xl overflow-hidden bg-muted border border-border/50 shadow-sm cursor-pointer transition-all hover:bg-muted/80 ${!embed && !isFile ? "py-4 px-6" : "aspect-video"
+                                  }`}
                                 onClick={() => openLightbox(mediaIndex >= 0 ? mediaIndex : idx)}
                               >
                                 {embed ? (
@@ -363,11 +364,14 @@ export default function NewsPost() {
                                     Ваш браузер не поддерживает видео.
                                   </video>
                                 ) : (
-                                  <div className="w-full h-full flex items-center justify-center p-6 text-center">
-                                    <div className="space-y-2">
-                                      <p className="text-sm font-bold">Видео по ссылке</p>
-                                      <p className="text-xs text-muted-foreground break-all">{vid}</p>
-                                      <p className="text-xs text-muted-foreground">Откроется в лайтбоксе как embed, если источник поддерживается.</p>
+                                  <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                                      <Play className="w-6 h-6 text-primary fill-primary" />
+                                    </div>
+                                    <div className="min-w-0">
+                                      <p className="text-sm font-bold truncate">Видео по ссылке</p>
+                                      <p className="text-xs text-muted-foreground truncate">{vid}</p>
+                                      <p className="text-[10px] text-muted-foreground mt-1">Откроется в лайтбоксе или новой вкладке</p>
                                     </div>
                                   </div>
                                 )}
