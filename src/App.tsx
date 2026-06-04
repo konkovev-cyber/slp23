@@ -59,6 +59,8 @@ import ProtectedRoute from "@/components/admin/ProtectedRoute";
 import AdminLayout from "@/components/admin/AdminLayout";
 import SchoolProtectedRoute from "@/components/school/SchoolProtectedRoute";
 import { MaintenanceGuard } from "@/components/MaintenanceGuard";
+import CookieBanner from "@/components/CookieBanner";
+import VisionPanel from "@/components/VisionPanel";
 
 const PageLoader = () => (
   <div className="flex items-center justify-center min-h-screen bg-background">
@@ -76,6 +78,7 @@ const App = () => (
       <BrowserRouter>
         <Suspense fallback={<PageLoader />}>
           <MaintenanceGuard>
+            <VisionPanel />
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/about" element={<AboutPage />} />
@@ -331,6 +334,7 @@ const App = () => (
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
+            <CookieBanner />
           </MaintenanceGuard>
         </Suspense>
       </BrowserRouter>

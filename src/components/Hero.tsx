@@ -167,7 +167,7 @@ const Hero = () => {
 
                 <div className="space-y-3">
                   {[
-                    { icon: GraduationCap, label: "Набор в 1-й класс", detail: "2026/27 учебный год" },
+                    { icon: GraduationCap, label: "Набор на 2026 год", detail: "2026/27 учебный год" },
                     { icon: Phone, label: "Обратный звонок", detail: "Перезвоним в течение часа" }
                   ].map((item, idx) => (
                     <div key={idx} className="p-3 rounded-xl bg-muted/40 border border-transparent hover:border-primary/20 hover:bg-white/50 dark:hover:bg-white/5 transition-all cursor-pointer flex items-center justify-between group/line">

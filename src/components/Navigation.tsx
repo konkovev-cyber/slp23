@@ -1,6 +1,6 @@
-﻿import { useState, useEffect } from "react";
+﻿import { useState, useEffect, useMemo } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Menu, X, ChevronDown } from "lucide-react";
+import { Menu, X, ChevronDown, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -12,6 +12,8 @@ import {
 import { cn } from "@/lib/utils";
 import ThemeToggle from "./ThemeToggle";
 import { useAuth } from "@/hooks/use-auth";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -31,13 +33,29 @@ const Navigation = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const schoolItems = [
-    { label: "О школе", href: "/about" },
-    { label: "Программы", href: "/programs" },
-    { label: "Кружки", href: "/clubs" },
-    { label: "Галерея", href: "/gallery" },
-    { label: "Новости", href: "/news" },
-  ];
+  const { data: visibility = {} } = useQuery({
+    queryKey: ["sections-visibility"],
+    queryFn: async () => {
+      const { data } = await supabase.from("site_content").select("id, is_visible");
+      return (data || []).reduce((acc, item) => ({
+        ...acc,
+        [item.id]: item.is_visible
+      }), {} as Record<string, boolean>);
+    }
+  });
+
+  const schoolItems = useMemo(() => {
+    const items = [
+      { id: "about", label: "О школе", href: "/about" },
+      { id: "programs", label: "Программы", href: "/programs" },
+      { id: "clubs", label: "Кружки", href: "/clubs" },
+      { id: "gallery", label: "Галерея", href: "/gallery" },
+      { id: "news", label: "Новости", href: "/news" },
+    ];
+    // Фильтруем пункты: если ID есть в базе, проверяем is_visible. 
+    // Если записи в базе еще нет, считаем видимым по умолчанию.
+    return items.filter(item => visibility[item.id] !== false);
+  }, [visibility]);
 
   const svedeniyaItems = [
     { label: "Основные сведения", href: "/svedeniya#osnovnye-svedeniya" },
@@ -55,6 +73,10 @@ const Navigation = () => {
   const handleDiaryClick = () => {
     navigate(userId ? "/school/diary" : "/school/login");
     setIsOpen(false);
+  };
+
+  const enableVisionMode = () => {
+    window.dispatchEvent(new CustomEvent("toggle-vision", { detail: true }));
   };
 
   return (
@@ -140,6 +162,15 @@ const Navigation = () => {
           </div>
 
           <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={enableVisionMode}
+              className="rounded-full w-10 h-10 hover:bg-white/10 hidden md:flex"
+              title="Версия для слабовидящих"
+            >
+              <Eye className="w-5 h-5 text-foreground/70" />
+            </Button>
             <ThemeToggle />
             <Button
               type="button"
@@ -195,6 +226,14 @@ const Navigation = () => {
               >
                 Новости
               </Link>
+
+              <button
+                type="button"
+                onClick={enableVisionMode}
+                className="text-2xl font-bold py-2 active:text-primary transition-colors text-left flex items-center gap-3"
+              >
+                <Eye className="w-6 h-6" /> Версия для слабовидящих
+              </button>
 
               <button
                 type="button"

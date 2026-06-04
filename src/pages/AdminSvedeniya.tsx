@@ -9,7 +9,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link } from "react-router-dom";
-import { FileText, Printer, FileDown } from "lucide-react";
+import { FileText, Printer, FileDown, Files } from "lucide-react";
+import SvedeniyaDocuments from "@/components/admin/SvedeniyaDocuments";
 
 const SECTIONS = [
     { id: "basic", title: "Основные сведения" },
@@ -30,6 +31,8 @@ export default function AdminSvedeniya() {
     const { toast } = useToast();
     const queryClient = useQueryClient();
     const [contentMap, setContentMap] = useState<Record<string, string>>({});
+    // Для каждого раздела: "text" | "docs"
+    const [subTab, setSubTab] = useState<Record<string, "text" | "docs">>({});
 
     const { data } = useQuery({
         queryKey: ["svedeniya_content"],
@@ -107,6 +110,10 @@ export default function AdminSvedeniya() {
         }, 500);
     };
 
+    const getSubTab = (sectionId: string) => subTab[sectionId] || "text";
+    const setSubTabFor = (sectionId: string, tab: "text" | "docs") =>
+        setSubTab(prev => ({ ...prev, [sectionId]: tab }));
+
     return (
         <div className="space-y-6">
             <Helmet><title>Редактор сведений</title></Helmet>
@@ -114,7 +121,7 @@ export default function AdminSvedeniya() {
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-2xl font-bold">Основные сведения</h1>
-                    <p className="text-muted-foreground text-sm">Редактирование содержимого разделов "Сведения об организации"</p>
+                    <p className="text-muted-foreground text-sm">Редактирование содержимого разделов «Сведения об организации»</p>
                 </div>
                 <div className="flex gap-2">
                     <Button variant="outline" asChild>
@@ -128,6 +135,7 @@ export default function AdminSvedeniya() {
 
             <Card className="p-6">
                 <Tabs defaultValue={SECTIONS[0].id} className="flex flex-col md:flex-row gap-6 items-start">
+                    {/* Боковая навигация разделов */}
                     <TabsList className="flex flex-col h-auto items-stretch justify-start w-full md:w-64 bg-muted/50 p-2 gap-1 md:sticky md:top-0">
                         {SECTIONS.map(s => (
                             <TabsTrigger key={s.id} value={s.id} className="w-full justify-start text-left whitespace-normal h-auto py-2">
@@ -135,9 +143,11 @@ export default function AdminSvedeniya() {
                             </TabsTrigger>
                         ))}
                     </TabsList>
+
                     <div className="flex-1 min-h-[500px] w-full">
                         {SECTIONS.map(s => (
                             <TabsContent key={s.id} value={s.id} className="mt-0 h-full flex flex-col gap-2">
+                                {/* Заголовок раздела + кнопки */}
                                 <div className="flex items-center justify-between mb-2">
                                     <Label className="text-lg font-semibold">{s.title}</Label>
                                     <div className="flex gap-2">
@@ -162,13 +172,46 @@ export default function AdminSvedeniya() {
                                         </Button>
                                     </div>
                                 </div>
-                                <p className="text-xs text-muted-foreground mb-2">Поддерживается простой текст и HTML.</p>
-                                <Textarea
-                                    className="flex-1 font-mono text-sm min-h-[400px]"
-                                    value={contentMap[s.id] || ""}
-                                    onChange={(e) => setContentMap({ ...contentMap, [s.id]: e.target.value })}
-                                    placeholder={`Введите содержимое для раздела "${s.title}"...`}
-                                />
+
+                                {/* Переключатель: Текст / Документы */}
+                                <div className="flex gap-1 border-b mb-3">
+                                    <button
+                                        className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors -mb-px ${
+                                            getSubTab(s.id) === "text"
+                                                ? "border-primary text-primary"
+                                                : "border-transparent text-muted-foreground hover:text-foreground"
+                                        }`}
+                                        onClick={() => setSubTabFor(s.id, "text")}
+                                    >
+                                        Текст раздела
+                                    </button>
+                                    <button
+                                        className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors -mb-px flex items-center gap-1.5 ${
+                                            getSubTab(s.id) === "docs"
+                                                ? "border-primary text-primary"
+                                                : "border-transparent text-muted-foreground hover:text-foreground"
+                                        }`}
+                                        onClick={() => setSubTabFor(s.id, "docs")}
+                                    >
+                                        <Files className="w-3.5 h-3.5" />
+                                        Документы
+                                    </button>
+                                </div>
+
+                                {/* Контент вкладки */}
+                                {getSubTab(s.id) === "text" ? (
+                                    <>
+                                        <p className="text-xs text-muted-foreground mb-2">Поддерживается простой текст и HTML.</p>
+                                        <Textarea
+                                            className="flex-1 font-mono text-sm min-h-[400px]"
+                                            value={contentMap[s.id] || ""}
+                                            onChange={(e) => setContentMap({ ...contentMap, [s.id]: e.target.value })}
+                                            placeholder={`Введите содержимое для раздела "${s.title}"...`}
+                                        />
+                                    </>
+                                ) : (
+                                    <SvedeniyaDocuments sectionId={s.id} />
+                                )}
                             </TabsContent>
                         ))}
                     </div>

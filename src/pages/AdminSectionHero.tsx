@@ -34,6 +34,12 @@ export default function AdminSectionHero() {
 
   const isHero = sectionId === "hero";
   const isSettings = sectionId === "settings";
+  const isAbout = sectionId === "about";
+  const isFooter = sectionId === "footer";
+  const isGeneric = [
+    "features", "programs", "clubs", "testimonials",
+    "news", "teachers", "honor", "gallery", "contact"
+  ].includes(sectionId);
 
   const { data, isLoading } = useQuery({
     queryKey: ["admin_section", sectionId],
@@ -72,6 +78,18 @@ export default function AdminSectionHero() {
   // Settings specific
   const [maintenanceMode, setMaintenanceMode] = useState(false);
 
+  // About specific
+  const [aboutVideoUrl, setAboutVideoUrl] = useState("");
+  const [aboutDirectorName, setAboutDirectorName] = useState("");
+  const [aboutDirectorQuote, setAboutDirectorQuote] = useState("");
+
+  // Generic and Footer fields
+  const [genericTitle, setGenericTitle] = useState("");
+  const [footerDescription, setFooterDescription] = useState("");
+  const [footerAddress, setFooterAddress] = useState("");
+  const [footerPhone, setFooterPhone] = useState("");
+  const [footerEmail, setFooterEmail] = useState("");
+
   useEffect(() => {
     if (!data) return;
     setIsVisible(data.is_visible);
@@ -103,12 +121,27 @@ export default function AdminSectionHero() {
       } else {
         setBgImage(null);
       }
+    } else if (isAbout || isGeneric) {
+      setGenericTitle(initial.title ?? "");
+      setBadgeText(initial.badge_text ?? "");
+      setLead(initial.lead ?? "");
+
+      if (isAbout) {
+        setAboutVideoUrl(initial.video_url ?? "");
+        setAboutDirectorName(initial.director_name ?? "");
+        setAboutDirectorQuote(initial.director_quote ?? "");
+      }
+    } else if (isFooter) {
+      setFooterDescription(initial.description ?? "");
+      setFooterAddress(initial.address ?? "");
+      setFooterPhone(initial.phone ?? "");
+      setFooterEmail(initial.email ?? "");
     } else if (isSettings) {
       setMaintenanceMode(!!initial.maintenance_mode);
     } else {
       setRawContent(JSON.stringify(initial, null, 2));
     }
-  }, [data, initial, isHero, isSettings]);
+  }, [data, initial, isHero, isSettings, isAbout, isGeneric, isFooter]);
 
   const saveMutation = useMutation({
     mutationFn: async () => {
@@ -141,6 +174,15 @@ export default function AdminSectionHero() {
               alt: bgImage.alt,
             }
             : initial.background_image,
+        };
+      } else if (isAbout) {
+        content = {
+          ...content,
+          title: aboutTitle,
+          lead: aboutLead,
+          video_url: aboutVideoUrl,
+          director_name: aboutDirectorName,
+          director_quote: aboutDirectorQuote,
         };
       } else if (isSettings) {
         content = {
@@ -266,6 +308,64 @@ export default function AdminSectionHero() {
           </div>
         )}
 
+        {(isGeneric || isAbout) && (
+          <div className="space-y-5 border-t pt-4">
+            <div className="space-y-2">
+              <Label>Badge (Надзаголовок)</Label>
+              <Input value={badgeText} onChange={(e) => setBadgeText(e.target.value)} placeholder="Новости / О школе / Набор открыт" />
+            </div>
+            <div className="space-y-2">
+              <Label>Заголовок (Title)</Label>
+              <Input value={genericTitle} onChange={(e) => setGenericTitle(e.target.value)} placeholder="Введите основной заголовок..." />
+            </div>
+            <div className="space-y-2">
+              <Label>Описание (Lead)</Label>
+              <Textarea value={lead} onChange={(e) => setLead(e.target.value)} rows={4} placeholder="Введите текст описания..." />
+            </div>
+            {isAbout && (
+              <>
+                <div className="space-y-2">
+                  <Label>URL видео (YouTube/MP4)</Label>
+                  <Input value={aboutVideoUrl} onChange={(e) => setAboutVideoUrl(e.target.value)} placeholder="https://..." />
+                </div>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label>Имя директора</Label>
+                    <Input value={aboutDirectorName} onChange={(e) => setAboutDirectorName(e.target.value)} placeholder="Киян Юлия Юрьевна" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Цитата директора</Label>
+                    <Textarea value={aboutDirectorQuote} onChange={(e) => setAboutDirectorQuote(e.target.value)} rows={3} placeholder="Слова руководителя..." />
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        )}
+
+        {isFooter && (
+          <div className="space-y-5 border-t pt-4">
+            <div className="space-y-2">
+              <Label>Описание школы в подвале</Label>
+              <Textarea value={footerDescription} onChange={(e) => setFooterDescription(e.target.value)} rows={3} />
+            </div>
+            <div className="space-y-2">
+              <Label>Адрес</Label>
+              <Input value={footerAddress} onChange={(e) => setFooterAddress(e.target.value)} />
+            </div>
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label>Телефон</Label>
+                <Input value={footerPhone} onChange={(e) => setFooterPhone(e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label>Email</Label>
+                <Input value={footerEmail} onChange={(e) => setFooterEmail(e.target.value)} />
+              </div>
+            </div>
+          </div>
+        )}
+
         {isSettings && (
           <div className="space-y-4 border-t pt-4">
             <div className="flex items-center justify-between">
@@ -278,7 +378,7 @@ export default function AdminSectionHero() {
           </div>
         )}
 
-        {!isHero && !isSettings && (
+        {!isHero && !isSettings && !isAbout && !isGeneric && !isFooter && (
           <div className="space-y-4 border-t pt-4">
             <div className="space-y-2">
               <Label>Контент секции (JSON)</Label>

@@ -1,13 +1,40 @@
-﻿import { SiInstagram, SiTelegram, SiVk, SiGithub } from "react-icons/si";
+import { useMemo } from "react";
+import { SiInstagram, SiTelegram, SiVk } from "react-icons/si";
 import { Link } from "react-router-dom";
 import { Download } from "lucide-react";
 import { Capacitor } from "@capacitor/core";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 const isNative = Capacitor.isNativePlatform();
 
 const Footer = () => {
   // В нативном приложении (APK) не показываем кнопку скачивания
   const showApkDownload = !isNative;
+
+  const { data: visibility = {} } = useQuery({
+    queryKey: ["sections-visibility"],
+    queryFn: async () => {
+      const { data } = await supabase.from("site_content").select("id, is_visible");
+      return (data || []).reduce((acc, item) => ({
+        ...acc,
+        [item.id]: item.is_visible
+      }), {} as Record<string, boolean>);
+    }
+  });
+
+  const mainNavItems = useMemo(() => {
+    const items = [
+      { id: "home", label: "Главная страница", href: "/" },
+      { id: "about", label: "О нашей школе", href: "/#about" },
+      { id: "programs", label: "Программы обучения", href: "/#programs" },
+      { id: "clubs", label: "Кружки и секции", href: "/#clubs" },
+      { id: "news", label: "Новости школы", href: "/news" },
+      { id: "gallery", label: "Фотогалерея", href: "/#gallery" },
+    ];
+    // Главную оставляем всегда, остальные проверяем
+    return items.filter(item => item.id === "home" || visibility[item.id] !== false);
+  }, [visibility]);
 
   return (
     <footer className="bg-background border-t border-border pt-16 pb-12">
@@ -21,7 +48,7 @@ const Footer = () => {
               <span className="font-bold text-xl text-foreground tracking-tight">Личность ПЛЮС</span>
             </div>
             <p className="text-muted-foreground text-[13px] font-medium leading-relaxed max-w-xs">
-              Частная общеобразовательная школа нового поколения. Создаем условия для развития лидеров будущего.
+              Частная школа дополнительного образования. Создаём условия для развития лидеров будущего.
             </p>
             <div className="flex space-x-3 pt-2">
               {[
@@ -46,36 +73,13 @@ const Footer = () => {
           <nav role="navigation" aria-label="Навигация в подвале">
             <h4 className="text-foreground font-bold mb-6 uppercase tracking-wider text-[10px]">Навигация</h4>
             <ul className="space-y-3.5">
-              <li>
-                <Link to="/" className="text-muted-foreground hover:text-primary transition-colors text-[13px] font-medium">
-                  Главная страница
-                </Link>
-              </li>
-              <li>
-                <Link to="/#about" className="text-muted-foreground hover:text-primary transition-colors text-[13px] font-medium">
-                  О нашей школе
-                </Link>
-              </li>
-              <li>
-                <Link to="/#programs" className="text-muted-foreground hover:text-primary transition-colors text-[13px] font-medium">
-                  Программы обучения
-                </Link>
-              </li>
-              <li>
-                <Link to="/#clubs" className="text-muted-foreground hover:text-primary transition-colors text-[13px] font-medium">
-                  Кружки и секции
-                </Link>
-              </li>
-              <li>
-                <Link to="/news" className="text-muted-foreground hover:text-primary transition-colors text-[13px] font-medium">
-                  Новости школы
-                </Link>
-              </li>
-              <li>
-                <Link to="/#gallery" className="text-muted-foreground hover:text-primary transition-colors text-[13px] font-medium">
-                  Фотогалерея
-                </Link>
-              </li>
+              {mainNavItems.map((item) => (
+                <li key={item.id}>
+                  <Link to={item.href} className="text-muted-foreground hover:text-primary transition-colors text-[13px] font-medium">
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </nav>
 
@@ -126,9 +130,10 @@ const Footer = () => {
 
         <div className="border-t border-border pt-8 flex flex-col md:flex-row justify-between items-center gap-6">
           <p className="text-muted-foreground text-[10px] font-medium uppercase tracking-widest text-center md:text-left">
-            © 2026 ЧОУ «Личность ПЛЮС». Все права защищены.
+            © 2026 ЧОУ «Личность ПЛЮС». Все права защищены. <br className="md:hidden" />
+            <span className="hidden md:inline"> | </span> ИНН 2368015470 | ОГРН 1212300048179
           </p>
-          
+
           <div className="flex items-center gap-6">
             {/* APK Download Icon - показываем только в веб-версии */}
             {showApkDownload && (

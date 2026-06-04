@@ -1,50 +1,18 @@
 <?php
-/**
- * 📦 Скрипт распаковки deploy.zip на сервере
- * 
- * Использование:
- * 1. Загрузите этот файл на сервер через FTP
- * 2. Откройте в браузере: https://slp23.ru/_unzip.php
- * 3. После успешной распаковки удалите этот файл!
- * 
- * ⚠️ ВНИМАНИЕ: Удалите этот файл после использования!
- */
-
-// Имя архива (должно совпадать с zipFileName в ftp-deploy.js)
 $file = 'deploy.zip';
-
-set_time_limit(300);
-
+set_time_limit(600);
 if (!file_exists($file)) {
-    http_response_code(404);
-    die("❌ Error: $file not found. Загрузите архив через FTP.");
+    die("❌ Ошибка: Файл $file не найден. Проверьте загрузку.");
 }
-
-echo "📦 Распаковка $file...\n";
-
 $zip = new ZipArchive;
 if ($zip->open($file) === TRUE) {
-    $extracted = $zip->extractTo(__DIR__);
+    echo "📦 Распаковка $file...<br>";
+    $zip->extractTo(__DIR__);
     $zip->close();
-    
-    if ($extracted) {
-        echo "✅ Распаковка успешна!\n";
-        
-        // Удаляем архив после распаковки
-        if (unlink($file)) {
-            echo "🗑️  Архив удалён\n";
-        } else {
-            echo "⚠️  Не удалось удалить архив\n";
-        }
-        
-        echo "\n✅ ДЕПЛОЙ ЗАВЕРШЁН!\n";
-        echo "📝 Удалите этот файл (_unzip.php) для безопасности\n";
-    } else {
-        http_response_code(500);
-        echo "❌ Error: Failed to extract files\n";
-    }
+    unlink($file);
+    echo "✅ Распаковка успешна!<br>";
+    echo "🗑️ Архив удалён.<br><br>";
+    echo "<b>🚀 ДЕПЛОЙ ЗАВЕРШЁН!</b><br>";
 } else {
-    http_response_code(500);
-    echo "❌ Error: Cannot open zip file\n";
+    echo "❌ Ошибка: Не удалось открыть zip-архив.";
 }
-?>
