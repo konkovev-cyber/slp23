@@ -9,7 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link } from "react-router-dom";
-import { Printer, FileDown, Files, Users, UserCheck, Building2, Loader2 } from "lucide-react";
+import { Printer, FileDown, Files, Users, UserCheck, Building2, Loader2, Pencil, Check, X } from "lucide-react";
 import SvedeniyaDocuments from "@/components/admin/SvedeniyaDocuments";
 import PersonsEditor from "@/components/admin/PersonsEditor";
 import BasicInfoForm, { BasicInfoData, BASIC_INFO_DEFAULTS } from "@/components/admin/BasicInfoForm";
@@ -39,6 +39,8 @@ export default function AdminSvedeniya() {
     const [contentMap, setContentMap] = useState<Record<string, string>>({});
     const [basicInfo,  setBasicInfo]  = useState<BasicInfoData>(BASIC_INFO_DEFAULTS);
     const [subTab,     setSubTab]     = useState<Record<string, SubTab>>({});
+    const [editing,    setEditing]    = useState<Record<string, boolean>>({});
+    const [draft,      setDraft]      = useState<Record<string, string>>({});
 
     // ── загрузка ──
     const { data, isLoading: loadingContent } = useQuery({
@@ -110,6 +112,17 @@ export default function AdminSvedeniya() {
     const getSubTab = (id: string) => subTab[id] || "text";
     const setSubTabFor = (id: string, tab: SubTab) =>
         setSubTab(p => ({ ...p, [id]: tab }));
+
+    const startEdit = (id: string) => {
+        setDraft(p => ({ ...p, [id]: contentMap[id] || "" }));
+        setEditing(p => ({ ...p, [id]: true }));
+    };
+    const cancelEdit = (id: string) => setEditing(p => ({ ...p, [id]: false }));
+    const saveEdit = (id: string) => {
+        setContentMap(prev => ({ ...prev, [id]: draft[id] || "" }));
+        setEditing(p => ({ ...p, [id]: false }));
+        // сохраняем через общую кнопку "Сохранить всё"
+    };
 
     return (
         <div className="space-y-6">
@@ -226,17 +239,42 @@ export default function AdminSvedeniya() {
                                 {/* ═══ Текстовый раздел ═══ */}
                                 {s.type === "text" && (
                                     <>
+                                        {/* Заголовок раздела */}
                                         <div className="flex items-center justify-between">
                                             <Label className="text-base font-semibold">{s.title}</Label>
                                             <div className="flex gap-2">
-                                                <Button variant="outline" size="sm" className="h-8 gap-1.5"
-                                                    onClick={() => printSection(s.title, contentMap[s.id] || "")}>
-                                                    <Printer className="w-3.5 h-3.5" /> Печать
-                                                </Button>
-                                                <Button variant="outline" size="sm" className="h-8 gap-1.5"
-                                                    onClick={() => printSection(s.title, contentMap[s.id] || "")}>
-                                                    <FileDown className="w-3.5 h-3.5" /> PDF
-                                                </Button>
+                                                {!editing[s.id] && (
+                                                    <>
+                                                        <Button variant="outline" size="sm" className="h-8 gap-1.5"
+                                                            onClick={() => printSection(s.title, contentMap[s.id] || "")}>
+                                                            <Printer className="w-3.5 h-3.5" /> Печать
+                                                        </Button>
+                                                        <Button variant="outline" size="sm" className="h-8 gap-1.5"
+                                                            onClick={() => printSection(s.title, contentMap[s.id] || "")}>
+                                                            <FileDown className="w-3.5 h-3.5" /> PDF
+                                                        </Button>
+                                                        <Button size="sm" className="h-8 gap-1.5"
+                                                            onClick={() => startEdit(s.id)}>
+                                                            <Pencil className="w-3.5 h-3.5" /> Редактировать
+                                                        </Button>
+                                                    </>
+                                                )}
+                                                {editing[s.id] && (
+                                                    <>
+                                                        <Button variant="outline" size="sm" className="h-8 gap-1.5"
+                                                            onClick={() => cancelEdit(s.id)}>
+                                                            <X className="w-3.5 h-3.5" /> Отмена
+                                                        </Button>
+                                                        <Button size="sm" className="h-8 gap-1.5 bg-green-600 hover:bg-green-700"
+                                                            onClick={() => saveEdit(s.id)}
+                                                            disabled={saveMutation.isPending}>
+                                                            {saveMutation.isPending
+                                                                ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                                                : <Check className="w-3.5 h-3.5" />}
+                                                            Сохранить
+                                                        </Button>
+                                                    </>
+                                                )}
                                             </div>
                                         </div>
 
@@ -259,28 +297,44 @@ export default function AdminSvedeniya() {
                                         </div>
 
                                         {getSubTab(s.id) === "text" ? (
-                                            <>
-                                                <p className="text-xs text-muted-foreground">
-                                                    Поддерживается простой текст и HTML-разметка.
-                                                </p>
-                                                <Textarea
-                                                    className="font-mono text-sm min-h-[420px]"
-                                                    value={contentMap[s.id] || ""}
-                                                    onChange={e =>
-                                                        setContentMap({ ...contentMap, [s.id]: e.target.value })
-                                                    }
-                                                    placeholder={`Введите содержимое для раздела «${s.title}»…`}
-                                                />
-                                                <Button
-                                                    size="sm" className="gap-2"
-                                                    onClick={() => saveMutation.mutate()}
-                                                    disabled={saveMutation.isPending}
-                                                >
-                                                    {saveMutation.isPending
-                                                        ? <><Loader2 className="w-3.5 h-3.5 animate-spin" />Сохранение...</>
-                                                        : "Сохранить текст"}
-                                                </Button>
-                                            </>
+                                            editing[s.id] ? (
+                                                /* ─ Режим редактирования ─ */
+                                                <>
+                                                    <p className="text-xs text-muted-foreground">
+                                                        Поддерживается простой текст и HTML-разметка.
+                                                    </p>
+                                                    <Textarea
+                                                        className="font-mono text-sm min-h-[420px]"
+                                                        value={draft[s.id] ?? contentMap[s.id] ?? ""}
+                                                        onChange={e =>
+                                                            setDraft(prev => ({ ...prev, [s.id]: e.target.value }))
+                                                        }
+                                                        placeholder={`Введите содержимое для раздела «${s.title}»…`}
+                                                        autoFocus
+                                                    />
+                                                </>
+                                            ) : (
+                                                /* ─ Режим просмотра ─ */
+                                                contentMap[s.id] ? (
+                                                    <div
+                                                        className="prose prose-sm max-w-none dark:prose-invert min-h-[120px] p-4 rounded-xl border border-border/60 bg-muted/20 cursor-pointer hover:bg-muted/40 transition-colors group relative"
+                                                        onClick={() => startEdit(s.id)}
+                                                        title="Нажмите для редактирования"
+                                                        dangerouslySetInnerHTML={{ __html: contentMap[s.id] }}
+                                                    />
+                                                ) : (
+                                                    <button
+                                                        className="w-full min-h-[120px] flex flex-col items-center justify-center gap-3 p-6 rounded-xl border-2 border-dashed border-border hover:border-primary/50 hover:bg-primary/5 transition-all text-muted-foreground hover:text-primary group"
+                                                        onClick={() => startEdit(s.id)}
+                                                    >
+                                                        <Pencil className="w-8 h-8 opacity-40 group-hover:opacity-70 transition-opacity" />
+                                                        <div className="text-center">
+                                                            <div className="font-semibold text-sm">Напишите содержимое</div>
+                                                            <div className="text-xs mt-0.5">[Раздел пуст — нажмите чтобы добавить текст]</div>
+                                                        </div>
+                                                    </button>
+                                                )
+                                            )
                                         ) : (
                                             <SvedeniyaDocuments sectionId={s.id} />
                                         )}

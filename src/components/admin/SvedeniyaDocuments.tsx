@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import {
   FileText, FileSpreadsheet, File, Upload, Trash2,
-  X, Loader2, Eye, Download, GripVertical
+  X, Loader2, Eye, Download, GripVertical, Plus, Pencil, Check
 } from "lucide-react";
 import {
   AlertDialog,
@@ -117,6 +117,10 @@ export default function SvedeniyaDocuments({ sectionId }: Props) {
   const [newTitle, setNewTitle] = useState("");
   const [newDescription, setNewDescription] = useState("");
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [showForm, setShowForm] = useState(false);
+  const [editingDocId, setEditingDocId] = useState<string | null>(null);
+  const [draftTitle, setDraftTitle] = useState("");
+  const [draftDesc, setDraftDesc] = useState("");
 
   const queryKey = ["svedeniya_documents", sectionId];
 
@@ -155,6 +159,29 @@ export default function SvedeniyaDocuments({ sectionId }: Props) {
     onError: (e: any) =>
       toast({ title: "Ошибка удаления", description: e.message, variant: "destructive" }),
   });
+
+  const updateMutation = useMutation({
+    mutationFn: async ({ id, title, description }: { id: string; title: string; description: string }) => {
+      const { error } = await supabase
+        .from("svedeniya_documents")
+        .update({ title: title.trim(), description: description.trim() || null })
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey });
+      setEditingDocId(null);
+      toast({ title: "Сохранено", description: "Данные документа обновлены." });
+    },
+    onError: (e: any) =>
+      toast({ title: "Ошибка", description: e.message, variant: "destructive" }),
+  });
+
+  const startEditDoc = (doc: DocRow) => {
+    setEditingDocId(doc.id);
+    setDraftTitle(doc.title);
+    setDraftDesc(doc.description || "");
+  };
 
   const handleFileSelect = (file: File) => {
     const mimeType = file.type;
@@ -226,6 +253,14 @@ export default function SvedeniyaDocuments({ sectionId }: Props) {
     }
   };
 
+  const resetForm = () => {
+    setSelectedFile(null);
+    setNewTitle("");
+    setNewDescription("");
+    setShowForm(false);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
   return (
     <div className="mt-4 space-y-4">
       {/* Превью PDF модалка */}
@@ -243,11 +278,26 @@ export default function SvedeniyaDocuments({ sectionId }: Props) {
         </div>
       )}
 
+      {/* Кнопка «Добавить документ» */}
+      {!showForm && (
+        <Button size="sm" variant="outline" className="gap-2 w-full border-dashed"
+          onClick={() => setShowForm(true)}>
+          <Plus className="w-4 h-4" /> Добавить документ
+        </Button>
+      )}
+
       {/* Форма загрузки */}
+      {showForm && (
       <div className="border border-dashed rounded-lg p-4 bg-muted/20">
-        <p className="text-xs font-semibold text-muted-foreground mb-3 uppercase tracking-wide">
-          Добавить документ
-        </p>
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+            Добавить документ
+          </p>
+          <Button variant="ghost" size="sm" className="h-7 gap-1 text-muted-foreground"
+            onClick={resetForm}>
+            <X className="w-3.5 h-3.5" /> Закрыть
+          </Button>
+        </div>
 
         {/* Drop zone */}
         <div
@@ -318,7 +368,7 @@ export default function SvedeniyaDocuments({ sectionId }: Props) {
             />
           </div>
           <Button
-            onClick={handleUpload}
+            onClick={async () => { await handleUpload(); if (!uploading) resetForm(); }}
             disabled={uploading || !selectedFile || !newTitle.trim()}
             size="sm"
             className="w-full gap-2"
@@ -331,6 +381,7 @@ export default function SvedeniyaDocuments({ sectionId }: Props) {
           </Button>
         </div>
       </div>
+      )}
 
       {/* Список документов */}
       {isLoading ? (
@@ -349,78 +400,109 @@ export default function SvedeniyaDocuments({ sectionId }: Props) {
           {docs.map((doc) => (
             <div
               key={doc.id}
-              className="flex items-start gap-3 p-3 rounded-lg border bg-card hover:bg-muted/30 transition-colors"
+              className="rounded-lg border bg-card transition-colors"
             >
-              <GripVertical className="w-4 h-4 text-muted-foreground/40 mt-1 shrink-0 cursor-grab" />
-              <div className="shrink-0 mt-0.5">{getFileTypeIcon(doc.file_type)}</div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-medium text-sm truncate">{doc.title}</span>
-                  {getFileTypeBadge(doc.file_type)}
-                  {doc.file_size && (
-                    <span className="text-xs text-muted-foreground">{formatSize(doc.file_size)}</span>
+              {/* ── Основная строка ── */}
+              <div className="flex items-start gap-3 p-3 hover:bg-muted/30 transition-colors">
+                <GripVertical className="w-4 h-4 text-muted-foreground/40 mt-1 shrink-0 cursor-grab" />
+                <div className="shrink-0 mt-0.5">{getFileTypeIcon(doc.file_type)}</div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-medium text-sm truncate">{doc.title}</span>
+                    {getFileTypeBadge(doc.file_type)}
+                    {doc.file_size && (
+                      <span className="text-xs text-muted-foreground">{formatSize(doc.file_size)}</span>
+                    )}
+                  </div>
+                  {doc.description && (
+                    <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{doc.description}</p>
                   )}
+                  <p className="text-[10px] text-muted-foreground/60 mt-1">
+                    {new Date(doc.created_at).toLocaleDateString("ru-RU")} · {doc.file_name}
+                  </p>
                 </div>
-                {doc.description && (
-                  <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{doc.description}</p>
-                )}
-                <p className="text-[10px] text-muted-foreground/60 mt-1">
-                  {new Date(doc.created_at).toLocaleDateString("ru-RU")} · {doc.file_name}
-                </p>
-              </div>
-              <div className="flex items-center gap-1 shrink-0">
-                {doc.file_type === "pdf" && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-7 w-7"
-                    title="Просмотр"
-                    onClick={() => setPreviewUrl(doc.file_url)}
-                  >
-                    <Eye className="w-3.5 h-3.5" />
-                  </Button>
-                )}
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7"
-                  title="Скачать"
-                  asChild
-                >
-                  <a href={doc.file_url} download={doc.file_name} target="_blank" rel="noreferrer">
-                    <Download className="w-3.5 h-3.5" />
-                  </a>
-                </Button>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-7 w-7 text-destructive/70 hover:text-destructive hover:bg-destructive/10"
-                      title="Удалить"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
+                <div className="flex items-center gap-1 shrink-0">
+                  {doc.file_type === "pdf" && (
+                    <Button variant="ghost" size="icon" className="h-7 w-7" title="Просмотр"
+                      onClick={() => setPreviewUrl(doc.file_url)}>
+                      <Eye className="w-3.5 h-3.5" />
                     </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Удалить документ?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        «{doc.title}» будет удалён без возможности восстановления.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Отмена</AlertDialogCancel>
-                      <AlertDialogAction
-                        className="bg-destructive hover:bg-destructive/90"
-                        onClick={() => deleteMutation.mutate(doc)}
-                      >
-                        Удалить
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
+                  )}
+                  <Button variant="ghost" size="icon" className="h-7 w-7" title="Скачать" asChild>
+                    <a href={doc.file_url} download={doc.file_name} target="_blank" rel="noreferrer">
+                      <Download className="w-3.5 h-3.5" />
+                    </a>
+                  </Button>
+                  <Button variant="ghost" size="icon"
+                    className={`h-7 w-7 ${editingDocId === doc.id ? "text-primary bg-primary/10" : ""}`}
+                    title="Редактировать"
+                    onClick={() => editingDocId === doc.id ? setEditingDocId(null) : startEditDoc(doc)}>
+                    <Pencil className="w-3.5 h-3.5" />
+                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="ghost" size="icon"
+                        className="h-7 w-7 text-destructive/70 hover:text-destructive hover:bg-destructive/10"
+                        title="Удалить">
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Удалить документ?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          «{doc.title}» будет удалён без возможности восстановления.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Отмена</AlertDialogCancel>
+                        <AlertDialogAction className="bg-destructive hover:bg-destructive/90"
+                          onClick={() => deleteMutation.mutate(doc)}>
+                          Удалить
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
               </div>
+
+              {/* ── Инлайн редактирование ── */}
+              {editingDocId === doc.id && (
+                <div className="px-4 pb-4 pt-1 border-t border-border/60 bg-muted/20 space-y-3">
+                  <div>
+                    <Label className="text-xs">Название *</Label>
+                    <Input
+                      value={draftTitle}
+                      onChange={e => setDraftTitle(e.target.value)}
+                      className="mt-1 h-8 text-sm"
+                      autoFocus
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs">Описание</Label>
+                    <Textarea
+                      value={draftDesc}
+                      onChange={e => setDraftDesc(e.target.value)}
+                      className="mt-1 text-sm min-h-[60px] resize-none"
+                      placeholder="Краткое описание..."
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <Button size="sm" variant="outline" className="gap-1.5 flex-1"
+                      onClick={() => setEditingDocId(null)}>
+                      <X className="w-3.5 h-3.5" /> Отмена
+                    </Button>
+                    <Button size="sm" className="gap-1.5 flex-1 bg-green-600 hover:bg-green-700"
+                      disabled={!draftTitle.trim() || updateMutation.isPending}
+                      onClick={() => updateMutation.mutate({ id: doc.id, title: draftTitle, description: draftDesc })}>
+                      {updateMutation.isPending
+                        ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        : <Check className="w-3.5 h-3.5" />}
+                      Сохранить
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
           ))}
         </div>
