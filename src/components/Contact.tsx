@@ -116,12 +116,19 @@ const Contact = () => {
                 </div>
               </div>
 
-              <div className="rounded-2xl overflow-hidden border border-border/50 aspect-video shadow-lg relative group">
+              <div className="rounded-2xl overflow-hidden border border-border/50 aspect-video shadow-lg relative group h-[300px]">
                 <iframe
                   src={iframeSrc}
-                  className="w-full h-full border-0 grayscale hover:grayscale-0 transition-all duration-700"
+                  className="w-full h-full border-0 grayscale dark:invert-[90%] dark:hue-rotate-[180deg] hover:grayscale-0 dark:hover:invert-0 dark:hover:hue-rotate-0 transition-all duration-700"
                   title="Location Map"
                 />
+                <div className="absolute bottom-3 right-3 z-10 transition-transform duration-300 hover:scale-105">
+                  <Button asChild size="sm" className="rounded-full bg-white/90 dark:bg-card/90 text-foreground hover:bg-white border border-border/50 text-[10px] uppercase tracking-wider font-bold h-8 shadow-md">
+                    <a href="https://yandex.ru/maps/?text=Горячий+Ключ,+переулок+Школьный,+27" target="_blank" rel="noopener noreferrer">
+                      Открыть на картах
+                    </a>
+                  </Button>
+                </div>
                 <div className="absolute inset-0 pointer-events-none border-4 border-white/10 rounded-2xl" />
               </div>
             </motion.div>

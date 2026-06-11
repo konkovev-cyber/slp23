@@ -39,6 +39,49 @@ export default function ContactPage() {
             <Helmet>
                 <title>Контакты — Личность ПЛЮС</title>
                 <meta name="description" content="Контакты школы «Личность ПЛЮС»: адрес, телефон, email и карта проезда." />
+                <script type="application/ld+json">
+                  {`
+                    {
+                      "@context": "https://schema.org",
+                      "@type": "School",
+                      "name": "Личность ПЛЮС",
+                      "alternateName": "Частная школа Личность ПЛЮС в Горячем Ключе",
+                      "url": "https://slp23.ru/contact",
+                      "logo": "https://slp23.ru/logo.png",
+                      "image": "https://slp23.ru/logo.png",
+                      "description": "Контакты школы «Личность ПЛЮС»: адрес, телефон, email и карта проезда.",
+                      "address": {
+                        "@type": "PostalAddress",
+                        "streetAddress": "переулок Школьный, 27",
+                        "addressLocality": "Горячий Ключ",
+                        "addressRegion": "Краснодарский край",
+                        "postalCode": "353290",
+                        "addressCountry": "RU"
+                      },
+                      "geo": {
+                        "@type": "GeoCoordinates",
+                        "latitude": "44.629392",
+                        "longitude": "39.124239"
+                      },
+                      "telephone": "+7-928-261-99-28",
+                      "email": "slichnost5@mail.ru",
+                      "openingHoursSpecification": [
+                        {
+                          "@type": "OpeningHoursSpecification",
+                          "dayOfWeek": [
+                            "Monday",
+                            "Tuesday",
+                            "Wednesday",
+                            "Thursday",
+                            "Friday"
+                          ],
+                          "opens": "08:00",
+                          "closes": "17:00"
+                        }
+                      ]
+                    }
+                  `}
+                </script>
             </Helmet>
 
             <Navigation />
@@ -118,9 +161,24 @@ export default function ContactPage() {
                             <motion.div
                                 initial={{ opacity: 0, scale: 0.98 }}
                                 animate={{ opacity: 1, scale: 1 }}
-                                className="rounded-xl overflow-hidden h-[300px] border border-border shadow-sm"
+                                className="rounded-2xl overflow-hidden h-[300px] border border-border/50 shadow-lg relative group"
                             >
-                                <iframe src={iframeSrc} width="100%" height="100%" frameBorder="0" title="Карта проезда к школе Личность ПЛЮС" />
+                                <iframe
+                                    src={iframeSrc}
+                                    width="100%"
+                                    height="100%"
+                                    frameBorder="0"
+                                    className="w-full h-full border-0 grayscale dark:invert-[90%] dark:hue-rotate-[180deg] hover:grayscale-0 dark:hover:invert-0 dark:hover:hue-rotate-0 transition-all duration-700"
+                                    title="Карта проезда к школе Личность ПЛЮС"
+                                />
+                                <div className="absolute bottom-3 right-3 z-10 transition-transform duration-300 hover:scale-105">
+                                    <Button asChild size="sm" className="rounded-full bg-white/90 dark:bg-card/90 text-foreground hover:bg-white border border-border/50 text-[10px] uppercase tracking-wider font-bold h-8 shadow-md">
+                                        <a href="https://yandex.ru/maps/?text=Горячий+Ключ,+переулок+Школьный,+27" target="_blank" rel="noopener noreferrer">
+                                            Открыть на картах
+                                        </a>
+                                    </Button>
+                                </div>
+                                <div className="absolute inset-0 pointer-events-none border-4 border-white/10 rounded-2xl" />
                             </motion.div>
                         </section>
 

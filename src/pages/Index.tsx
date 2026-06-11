@@ -90,6 +90,49 @@ const Index = () => {
         <title>Личность ПЛЮС — Частная школа в Горячем Ключе</title>
         <meta name="description" content="Частная школа «Личность ПЛЮС» в Горячем Ключе. Индивидуальный подход, малые классы, углубленное обучение и творческое развитие детей." />
         <link rel="canonical" href="https://slp23.ru/" />
+        <script type="application/ld+json">
+          {`
+            {
+              "@context": "https://schema.org",
+              "@type": "School",
+              "name": "Личность ПЛЮС",
+              "alternateName": "Частная школа Личность ПЛЮС в Горячем Ключе",
+              "url": "https://slp23.ru/",
+              "logo": "https://slp23.ru/logo.png",
+              "image": "https://slp23.ru/logo.png",
+              "description": "Частная школа «Личность ПЛЮС» в Горячем Ключе. Индивидуальный подход, малые классы, углубленное обучение и творческое развитие детей.",
+              "address": {
+                "@type": "PostalAddress",
+                "streetAddress": "переулок Школьный, 27",
+                "addressLocality": "Горячий Ключ",
+                "addressRegion": "Краснодарский край",
+                "postalCode": "353290",
+                "addressCountry": "RU"
+              },
+              "geo": {
+                "@type": "GeoCoordinates",
+                "latitude": "44.629392",
+                "longitude": "39.124239"
+              },
+              "telephone": "+7-928-261-99-28",
+              "email": "slichnost5@mail.ru",
+              "openingHoursSpecification": [
+                {
+                  "@type": "OpeningHoursSpecification",
+                  "dayOfWeek": [
+                    "Monday",
+                    "Tuesday",
+                    "Wednesday",
+                    "Thursday",
+                    "Friday"
+                  ],
+                  "opens": "08:00",
+                  "closes": "17:00"
+                }
+              ]
+            }
+          `}
+        </script>
       </Helmet>
       <Navigation />
       <main id="main-content">

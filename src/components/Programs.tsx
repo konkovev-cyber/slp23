@@ -37,9 +37,13 @@ const Programs = () => {
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
+                className="relative group h-full"
               >
-                <div className="glass-card p-6 h-full rounded-xl group hover:border-primary/30 transition-all shadow-sm bg-white/50 dark:bg-card/40">
-                  <div className={`w-11 h-11 rounded-lg flex items-center justify-center mb-5 border ${program.color}`}>
+                {/* Premium Outer Gradient Glow */}
+                <div className="absolute -inset-px bg-gradient-to-r from-primary/20 via-accent/10 to-primary/20 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-[3px] pointer-events-none" />
+
+                <div className="glass-card p-6 h-full rounded-xl transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl hover:border-primary/30 bg-white/80 dark:bg-card/70 backdrop-blur-md relative z-10">
+                  <div className={`w-11 h-11 rounded-lg flex items-center justify-center mb-5 border transition-transform duration-300 group-hover:scale-110 ${program.color}`}>
                     <program.icon className="w-5 h-5" aria-hidden="true" role="presentation" />
                   </div>
                   <Badge className="bg-muted/50 text-muted-foreground border-transparent rounded-md mb-3 font-bold uppercase text-[9px] tracking-wider px-2 py-0.5">{program.age}</Badge>

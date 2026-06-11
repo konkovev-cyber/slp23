@@ -124,8 +124,11 @@ const News = () => {
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
               >
-                <Link to={item.href} className="group block h-full">
-                  <Card className="h-full rounded-xl overflow-hidden border-border bg-white/50 dark:bg-card/40 shadow-sm hover:shadow-md transition-all group-hover:border-primary/20">
+                <Link to={item.href} className="group block h-full relative">
+                  {/* Premium Outer Gradient Glow */}
+                  <div className="absolute -inset-px bg-gradient-to-r from-primary/30 via-accent/20 to-primary/30 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-[3px] pointer-events-none" />
+                  
+                  <Card className="h-full rounded-xl overflow-hidden border-border/60 bg-white/80 dark:bg-card/70 backdrop-blur-md shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1.5 group-hover:border-primary/30 relative z-10">
                     <div className="relative aspect-[16/10] overflow-hidden">
                       <img
                         src={item.image}
@@ -138,14 +141,14 @@ const News = () => {
                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                       />
                       <div className="absolute top-3 left-3">
-                        <Badge className="bg-white/90 backdrop-blur-sm text-primary border-none text-[9px] font-bold px-2 py-0.5 rounded-md shadow-sm">
+                        <Badge className="bg-white/90 dark:bg-card/90 backdrop-blur-sm text-primary border-none text-[9px] font-bold px-2 py-0.5 rounded-md shadow-sm">
                           {item.category}
                         </Badge>
                       </div>
                     </div>
                     <CardContent className="p-4">
                       <div className="flex items-center gap-1.5 text-muted-foreground text-[10px] font-bold mb-2">
-                        <CalendarIcon className="w-3 h-3" aria-hidden="true" />
+                        <CalendarIcon className="w-3 h-3 text-primary" aria-hidden="true" />
                         <time dateTime={posts?.find(p => p.id === item.id)?.published_at.split('T')[0]}>
                           {item.date}
                         </time>

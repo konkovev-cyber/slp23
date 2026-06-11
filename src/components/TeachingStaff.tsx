@@ -66,9 +66,12 @@ export default function TeachingStaff() {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
-              className="group"
+              className="group relative"
             >
-              <Card className="overflow-hidden border-border/40 bg-card/30 backdrop-blur-sm hover:shadow-xl transition-all duration-500 rounded-3xl group">
+              {/* Premium Outer Gradient Glow */}
+              <div className="absolute -inset-px bg-gradient-to-r from-primary/25 via-accent/15 to-primary/25 rounded-[24px] opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-[4px] pointer-events-none" />
+
+              <Card className="overflow-hidden border-border/40 bg-white/80 dark:bg-card/40 backdrop-blur-md hover:shadow-2xl transition-all duration-500 rounded-3xl hover:-translate-y-1 relative z-10">
                 <div className="flex flex-col sm:flex-row h-full">
                   {/* Image Side */}
                   <div className="relative w-full sm:w-48 aspect-[3/4] sm:aspect-auto overflow-hidden shrink-0">
