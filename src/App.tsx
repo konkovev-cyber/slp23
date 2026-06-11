@@ -134,13 +134,7 @@ const App = () => (
               />
               <Route
                 path="/admin/teachers"
-                element={
-                  <ProtectedRoute redirectTo="/admin">
-                    <AdminLayout title="Преподаватели">
-                      <AdminTeachers />
-                    </AdminLayout>
-                  </ProtectedRoute>
-                }
+                element={<Navigate to="/admin/svedeniya" replace />}
               />
               <Route
                 path="/admin/svedeniya"
