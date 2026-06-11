@@ -1,10 +1,9 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowUp, MessageSquare, X, Send, Phone } from "lucide-react";
+import { ArrowUp, MessageSquare, X, Send, Phone, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { SiWhatsapp, SiTelegram } from "react-icons/si";
 
 const FloatingActions = () => {
     const [showScrollTop, setShowScrollTop] = useState(false);
@@ -36,25 +35,18 @@ const FloatingActions = () => {
 
     const actions = [
         {
-            id: 'wa',
-            icon: <SiWhatsapp className="w-5 h-5" />,
-            label: "WhatsApp",
-            href: "https://wa.me/79282619928",
-            color: "bg-[#25D366] text-white"
-        },
-        {
-            id: 'tg',
-            icon: <SiTelegram className="w-5 h-5" />,
-            label: "Telegram",
-            href: "https://t.me/julia_slp",
-            color: "bg-[#0088cc] text-white"
-        },
-        {
             id: 'call',
             icon: <Phone className="w-5 h-5" />,
             label: "Позвонить",
             href: "tel:+79282619928",
             color: "bg-primary text-white"
+        },
+        {
+            id: 'email',
+            icon: <Mail className="w-5 h-5" />,
+            label: "Написать на email",
+            href: "mailto:slichnost5@mail.ru",
+            color: "bg-accent text-white"
         },
         {
             id: 'form',

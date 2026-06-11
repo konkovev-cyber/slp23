@@ -5,7 +5,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { MapPin, Phone, Mail, Clock, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { SiWhatsapp, SiTelegram } from "react-icons/si";
 
 const Contact = () => {
   const { toast } = useToast();
@@ -24,17 +23,6 @@ const Contact = () => {
       description: "Мы свяжемся с вами в ближайшее время.",
     });
     setFormData({ name: "", phone: "", email: "", age: "", message: "" });
-  };
-
-  const sendToWhatsApp = () => {
-    const message = encodeURIComponent(
-      `Здравствуйте! Меня зовут ${formData.name || "[Имя]"}. Хочу записаться на экскурсию. ${formData.message || ""}`
-    );
-    window.open(`https://wa.me/79282619928?text=${message}`, "_blank");
-  };
-
-  const sendToTelegram = () => {
-    window.open("https://t.me/lichnost_PLUS", "_blank");
   };
 
   const constructorHash = "4f61ac17bbf756654de58429231d443241ac89a38745ebe8760ff57bfecb15e8";
@@ -60,18 +48,23 @@ const Contact = () => {
 
             <div className="flex flex-wrap justify-center gap-3">
               <Button
-                onClick={sendToWhatsApp}
-                className="rounded-full bg-[#25D366] hover:bg-[#25D366]/90 text-white px-6 h-10 text-xs font-bold shadow-md active:scale-95 transition-all uppercase tracking-wider"
+                asChild
+                className="rounded-full bg-primary hover:bg-primary/90 text-white px-6 h-10 text-xs font-bold shadow-md active:scale-95 transition-all uppercase tracking-wider"
               >
-                <SiWhatsapp className="w-4 h-4 mr-2" />
-                WhatsApp
+                <a href="tel:+79282619928">
+                  <Phone className="w-4 h-4 mr-2" />
+                  Позвонить
+                </a>
               </Button>
               <Button
-                onClick={sendToTelegram}
-                className="rounded-full bg-[#0088cc] hover:bg-[#0088cc]/90 text-white px-6 h-10 text-xs font-bold shadow-md active:scale-95 transition-all uppercase tracking-wider"
+                asChild
+                variant="outline"
+                className="rounded-full px-6 h-10 text-xs font-bold shadow-md active:scale-95 transition-all uppercase tracking-wider"
               >
-                <SiTelegram className="w-4 h-4 mr-2" />
-                Telegram
+                <a href="mailto:slichnost5@mail.ru">
+                  <Mail className="w-4 h-4 mr-2" />
+                  Написать email
+                </a>
               </Button>
             </div>
           </motion.div>

@@ -9,7 +9,6 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { MapPin, Phone, Mail, Clock, Send } from "lucide-react";
-import { SiWhatsapp, SiTelegram } from "react-icons/si";
 import { motion } from "framer-motion";
 
 export default function ContactPage() {
@@ -33,17 +32,6 @@ export default function ContactPage() {
             description: "Мы свяжемся с вами в ближайшее время.",
         });
         setFormData({ name: "", phone: "", email: "", age: "", message: "" });
-    };
-
-    const sendToWhatsApp = () => {
-        const message = encodeURIComponent(
-            `Здравствуйте! Меня зовут ${formData.name || '[Имя]'}. Хочу записаться на экскурсию. ${formData.message || ''}`
-        );
-        window.open(`https://wa.me/79282619928?text=${message}`, '_blank');
-    };
-
-    const sendToTelegram = () => {
-        window.open("https://t.me/julia_slp", "_blank");
     };
 
     return (
@@ -113,11 +101,15 @@ export default function ContactPage() {
                                     </div>
 
                                     <div className="flex gap-3 mt-8">
-                                        <Button onClick={sendToWhatsApp} size="sm" className="flex-1 gap-2 rounded-full h-10 font-bold bg-[#25D366] hover:bg-[#25D366]/90 text-white shadow-sm" aria-label="Написать в WhatsApp">
-                                            <SiWhatsapp className="w-4 h-4" /> WhatsApp
+                                        <Button asChild size="sm" className="flex-1 gap-2 rounded-full h-10 font-bold bg-primary hover:bg-primary/90 text-white shadow-sm" aria-label="Позвонить">
+                                            <a href="tel:+79282619928">
+                                                <Phone className="w-4 h-4" /> +7 (928) 261-99-28
+                                            </a>
                                         </Button>
-                                        <Button onClick={sendToTelegram} size="sm" variant="outline" className="flex-1 gap-2 rounded-full h-10 font-bold border-border shadow-sm" aria-label="Открыть Telegram">
-                                            <SiTelegram className="w-4 h-4" /> Telegram
+                                        <Button asChild size="sm" variant="outline" className="flex-1 gap-2 rounded-full h-10 font-bold border-border shadow-sm" aria-label="Написать email">
+                                            <a href="mailto:slichnost5@mail.ru">
+                                                <Mail className="w-4 h-4" /> Email
+                                            </a>
                                         </Button>
                                     </div>
                                 </article>

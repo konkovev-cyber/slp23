@@ -1,5 +1,6 @@
 import { useMemo } from "react";
-import { SiInstagram, SiTelegram, SiVk } from "react-icons/si";
+import { SiInstagram, SiVk } from "react-icons/si";
+import { Mail } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Download } from "lucide-react";
 import { Capacitor } from "@capacitor/core";
@@ -52,9 +53,8 @@ const Footer = () => {
             </p>
             <div className="flex space-x-3 pt-2">
               {[
-                { i: SiVk, l: "https://vk.com/lichnostplus", label: "VK" },
-                { i: SiTelegram, l: "https://t.me/lichnost_PLUS", label: "TG" },
-                { i: SiInstagram, l: "https://www.instagram.com/lichnost_plus_gk/", label: "IG" }
+                { i: SiVk,        l: "https://vk.com/lichnostplus",                        label: "VK",    icon: null },
+                { i: SiInstagram, l: "https://www.instagram.com/lichnost_plus_gk/",        label: "IG",    icon: null },
               ].map((Soc, idx) => (
                 <a
                   key={idx}
@@ -67,6 +67,13 @@ const Footer = () => {
                   <Soc.i className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
                 </a>
               ))}
+              <a
+                href="mailto:slichnost5@mail.ru"
+                aria-label="Email"
+                className="w-9 h-9 bg-muted rounded-full flex items-center justify-center border border-border hover:bg-primary/10 hover:border-primary transition-all group"
+              >
+                <Mail className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+              </a>
             </div>
           </div>
 
