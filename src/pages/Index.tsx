@@ -25,17 +25,18 @@ const SectionSkeleton = () => (
 );
 
 const Index = () => {
-  const { data: featuresRow } = useContent("features");
-  const { data: aboutRow } = useContent("about");
-  const { data: programsRow } = useContent("programs");
-  const { data: clubsRow } = useContent("clubs");
-  const { data: testimonialsRow } = useContent("testimonials");
-  const { data: newsRow } = useContent("news");
-  const { data: teachersRow } = useContent("teachers");
-  const { data: honorRow } = useContent("honor");
-  const { data: galleryRow } = useContent("gallery");
-  const { data: contactRow } = useContent("contact");
-  const { data: footerRow } = useContent("footer");
+  const { data: heroRow, isLoading: isHeroLoading } = useContent("hero");
+  const { data: featuresRow, isLoading: isFeaturesLoading } = useContent("features");
+  const { data: aboutRow, isLoading: isAboutLoading } = useContent("about");
+  const { data: programsRow, isLoading: isProgramsLoading } = useContent("programs");
+  const { data: clubsRow, isLoading: isClubsLoading } = useContent("clubs");
+  const { data: testimonialsRow, isLoading: isTestimonialsLoading } = useContent("testimonials");
+  const { data: newsRow, isLoading: isNewsLoading } = useContent("news");
+  const { data: teachersRow, isLoading: isTeachersLoading } = useContent("teachers");
+  const { data: honorRow, isLoading: isHonorLoading } = useContent("honor");
+  const { data: galleryRow, isLoading: isGalleryLoading } = useContent("gallery");
+  const { data: contactRow, isLoading: isContactLoading } = useContent("contact");
+  const { data: footerRow, isLoading: isFooterLoading } = useContent("footer");
 
   const showFeatures = featuresRow?.is_visible === true;
   const showAbout = aboutRow?.is_visible === true;
@@ -48,6 +49,7 @@ const Index = () => {
   const showGallery = galleryRow?.is_visible === true;
   const showContact = contactRow?.is_visible === true;
   const showFooter = footerRow?.is_visible !== false; // Footer usually stays
+  const showHero = heroRow?.is_visible !== false;
 
   return (
     <div className="min-h-screen bg-background transition-colors duration-300">
@@ -58,19 +60,33 @@ const Index = () => {
       </Helmet>
       <Navigation />
       <main id="main-content">
-        <Hero />
+        {isHeroLoading ? <SectionSkeleton /> : showHero ? <Hero /> : null}
         <Suspense fallback={<SectionSkeleton />}>
-          {showFeatures ? <Features /> : null}
-          {showAbout ? <About /> : null}
-          {showPrograms ? <Suspense fallback={<SectionSkeleton />}><Programs /></Suspense> : null}
-          {showClubs ? <Suspense fallback={<SectionSkeleton />}><Clubs /></Suspense> : null}
-          {showTestimonials ? <Suspense fallback={<SectionSkeleton />}><Testimonials /></Suspense> : null}
-          {showNews ? <Suspense fallback={<SectionSkeleton />}><News /></Suspense> : null}
-          {showTeachers ? <Suspense fallback={<SectionSkeleton />}><TeachingStaff /></Suspense> : null}
-          {showHonor ? <Suspense fallback={<SectionSkeleton />}><HonorBoard /></Suspense> : null}
-          {showGallery ? <Suspense fallback={<SectionSkeleton />}><GalleryPreview /></Suspense> : null}
-          {showContact ? <Suspense fallback={<SectionSkeleton />}><Contact /></Suspense> : null}
-          {showFooter ? <Suspense fallback={<SectionSkeleton />}><Footer /></Suspense> : null}
+          {isFeaturesLoading ? <SectionSkeleton /> : showFeatures ? <Features /> : null}
+          {isAboutLoading ? <SectionSkeleton /> : showAbout ? <About /> : null}
+          {isProgramsLoading ? (
+            <SectionSkeleton />
+          ) : showPrograms ? (
+            <Suspense fallback={<SectionSkeleton />}>
+              <Programs />
+            </Suspense>
+          ) : null}
+          {isClubsLoading ? <SectionSkeleton /> : showClubs ? <Suspense fallback={<SectionSkeleton />}><Clubs /></Suspense> : null}
+          {isTestimonialsLoading ? <SectionSkeleton /> : showTestimonials ? <Suspense fallback={<SectionSkeleton />}><Testimonials /></Suspense> : null}
+          {isNewsLoading ? <SectionSkeleton /> : showNews ? <Suspense fallback={<SectionSkeleton />}><News /></Suspense> : null}
+          {isTeachersLoading ? (
+            <SectionSkeleton />
+          ) : showTeachers ? (
+            <Suspense fallback={<SectionSkeleton />}>
+              <TeachingStaff />
+            </Suspense>
+          ) : null}
+          {isHonorLoading ? <SectionSkeleton /> : showHonor ? <Suspense fallback={<SectionSkeleton />}><HonorBoard /></Suspense> : null}
+          {isGalleryLoading ? <SectionSkeleton /> : showGallery ? <Suspense fallback={<SectionSkeleton />}><GalleryPreview /></Suspense> : null}
+          {isContactLoading ? <SectionSkeleton /> : showContact ? <Suspense fallback={<SectionSkeleton />}><Contact /></Suspense> : null}
+          {isFooterLoading ? <SectionSkeleton /> : showFooter ? (
+            <Suspense fallback={<SectionSkeleton />}><Footer /></Suspense>
+          ) : null}
           <FloatingActions />
         </Suspense>
       </main>
