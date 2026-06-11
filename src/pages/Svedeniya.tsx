@@ -171,9 +171,9 @@ function PersonModal({ p, onClose, onVideo }: { p: Person; onClose: () => void; 
             >
                 {/* Фото-шапка */}
                 <div className="relative">
-                    <div className="aspect-[4/3] bg-muted overflow-hidden">
+                    <div className="relative h-72 sm:h-80 bg-muted overflow-hidden">
                         {p.image_url
-                            ? <img src={p.image_url} alt={p.name} className="w-full h-full object-cover object-top" />
+                            ? <img src={p.image_url} alt={p.name} className="w-full h-full object-contain object-top" style={{background: "#f5f4f0"}} />
                             : <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/10 to-primary/5">
                                 <UserCheck className="w-24 h-24 text-primary/30" />
                             </div>

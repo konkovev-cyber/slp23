@@ -48,11 +48,12 @@ function HonorModal({ item, onClose }: { item: HonorItem; onClose: () => void })
                 onClick={e => e.stopPropagation()}
             >
                 {/* Фото */}
-                <div className="relative aspect-[4/3] overflow-hidden bg-muted">
+                <div className="relative h-72 sm:h-80 bg-muted overflow-hidden">
                     <img
                         src={item.image_url || "/placeholder.svg"}
                         alt={item.name}
-                        className="w-full h-full object-cover object-top"
+                        className="w-full h-full object-contain object-top"
+                        style={{background: "#f5f4f0"}}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-transparent" />
 
