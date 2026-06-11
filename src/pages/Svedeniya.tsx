@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { Helmet } from "react-helmet-async";
 import { useLocation } from "react-router-dom";
 import Navigation from "@/components/Navigation";
@@ -7,10 +7,10 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
-    ChevronLeft, ChevronRight, Printer, FileText, FileSpreadsheet,
+    ChevronLeft, Printer, FileText, FileSpreadsheet,
     File, Download, Eye, X, Phone, Mail, BookOpen, GraduationCap,
     Clock, Award, Building2, MapPin, Globe, Hash, Scale, Calendar,
-    Users, UserCheck, Star, Play
+    Users, UserCheck, Star, Play, Briefcase
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -148,55 +148,160 @@ function SectionDocs({ sectionId }: { sectionId: string }) {
     );
 }
 
-// ─── Карточка руководителя ────────────────────────────────────────────────────
-function ManagementCard({ p }: { p: Person }) {
+// ─── Модальная карточка персоны ───────────────────────────────────────────────
+function PersonModal({ p, onClose, onVideo }: { p: Person; onClose: () => void; onVideo?: (u: string) => void }) {
+    useEffect(() => {
+        const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+        document.addEventListener("keydown", onKey);
+        document.body.style.overflow = "hidden";
+        return () => { document.removeEventListener("keydown", onKey); document.body.style.overflow = ""; };
+    }, [onClose]);
+
     return (
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
-            className="group flex gap-5 p-5 rounded-2xl border border-border/60 bg-white/60 dark:bg-card/40 backdrop-blur-sm hover:shadow-lg hover:bg-white/90 dark:hover:bg-card/60 transition-all">
-            {/* Фото */}
-            <div className="w-20 h-20 rounded-xl overflow-hidden bg-muted border border-border/60 shrink-0 group-hover:scale-105 transition-transform">
-                {p.image_url
-                    ? <img src={p.image_url} alt={p.name} className="w-full h-full object-cover" />
-                    : <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/40 dark:to-blue-900/40">
-                        <UserCheck className="w-8 h-8 text-blue-400" />
+        <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[200] bg-black/70 backdrop-blur-md flex items-center justify-center p-4"
+            onClick={onClose}
+        >
+            <motion.div
+                initial={{ opacity: 0, scale: 0.93, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.93, y: 20 }} transition={{ type: "spring", stiffness: 320, damping: 28 }}
+                className="bg-white dark:bg-card rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden"
+                onClick={e => e.stopPropagation()}
+            >
+                {/* Фото-шапка */}
+                <div className="relative">
+                    <div className="aspect-[4/3] bg-muted overflow-hidden">
+                        {p.image_url
+                            ? <img src={p.image_url} alt={p.name} className="w-full h-full object-cover object-top" />
+                            : <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/10 to-primary/5">
+                                <UserCheck className="w-24 h-24 text-primary/30" />
+                            </div>
+                        }
                     </div>
-                }
-            </div>
-            {/* Инфо */}
-            <div className="flex-1 min-w-0">
-                <h3 className="font-bold text-base leading-tight">{p.name}</h3>
-                <p className="text-xs font-semibold text-primary uppercase tracking-wider mt-0.5">{p.title}</p>
-                {p.education  && <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1.5"><GraduationCap className="w-3.5 h-3.5 shrink-0" />{p.education}</p>}
-                {p.experience && <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1.5"><Clock className="w-3.5 h-3.5 shrink-0" />Стаж: {p.experience}</p>}
-                {p.category   && <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1.5"><Award className="w-3.5 h-3.5 shrink-0" />{p.category}</p>}
-                {(p.phone || p.email) && (
-                    <div className="mt-3 pt-3 border-t border-border/40 space-y-1">
-                        {p.phone && <a href={`tel:${p.phone}`} className="text-xs flex items-center gap-1.5 text-muted-foreground hover:text-primary transition-colors"><Phone className="w-3.5 h-3.5 shrink-0" />{p.phone}</a>}
-                        {p.email && <a href={`mailto:${p.email}`} className="text-xs flex items-center gap-1.5 text-muted-foreground hover:text-primary transition-colors"><Mail className="w-3.5 h-3.5 shrink-0" />{p.email}</a>}
+                    {/* Градиент снизу фото */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+                    {/* Имя поверх фото */}
+                    <div className="absolute bottom-0 left-0 right-0 p-5">
+                        <h2 className="text-xl font-black text-white leading-tight drop-shadow">{p.name}</h2>
+                        <p className="text-xs font-bold text-white/80 uppercase tracking-widest mt-1">{p.title}</p>
                     </div>
-                )}
-                {p.description && <p className="text-xs text-muted-foreground mt-2 italic leading-relaxed line-clamp-3">{p.description}</p>}
-            </div>
+                    {/* Кнопка закрыть */}
+                    <button onClick={onClose}
+                        className="absolute top-4 right-4 w-9 h-9 bg-black/40 hover:bg-black/60 backdrop-blur-md rounded-full flex items-center justify-center text-white transition-all">
+                        <X className="w-4 h-4" />
+                    </button>
+                    {/* Кнопка видео */}
+                    {p.video_url && onVideo && (
+                        <button onClick={() => onVideo(p.video_url!)}
+                            className="absolute top-4 right-16 w-9 h-9 bg-primary/80 hover:bg-primary backdrop-blur-md rounded-full flex items-center justify-center text-white transition-all">
+                            <Play className="w-4 h-4 fill-white" />
+                        </button>
+                    )}
+                </div>
+
+                {/* Контент */}
+                <div className="p-6 space-y-4">
+                    {/* Детали */}
+                    <div className="grid grid-cols-2 gap-3">
+                        {p.experience && (
+                            <div className="flex items-start gap-2.5 p-3 rounded-xl bg-muted/40 border border-border/40">
+                                <Clock className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                                <div>
+                                    <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Стаж</div>
+                                    <div className="text-sm font-bold">{p.experience}</div>
+                                </div>
+                            </div>
+                        )}
+                        {p.category && (
+                            <div className="flex items-start gap-2.5 p-3 rounded-xl bg-muted/40 border border-border/40">
+                                <Award className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                                <div>
+                                    <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Категория</div>
+                                    <div className="text-sm font-bold">{p.category}</div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                    {p.education && (
+                        <div className="flex items-start gap-3 p-3 rounded-xl bg-muted/40 border border-border/40">
+                            <GraduationCap className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                            <div>
+                                <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-0.5">Образование</div>
+                                <div className="text-sm font-medium">{p.education}</div>
+                            </div>
+                        </div>
+                    )}
+                    {p.subjects && (
+                        <div className="flex items-start gap-3 p-3 rounded-xl bg-muted/40 border border-border/40">
+                            <BookOpen className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                            <div>
+                                <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">Предметы</div>
+                                <div className="flex flex-wrap gap-1.5">
+                                    {p.subjects.split(",").map(s => (
+                                        <span key={s} className="px-2 py-0.5 bg-primary/10 text-primary text-xs font-bold rounded-full">{s.trim()}</span>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                    {p.description && (
+                        <div className="flex items-start gap-3 p-3 rounded-xl bg-muted/40 border border-border/40">
+                            <Briefcase className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                            <div>
+                                <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-0.5">О себе</div>
+                                <p className="text-sm text-foreground/80 leading-relaxed">{p.description}</p>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Контакты */}
+                    {(p.phone || p.email) && (
+                        <div className="flex gap-3 pt-1">
+                            {p.phone && (
+                                <Button asChild className="flex-1 rounded-full h-10 gap-2 font-bold">
+                                    <a href={`tel:${p.phone}`}><Phone className="w-4 h-4" /> Позвонить</a>
+                                </Button>
+                            )}
+                            {p.email && (
+                                <Button asChild variant="outline" className="flex-1 rounded-full h-10 gap-2 font-bold">
+                                    <a href={`mailto:${p.email}`}><Mail className="w-4 h-4" /> Email</a>
+                                </Button>
+                            )}
+                        </div>
+                    )}
+                </div>
+            </motion.div>
         </motion.div>
     );
 }
 
-// ─── Карточка педагога ────────────────────────────────────────────────────────
-function TeacherCard({ p, onVideo }: { p: Person; onVideo: (u: string) => void }) {
+// ─── Единая карточка персоны (портрет) ───────────────────────────────────────
+function PersonCard({ p, onOpen }: { p: Person; onOpen: (p: Person) => void }) {
+    const defaultIcon = p.role_type === "management" ? UserCheck : Users;
+    const DefaultIcon = defaultIcon;
     return (
-        <motion.div initial={{ opacity: 0, scale: .97 }} animate={{ opacity: 1, scale: 1 }}
-            className="group rounded-2xl border border-border/60 bg-white/60 dark:bg-card/40 backdrop-blur-sm hover:shadow-lg hover:bg-white/90 dark:hover:bg-card/60 transition-all overflow-hidden">
+        <motion.button
+            type="button"
+            initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }}
+            onClick={() => onOpen(p)}
+            className="group text-left rounded-2xl border border-border/60 bg-white/60 dark:bg-card/40 backdrop-blur-sm hover:shadow-xl hover:bg-white/90 dark:hover:bg-card/60 transition-all overflow-hidden cursor-pointer w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            aria-label={`Открыть профиль: ${p.name}`}
+        >
             {/* Фото */}
             <div className="relative aspect-[3/4] bg-muted overflow-hidden">
                 {p.image_url
-                    ? <img src={p.image_url} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                    : <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-950/40 dark:to-emerald-900/40">
-                        <Users className="w-14 h-14 text-green-400" />
+                    ? <img src={p.image_url} alt={p.name}
+                        className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500" />
+                    : <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/10 to-primary/5">
+                        <DefaultIcon className="w-16 h-16 text-primary/30" />
                     </div>
                 }
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/10 to-transparent" />
+
+                {/* Предметы */}
                 {p.subjects && (
-                    <div className="absolute bottom-3 left-3 right-3">
+                    <div className="absolute bottom-14 left-3 right-3">
                         <div className="flex flex-wrap gap-1">
                             {p.subjects.split(",").slice(0, 2).map(s => (
                                 <span key={s} className="inline-flex items-center gap-1 bg-black/50 backdrop-blur-sm text-white text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full">
@@ -206,25 +311,44 @@ function TeacherCard({ p, onVideo }: { p: Person; onVideo: (u: string) => void }
                         </div>
                     </div>
                 )}
-                {p.video_url && (
-                    <button onClick={() => onVideo(p.video_url!)}
-                        className="absolute top-3 right-3 w-9 h-9 bg-black/40 hover:bg-primary backdrop-blur-md rounded-full flex items-center justify-center border border-white/30 transition-all hover:scale-110 shadow">
-                        <Play className="w-4 h-4 text-white fill-white" />
-                    </button>
-                )}
-            </div>
-            {/* Инфо */}
-            <div className="p-4">
-                <h3 className="font-bold text-sm leading-tight">{p.name}</h3>
-                <p className="text-[11px] text-primary font-semibold uppercase tracking-wider mt-0.5">{p.title}</p>
-                <div className="mt-2 space-y-1">
-                    {p.education  && <p className="text-[11px] text-muted-foreground flex items-center gap-1.5"><GraduationCap className="w-3 h-3 shrink-0" />{p.education}</p>}
-                    {p.experience && <p className="text-[11px] text-muted-foreground flex items-center gap-1.5"><Clock className="w-3 h-3 shrink-0" />Стаж: {p.experience}</p>}
-                    {p.category   && <p className="text-[11px] text-muted-foreground flex items-center gap-1.5"><Star className="w-3 h-3 shrink-0" />{p.category}</p>}
+
+                {/* Имя поверх фото */}
+                <div className="absolute bottom-0 left-0 right-0 p-3">
+                    <div className="text-sm font-black text-white leading-tight drop-shadow">{p.name}</div>
+                    <div className="text-[10px] font-bold text-white/75 uppercase tracking-wider mt-0.5 truncate">{p.title}</div>
                 </div>
-                {p.description && <p className="text-[11px] text-muted-foreground mt-2 italic line-clamp-2">{p.description}</p>}
+
+                {/* Видео-кнопка */}
+                {p.video_url && (
+                    <div className="absolute top-3 right-3 w-8 h-8 bg-primary/80 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30 shadow">
+                        <Play className="w-3.5 h-3.5 text-white fill-white" />
+                    </div>
+                )}
+
+                {/* Hover-оверлей «подробнее» */}
+                <div className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <span className="bg-white/90 dark:bg-card/90 text-foreground text-xs font-bold px-4 py-2 rounded-full shadow-lg backdrop-blur-sm translate-y-2 group-hover:translate-y-0 transition-transform">
+                        Подробнее →
+                    </span>
+                </div>
             </div>
-        </motion.div>
+
+            {/* Короткая инфо */}
+            <div className="p-3.5">
+                <div className="flex items-center gap-1.5">
+                    {p.experience && (
+                        <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                            <Clock className="w-2.5 h-2.5" />{p.experience}
+                        </span>
+                    )}
+                    {p.category && (
+                        <span className="text-[10px] text-muted-foreground flex items-center gap-1 ml-auto">
+                            <Star className="w-2.5 h-2.5 text-amber-500" />{p.category}
+                        </span>
+                    )}
+                </div>
+            </div>
+        </motion.button>
     );
 }
 
@@ -302,6 +426,8 @@ export default function Svedeniya() {
     const location = useLocation();
     const [collapsed, setCollapsed] = useState(false);
     const [videoUrl, setVideoUrl] = useState<string | null>(null);
+    const [selectedPerson, setSelectedPerson] = useState<Person | null>(null);
+    const openPerson = useCallback((p: Person) => setSelectedPerson(p), []);
 
     /* данные */
     const { data: rawContent = {} } = useQuery({
@@ -390,7 +516,7 @@ export default function Svedeniya() {
                             <Button variant="secondary" size="sm"
                                 onClick={() => setCollapsed(v => !v)}
                                 className="gap-2 hidden lg:inline-flex rounded-full font-bold h-9">
-                                {collapsed ? <ChevronRight className="h-3.5 w-3.5" /> : <ChevronLeft className="h-3.5 w-3.5" />}
+                                <ChevronLeft className="h-3.5 w-3.5" />
                                 {collapsed ? "Меню" : "Скрыть"}
                             </Button>
                         </div>
@@ -467,8 +593,8 @@ export default function Svedeniya() {
                                             {/* ─── Руководство ─── */}
                                             {s.type === "management" && (
                                                 managers.length > 0
-                                                    ? <div className="grid gap-4 sm:grid-cols-2">
-                                                        {managers.map(p => <ManagementCard key={p.id} p={p} />)}
+                                                    ? <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                                                        {managers.map(p => <PersonCard key={p.id} p={p} onOpen={openPerson} />)}
                                                     </div>
                                                     : <Placeholder />
                                             )}
@@ -477,7 +603,7 @@ export default function Svedeniya() {
                                             {s.type === "teachers" && (
                                                 teachers.length > 0
                                                     ? <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                                                        {teachers.map(p => <TeacherCard key={p.id} p={p} onVideo={setVideoUrl} />)}
+                                                        {teachers.map(p => <PersonCard key={p.id} p={p} onOpen={openPerson} />)}
                                                     </div>
                                                     : <Placeholder />
                                             )}
@@ -501,11 +627,22 @@ export default function Svedeniya() {
                 </div>
             </main>
 
+            {/* Модалка персоны */}
+            <AnimatePresence>
+                {selectedPerson && (
+                    <PersonModal
+                        p={selectedPerson}
+                        onClose={() => setSelectedPerson(null)}
+                        onVideo={url => { setSelectedPerson(null); setVideoUrl(url); }}
+                    />
+                )}
+            </AnimatePresence>
+
             {/* Видео-модалка */}
             <AnimatePresence>
                 {videoUrl && (
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4 backdrop-blur-xl"
+                        className="fixed inset-0 z-[300] bg-black/95 flex items-center justify-center p-4 backdrop-blur-xl"
                         onClick={() => setVideoUrl(null)}>
                         <div className="relative w-full max-w-4xl aspect-video rounded-3xl overflow-hidden shadow-2xl border border-white/10"
                             onClick={e => e.stopPropagation()}>
