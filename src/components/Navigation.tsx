@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Menu, X, ChevronDown, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -172,15 +172,6 @@ const Navigation = () => {
               <Eye className="w-5 h-5 text-foreground/70" />
             </Button>
             <ThemeToggle />
-            <Button
-              type="button"
-              variant="outline"
-              className="rounded-full font-bold h-9 px-4 text-sm shadow-sm transition-all hidden sm:flex"
-              onClick={handleDiaryClick}
-              disabled={isLoading}
-            >
-              {diaryLabel}
-            </Button>
             <Button asChild className="rounded-full font-bold h-9 px-5 text-sm shadow-sm transition-all hidden sm:flex bg-primary hover:bg-primary/90 text-white">
               <a href={isHome ? "#contacts" : "/#contacts"}>Записаться</a>
             </Button>
@@ -233,15 +224,6 @@ const Navigation = () => {
                 className="text-2xl font-bold py-2 active:text-primary transition-colors text-left flex items-center gap-3"
               >
                 <Eye className="w-6 h-6" /> Версия для слабовидящих
-              </button>
-
-              <button
-                type="button"
-                onClick={handleDiaryClick}
-                className="text-2xl font-bold py-2 active:text-primary transition-colors text-left"
-                aria-label="Перейти в дневник"
-              >
-                {diaryLabel}
               </button>
 
               <div className="space-y-3">
