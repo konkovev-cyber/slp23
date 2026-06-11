@@ -154,112 +154,144 @@ function PersonModal({ p, onClose, onVideo }: { p: Person; onClose: () => void; 
     return (
         <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[200] bg-black/70 backdrop-blur-md flex items-center justify-center p-4"
+            className="fixed inset-0 z-[200] bg-black/70 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto"
             onClick={onClose}
         >
             <motion.div
-                initial={{ opacity: 0, scale: 0.93, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.93, y: 20 }} transition={{ type: "spring", stiffness: 320, damping: 28 }}
-                className="bg-white dark:bg-card rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden"
+                initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 20 }} transition={{ type: "spring", stiffness: 300, damping: 26 }}
+                className="bg-white dark:bg-card rounded-3xl shadow-2xl w-full max-w-lg md:max-w-3xl lg:max-w-4xl overflow-hidden flex flex-col md:flex-row md:h-[550px] relative"
                 onClick={e => e.stopPropagation()}
             >
-                {/* Фото-шапка */}
-                <div className="relative">
-                    <div className="relative h-72 sm:h-80 bg-muted overflow-hidden">
-                        {p.image_url
-                            ? <img src={p.image_url} alt={p.name} className="w-full h-full object-contain object-top" style={{background: "#f5f4f0"}} />
-                            : <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/10 to-primary/5">
-                                <UserCheck className="w-24 h-24 text-primary/30" />
-                            </div>
-                        }
-                    </div>
-                    {/* Градиент снизу фото */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
-                    {/* Имя поверх фото */}
-                    <div className="absolute bottom-0 left-0 right-0 p-5">
+                {/* Левая сторона: Изображение */}
+                <div className="relative w-full md:w-[280px] lg:w-[340px] md:h-full shrink-0 bg-muted overflow-hidden flex-none">
+                    {p.image_url ? (
+                        <img
+                            src={p.image_url}
+                            alt={p.name}
+                            className="w-full h-72 md:h-full object-cover object-top"
+                        />
+                    ) : (
+                        <div className="w-full h-72 md:h-full flex flex-col items-center justify-center bg-gradient-to-br from-primary/15 to-primary/5 text-primary/30">
+                            <UserCheck className="w-24 h-24" />
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-primary/40 mt-2">Личность ПЛЮС</span>
+                        </div>
+                    )}
+                    {/* Градиентный оверлей для текста на мобильных */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent md:hidden" />
+                    
+                    {/* Имя поверх фото на мобильных */}
+                    <div className="absolute bottom-0 left-0 right-0 p-5 md:hidden">
                         <h2 className="text-xl font-black text-white leading-tight drop-shadow">{p.name}</h2>
                         <p className="text-xs font-bold text-white/80 uppercase tracking-widest mt-1">{p.title}</p>
                     </div>
-                    {/* Кнопка закрыть */}
-                    <button onClick={onClose}
-                        className="absolute top-4 right-4 w-9 h-9 bg-black/40 hover:bg-black/60 backdrop-blur-md rounded-full flex items-center justify-center text-white transition-all">
-                        <X className="w-4 h-4" />
-                    </button>
-                    {/* Кнопка видео */}
+
+                    {/* Видео кнопка поверх фото */}
                     {p.video_url && onVideo && (
-                        <button onClick={() => onVideo(p.video_url!)}
-                            className="absolute top-4 right-16 w-9 h-9 bg-primary/80 hover:bg-primary backdrop-blur-md rounded-full flex items-center justify-center text-white transition-all">
-                            <Play className="w-4 h-4 fill-white" />
+                        <button
+                            onClick={() => onVideo(p.video_url!)}
+                            className="absolute top-4 left-4 w-10 h-10 bg-primary/95 hover:bg-primary text-white rounded-full flex items-center justify-center shadow-lg transition-transform hover:scale-105"
+                            title="Смотреть видео-визитку"
+                        >
+                            <Play className="w-4 h-4 fill-white ml-0.5" />
                         </button>
                     )}
+
+                    {/* Кнопка закрыть на мобильных */}
+                    <button
+                        onClick={onClose}
+                        className="absolute top-4 right-4 w-9 h-9 bg-black/40 hover:bg-black/60 backdrop-blur-md rounded-full flex items-center justify-center text-white transition-all md:hidden"
+                    >
+                        <X className="w-4 h-4" />
+                    </button>
                 </div>
 
-                {/* Контент */}
-                <div className="p-6 space-y-4">
-                    {/* Детали */}
-                    <div className="grid grid-cols-2 gap-3">
-                        {p.experience && (
-                            <div className="flex items-start gap-2.5 p-3 rounded-xl bg-muted/40 border border-border/40">
-                                <Clock className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                {/* Правая сторона: Информация */}
+                <div className="flex-1 p-6 md:p-8 flex flex-col h-full overflow-hidden relative">
+                    {/* Кнопка закрыть на десктопе */}
+                    <button
+                        onClick={onClose}
+                        className="absolute top-4 right-4 w-9 h-9 bg-muted hover:bg-muted-foreground/10 rounded-full hidden md:flex items-center justify-center text-foreground/75 transition-all z-10"
+                    >
+                        <X className="w-4 h-4" />
+                    </button>
+
+                    {/* Скроллируемое тело */}
+                    <div className="flex-1 overflow-y-auto space-y-5 pr-1 md:pr-2">
+                        {/* Имя и звание на десктопе */}
+                        <div className="hidden md:block space-y-1.5 pr-6">
+                            <h2 className="text-2xl lg:text-3xl font-black text-foreground leading-tight tracking-tight">{p.name}</h2>
+                            <p className="text-xs font-bold text-primary uppercase tracking-widest">{p.title}</p>
+                        </div>
+
+                        {/* Сетка характеристик */}
+                        <div className="grid grid-cols-2 gap-3">
+                            {p.experience && (
+                                <div className="flex items-start gap-2.5 p-3 rounded-2xl bg-muted/40 border border-border/40 hover:bg-muted/60 transition-colors">
+                                    <Clock className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                                    <div>
+                                        <div className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider">Стаж</div>
+                                        <div className="text-xs font-bold text-foreground">{p.experience}</div>
+                                    </div>
+                                </div>
+                            )}
+                            {p.category && (
+                                <div className="flex items-start gap-2.5 p-3 rounded-2xl bg-muted/40 border border-border/40 hover:bg-muted/60 transition-colors">
+                                    <Award className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                                    <div>
+                                        <div className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider">Категория</div>
+                                        <div className="text-xs font-bold text-foreground">{p.category}</div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {p.subjects && (
+                            <div className="flex items-start gap-3 p-3 rounded-2xl bg-muted/40 border border-border/40 hover:bg-muted/60 transition-colors">
+                                <BookOpen className="w-4 h-4 text-primary shrink-0 mt-0.5" />
                                 <div>
-                                    <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Стаж</div>
-                                    <div className="text-sm font-bold">{p.experience}</div>
+                                    <div className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">Предметы</div>
+                                    <div className="flex flex-wrap gap-1.5">
+                                        {p.subjects.split(",").map(s => (
+                                            <span key={s} className="px-2.5 py-0.5 bg-primary/10 text-primary text-[10px] font-bold rounded-full">{s.trim()}</span>
+                                        ))}
+                                    </div>
                                 </div>
                             </div>
                         )}
-                        {p.category && (
-                            <div className="flex items-start gap-2.5 p-3 rounded-xl bg-muted/40 border border-border/40">
-                                <Award className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+
+                        {p.education && (
+                            <div className="flex items-start gap-3 p-3 rounded-2xl bg-muted/40 border border-border/40 hover:bg-muted/60 transition-colors">
+                                <GraduationCap className="w-4 h-4 text-primary shrink-0 mt-0.5" />
                                 <div>
-                                    <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Категория</div>
-                                    <div className="text-sm font-bold">{p.category}</div>
+                                    <div className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider mb-0.5">Образование</div>
+                                    <div className="text-xs font-medium text-foreground/90">{p.education}</div>
+                                </div>
+                            </div>
+                        )}
+
+                        {p.description && (
+                            <div className="flex items-start gap-3 p-3 rounded-2xl bg-muted/40 border border-border/40 hover:bg-muted/60 transition-colors">
+                                <Briefcase className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                                <div>
+                                    <div className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider mb-1">О себе</div>
+                                    <p className="text-xs text-foreground/80 leading-relaxed whitespace-pre-wrap">{p.description}</p>
                                 </div>
                             </div>
                         )}
                     </div>
-                    {p.education && (
-                        <div className="flex items-start gap-3 p-3 rounded-xl bg-muted/40 border border-border/40">
-                            <GraduationCap className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-                            <div>
-                                <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-0.5">Образование</div>
-                                <div className="text-sm font-medium">{p.education}</div>
-                            </div>
-                        </div>
-                    )}
-                    {p.subjects && (
-                        <div className="flex items-start gap-3 p-3 rounded-xl bg-muted/40 border border-border/40">
-                            <BookOpen className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-                            <div>
-                                <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">Предметы</div>
-                                <div className="flex flex-wrap gap-1.5">
-                                    {p.subjects.split(",").map(s => (
-                                        <span key={s} className="px-2 py-0.5 bg-primary/10 text-primary text-xs font-bold rounded-full">{s.trim()}</span>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                    )}
-                    {p.description && (
-                        <div className="flex items-start gap-3 p-3 rounded-xl bg-muted/40 border border-border/40">
-                            <Briefcase className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-                            <div>
-                                <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-0.5">О себе</div>
-                                <p className="text-sm text-foreground/80 leading-relaxed">{p.description}</p>
-                            </div>
-                        </div>
-                    )}
 
-                    {/* Контакты */}
+                    {/* Контакты (всегда внизу) */}
                     {(p.phone || p.email) && (
-                        <div className="flex gap-3 pt-1">
+                        <div className="flex gap-3 pt-4 mt-auto border-t border-border/50">
                             {p.phone && (
-                                <Button asChild className="flex-1 rounded-full h-10 gap-2 font-bold">
-                                    <a href={`tel:${p.phone}`}><Phone className="w-4 h-4" /> Позвонить</a>
+                                <Button asChild className="flex-1 rounded-full h-10 gap-2 font-bold shadow-md hover:shadow-lg transition-all text-xs">
+                                    <a href={`tel:${p.phone}`}><Phone className="w-3.5 h-3.5" /> Позвонить</a>
                                 </Button>
                             )}
                             {p.email && (
-                                <Button asChild variant="outline" className="flex-1 rounded-full h-10 gap-2 font-bold">
-                                    <a href={`mailto:${p.email}`}><Mail className="w-4 h-4" /> Email</a>
+                                <Button asChild variant="outline" className="flex-1 rounded-full h-10 gap-2 font-bold transition-all text-xs">
+                                    <a href={`mailto:${p.email}`}><Mail className="w-3.5 h-3.5" /> Email</a>
                                 </Button>
                             )}
                         </div>
