@@ -178,11 +178,27 @@ export default function AdminSectionHero() {
       } else if (isAbout) {
         content = {
           ...content,
-          title: aboutTitle,
-          lead: aboutLead,
+          title: genericTitle,
+          badge_text: badgeText,
+          lead: lead,
           video_url: aboutVideoUrl,
           director_name: aboutDirectorName,
           director_quote: aboutDirectorQuote,
+        };
+      } else if (isGeneric) {
+        content = {
+          ...content,
+          title: genericTitle,
+          badge_text: badgeText,
+          lead: lead,
+        };
+      } else if (isFooter) {
+        content = {
+          ...content,
+          description: footerDescription,
+          address: footerAddress,
+          phone: footerPhone,
+          email: footerEmail,
         };
       } else if (isSettings) {
         content = {
