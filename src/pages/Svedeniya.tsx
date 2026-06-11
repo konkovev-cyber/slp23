@@ -94,21 +94,15 @@ function DocCard({ doc, onPreview }: { doc: DocRow; onPreview: (u: string) => vo
     );
 }
 
+function isHtmlEmpty(html?: string) {
+    if (!html) return true;
+    const cleanText = html.replace(/<[^>]*>/g, "").replace(/&nbsp;/g, "").trim();
+    return cleanText === "";
+}
+
 // ─── Документы раздела ────────────────────────────────────────────────────────
-function SectionDocs({ sectionId }: { sectionId: string }) {
+function SectionDocs({ docs }: { docs: DocRow[] }) {
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-    const { data: docs = [] } = useQuery<DocRow[]>({
-        queryKey: ["svedeniya_documents_public", sectionId],
-        queryFn: async () => {
-            const { data, error } = await supabase
-                .from("svedeniya_documents")
-                .select("id,section_id,title,description,file_url,file_name,file_type,file_size,sort_order")
-                .eq("section_id", sectionId).eq("is_visible", true)
-                .order("sort_order").order("created_at");
-            if (error) { console.error(error); return []; }
-            return (data as DocRow[]) || [];
-        },
-    });
     if (!docs.length) return null;
     return (
         <>
@@ -471,17 +465,64 @@ export default function Svedeniya() {
         },
     });
 
+    const { data: allDocs = [] } = useQuery<DocRow[]>({
+        queryKey: ["svedeniya_documents_all_public"],
+        queryFn: async () => {
+            const { data, error } = await supabase
+                .from("svedeniya_documents")
+                .select("id,section_id,title,description,file_url,file_name,file_type,file_size,sort_order")
+                .eq("is_visible", true)
+                .order("sort_order").order("created_at");
+            if (error) { console.error(error); return []; }
+            return (data as DocRow[]) || [];
+        },
+    });
+
+    const docsBySection = useMemo(() => {
+        const map: Record<string, DocRow[]> = {};
+        allDocs.forEach(d => {
+            if (!map[d.section_id]) map[d.section_id] = [];
+            map[d.section_id].push(d);
+        });
+        return map;
+    }, [allDocs]);
+
+    const visibleSections = useMemo(() => {
+        return SECTIONS.filter(s => {
+            const hasDocs = (docsBySection[s.id] || []).length > 0;
+            if (s.id === "basic") {
+                const hasBasic = basicInfo && Object.entries(basicInfo).some(([k, v]) => v !== null && v !== undefined && String(v).trim() !== "");
+                const hasText = !isHtmlEmpty(contentMap[s.id]);
+                return hasBasic || hasText || hasDocs;
+            }
+            if (s.id === "management") {
+                return managers.length > 0 || hasDocs;
+            }
+            if (s.id === "teachers") {
+                return teachers.length > 0 || hasDocs;
+            }
+            const hasText = !isHtmlEmpty(contentMap[s.id]);
+            return hasText || hasDocs;
+        });
+    }, [docsBySection, basicInfo, contentMap, managers, teachers]);
+
     /* активный раздел */
     const activeId = useMemo(() => {
         const h = location.hash.replace("#", "");
-        return SECTIONS.some(s => s.id === h) ? h : SECTIONS[0].id;
-    }, [location.hash]);
+        return visibleSections.some(s => s.id === h) ? h : (visibleSections[0]?.id || "");
+    }, [location.hash, visibleSections]);
 
     useEffect(() => {
         const h = location.hash.replace("#", "");
         if (!h) return;
-        document.getElementById(h)?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }, [location.hash]);
+        const timer = setTimeout(() => {
+            const el = document.getElementById(h);
+            if (el) {
+                el.scrollIntoView({ behavior: "smooth", block: "start" });
+            }
+        }, 100);
+        return () => clearTimeout(timer);
+    }, [location.hash, visibleSections]);
 
     const canonical = buildCanonical("/svedeniya");
 
@@ -503,7 +544,6 @@ export default function Svedeniya() {
                     <motion.header initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }}
                         className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between border-b pb-8">
                         <div>
-                            <span className="text-primary font-bold tracking-widest uppercase text-[10px] mb-2 block">Сведения ОО</span>
                             <h1 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight">Основные сведения</h1>
                             <p className="mt-2 text-sm text-muted-foreground max-w-2xl font-medium">
                                 Раздел обязательных сведений образовательной организации.
@@ -529,7 +569,7 @@ export default function Svedeniya() {
                                 collapsed ? "lg:w-12" : "lg:w-72")}>
                             <div className="glass-card p-2 rounded-xl border-border/50">
                                 <nav aria-label="Меню раздела" className="space-y-0.5">
-                                    {SECTIONS.map((s, idx) => {
+                                    {visibleSections.map((s, idx) => {
                                         const Icon = s.icon;
                                         return (
                                             <a key={s.id} href={`#${s.id}`}
@@ -552,7 +592,7 @@ export default function Svedeniya() {
 
                         {/* Контент */}
                         <div className="space-y-6">
-                            {SECTIONS.map(s => {
+                            {visibleSections.map(s => {
                                 const Icon = s.icon;
                                 return (
                                     <section key={s.id} id={s.id} className="scroll-mt-24" aria-label={s.title}>
@@ -617,7 +657,7 @@ export default function Svedeniya() {
                                             )}
 
                                             {/* Документы раздела */}
-                                            <SectionDocs sectionId={s.id} />
+                                            <SectionDocs docs={docsBySection[s.id] || []} />
                                         </article>
                                     </section>
                                 );

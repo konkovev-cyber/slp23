@@ -1,4 +1,5 @@
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import Hero from "@/components/Hero";
 import { useContent } from "@/hooks/use-content";
@@ -25,6 +26,7 @@ const SectionSkeleton = () => (
 );
 
 const Index = () => {
+  const location = useLocation();
   const { data: heroRow, isLoading: isHeroLoading } = useContent("hero");
   const { data: featuresRow, isLoading: isFeaturesLoading } = useContent("features");
   const { data: aboutRow, isLoading: isAboutLoading } = useContent("about");
@@ -37,6 +39,37 @@ const Index = () => {
   const { data: galleryRow, isLoading: isGalleryLoading } = useContent("gallery");
   const { data: contactRow, isLoading: isContactLoading } = useContent("contact");
   const { data: footerRow, isLoading: isFooterLoading } = useContent("footer");
+
+  useEffect(() => {
+    const hash = location.hash.replace("#", "");
+    if (!hash) return;
+    
+    const scrollToElement = () => {
+      const el = document.getElementById(hash);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "start" });
+        return true;
+      }
+      return false;
+    };
+
+    if (scrollToElement()) return;
+
+    const interval = setInterval(() => {
+      if (scrollToElement()) {
+        clearInterval(interval);
+      }
+    }, 100);
+
+    const timeout = setTimeout(() => {
+      clearInterval(interval);
+    }, 2000); // Stop polling after 2s
+
+    return () => {
+      clearInterval(interval);
+      clearTimeout(timeout);
+    };
+  }, [location.hash, isHonorLoading, isAboutLoading, isClubsLoading, isNewsLoading, isTeachersLoading]);
 
   const showFeatures = featuresRow?.is_visible === true;
   const showAbout = aboutRow?.is_visible === true;

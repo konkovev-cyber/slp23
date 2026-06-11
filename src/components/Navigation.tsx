@@ -49,6 +49,8 @@ const Navigation = () => {
       { id: "about", label: "О школе", href: "/about" },
       { id: "programs", label: "Программы", href: "/programs" },
       { id: "clubs", label: "Кружки", href: "/clubs" },
+      { id: "teachers", label: "Преподавательский состав", href: "/svedeniya#teachers" },
+      { id: "honor", label: "Доска почета", href: "/#honor-board" },
       { id: "gallery", label: "Галерея", href: "/gallery" },
       { id: "news", label: "Новости", href: "/news" },
     ];
@@ -58,12 +60,12 @@ const Navigation = () => {
   }, [visibility]);
 
   const svedeniyaItems = [
-    { label: "Основные сведения", href: "/svedeniya#osnovnye-svedeniya" },
-    { label: "Структура и органы", href: "/svedeniya#struktura-i-organy-upravleniya" },
-    { label: "Документы", href: "/svedeniya#dokumenty" },
-    { label: "Образование", href: "/svedeniya#obrazovanie" },
-    { label: "Руководство", href: "/svedeniya#rukovodstvo" },
-    { label: "Пед. состав", href: "/svedeniya#pedagogicheskij-sostav" },
+    { label: "Основные сведения", href: "/svedeniya#basic" },
+    { label: "Структура и органы", href: "/svedeniya#structure" },
+    { label: "Документы", href: "/svedeniya#documents" },
+    { label: "Образование", href: "/svedeniya#education" },
+    { label: "Руководство", href: "/svedeniya#management" },
+    { label: "Пед. состав", href: "/svedeniya#teachers" },
   ];
 
   const navLinkClass = "text-[11px] font-bold uppercase tracking-widest text-foreground/80 hover:text-primary px-4 h-10 flex items-center transition-all hover:bg-transparent focus:bg-transparent data-[state=open]:text-primary cursor-pointer outline-none";
