@@ -32,6 +32,67 @@ function stripHtml(html: string): string {
         .trim();
 }
 
+type MediaEntry = { url: string; type: "image" | "video" | "document" };
+
+function parseAttachments(
+    attachments: any[],
+    mediaList: MediaEntry[],
+    linkLines: string[]
+): string | null {
+    const forceHttps = (u: string) => u ? u.replace(/^http:\/\//i, 'https://') : "";
+    let firstVideoThumb: string | null = null;
+
+    for (const attachment of attachments) {
+        if (attachment.type === "photo" && attachment.photo) {
+            const imageUrl = attachment.photo.sizes?.find((s: any) => s.type === "w" || s.type === "z" || s.type === "y" || s.type === "x")?.url
+                || attachment.photo.sizes?.[attachment.photo.sizes.length - 1]?.url
+                || attachment.photo.photo_1280;
+            if (imageUrl) {
+                const httpsUrl = forceHttps(imageUrl);
+                if (!mediaList.some(m => m.url === httpsUrl)) {
+                    mediaList.push({ url: httpsUrl, type: "image" });
+                }
+            }
+        }
+
+        if (attachment.type === "video" && attachment.video) {
+            const videoLink = `https://vk.com/video${attachment.video.owner_id}_${attachment.video.id}`;
+            const videoThumb = attachment.video.image?.find((s: any) => s.width >= 1280 || s.width >= 800)?.url
+                || attachment.video.image?.[attachment.video.image.length - 1]?.url
+                || "";
+            if (!mediaList.some(m => m.url === videoLink)) {
+                mediaList.push({ url: videoLink, type: "video" });
+            }
+            if (!firstVideoThumb && videoThumb) firstVideoThumb = forceHttps(videoThumb);
+        }
+
+        if (attachment.type === "doc" && attachment.doc) {
+            const docUrl = forceHttps(attachment.doc.url || "");
+            if (docUrl && !mediaList.some(m => m.url === docUrl)) {
+                mediaList.push({ url: docUrl, type: "document" });
+                linkLines.push(`📄 Файл: ${attachment.doc.title || "документ"} — ${docUrl}`);
+            }
+        }
+
+        if (attachment.type === "audio" && attachment.audio) {
+            const audioUrl = forceHttps(attachment.audio.url || "");
+            if (audioUrl && !mediaList.some(m => m.url === audioUrl)) {
+                mediaList.push({ url: audioUrl, type: "document" });
+                linkLines.push(`🎵 Аудио: ${attachment.audio.artist || ""} — ${attachment.audio.title || ""} — ${audioUrl}`);
+            }
+        }
+
+        if (attachment.type === "link" && attachment.link) {
+            const linkUrl = forceHttps(attachment.link.url || "");
+            if (linkUrl) {
+                linkLines.push(`🔗 ${attachment.link.title || linkUrl} — ${linkUrl}`);
+            }
+        }
+    }
+
+    return firstVideoThumb;
+}
+
 serve(async (req) => {
     if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
@@ -51,8 +112,8 @@ serve(async (req) => {
         queryParams.set("v", VK_VERSION);
         queryParams.set("access_token", VK_SERVICE_KEY);
 
-        const wallMatch = normalizedUrl.match(/vk\.com\/wall(-?\d+)/);
-        const domainMatch = normalizedUrl.match(/vk\.com\/([a-zA-Z0-9_\.]+)/);
+        const wallMatch = normalizedUrl.match(/vk\.(?:com|ru)\/wall(-?\d+)/i);
+        const domainMatch = normalizedUrl.match(/vk\.(?:com|ru)\/([a-zA-Z0-9_.]+)/i);
 
         if (wallMatch) {
             queryParams.set("owner_id", wallMatch[1]);
@@ -66,7 +127,7 @@ serve(async (req) => {
                 queryParams.set("domain", domain);
             }
         } else {
-            queryParams.set("domain", "slp23");
+            queryParams.set("domain", "lichnostplus");
         }
 
         // Вернулся на api.vk.com для надежности
@@ -88,12 +149,10 @@ serve(async (req) => {
         const posts = data.response?.items || [];
         console.log(`[VK Import] Found ${posts.length} posts`);
 
-        const forceHttps = (u: string) => u ? u.replace(/^http:\/\//i, 'https://') : "";
-
         const parsedPosts = posts.map((post: any) => {
             const contentText = post.text ? stripHtml(decodeHtml(post.text)) : "";
             const sourceUrl = `https://vk.com/wall${post.owner_id}_${post.id}`;
-            const content = contentText + `\n\nИсточник: ${sourceUrl}`;
+            let content = contentText + `\n\nИсточник: ${sourceUrl}`;
 
             let title = "Новости VK";
             if (contentText) {
@@ -103,32 +162,32 @@ serve(async (req) => {
                 }
             }
 
-            const mediaList: Array<{ url: string; type: "image" | "video" }> = [];
+            const mediaList: MediaEntry[] = [];
+            const linkLines: string[] = [];
             let coverImage = "";
 
             if (post.attachments) {
-                for (const attachment of post.attachments) {
-                    if (attachment.type === "photo" && attachment.photo) {
-                        const imageUrl = attachment.photo.sizes?.find((s: any) => s.type === "w" || s.type === "z" || s.type === "y" || s.type === "x")?.url
-                            || attachment.photo.sizes?.[attachment.photo.sizes.length - 1]?.url
-                            || attachment.photo.photo_1280;
-                        if (imageUrl) {
-                            const httpsUrl = forceHttps(imageUrl);
-                            mediaList.push({ url: httpsUrl, type: "image" });
-                            if (!coverImage) coverImage = httpsUrl;
-                        }
+                const thumb = parseAttachments(post.attachments, mediaList, linkLines);
+                if (thumb) coverImage = coverImage || thumb;
+            }
+
+            if (post.copy_history && Array.isArray(post.copy_history)) {
+                for (const rep of post.copy_history) {
+                    if (rep.attachments) {
+                        const thumb = parseAttachments(rep.attachments, mediaList, linkLines);
+                        if (thumb) coverImage = coverImage || thumb;
                     }
-
-                    if (attachment.type === "video" && attachment.video) {
-                        const videoLink = `https://vk.com/video${attachment.video.owner_id}_${attachment.video.id}`;
-                        const videoThumb = attachment.video.image?.find((s: any) => s.width >= 1280 || s.width >= 800)?.url
-                            || attachment.video.image?.[attachment.video.image.length - 1]?.url;
-
-                        mediaList.push({ url: videoLink, type: "video" });
-                        if (!coverImage && videoThumb) coverImage = forceHttps(videoThumb);
+                    if (rep.text) {
+                        linkLines.push(stripHtml(decodeHtml(rep.text)));
                     }
                 }
             }
+
+            if (linkLines.length > 0) {
+                content = (content + "\n\n" + linkLines.join("\n")).trim();
+            }
+
+            const cover = mediaList.find(m => m.type === "image")?.url || coverImage || "";
 
             return {
                 source_id: String(post.id),
@@ -136,8 +195,8 @@ serve(async (req) => {
                 title,
                 excerpt: contentText.slice(0, 160) + (contentText.length > 160 ? "..." : ""),
                 content,
-                image_url: coverImage || null,
-                mediaList: mediaList.slice(0, 20),
+                image_url: cover || null,
+                mediaList: mediaList.slice(0, 30),
                 source: "vk",
                 source_url: sourceUrl
             };
