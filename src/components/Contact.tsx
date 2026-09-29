@@ -3,7 +3,8 @@ import { motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { MapPin, Phone, Mail, Clock, Send, MessageCircle, Loader2, CheckCircle2 } from "lucide-react";
+import { MapPin, Phone, Mail, Clock, Send, Loader2, CheckCircle2 } from "lucide-react";
+import MaxLogo from "@/components/MaxLogo";
 import { useContactForm } from "@/hooks/use-contact-form";
 
 const MAX_URL = "https://max.ru/u/f9LHodD0cOKT6ie5z3UjEOeVzc19VegOtnM4T0jP9RThVVqC30DyPA-1NEE";
@@ -46,7 +47,7 @@ const Contact = () => {
             <div className="flex flex-wrap justify-center gap-3">
               <Button asChild variant="gradient" size="pill" className="text-xs font-bold uppercase tracking-wider">
                 <a href={MAX_URL} target="_blank" rel="noopener noreferrer">
-                  <MessageCircle className="w-4 h-4 mr-2" />
+                  <MaxLogo className="w-4 h-4 mr-2" />
                   Написать в MAX
                 </a>
               </Button>
@@ -77,7 +78,7 @@ const Contact = () => {
               <div className="glass-card p-6 rounded-2xl space-y-6 border-border/50 shadow-sm flex-1">
                 <div className="flex items-start gap-4">
                   <div className="w-10 h-10 bg-gradient-to-br from-primary/15 to-blue-500/15 rounded-xl flex items-center justify-center border border-primary/25 shrink-0">
-                    <MessageCircle className="w-5 h-5 text-primary" />
+                    <MaxLogo className="w-5 h-5" />
                   </div>
                   <div>
                     <h4 className="text-foreground font-bold text-sm mb-0.5 tracking-tight flex items-center gap-2">

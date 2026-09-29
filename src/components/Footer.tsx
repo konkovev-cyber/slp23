@@ -1,6 +1,8 @@
 import { useMemo } from "react";
-import { SiInstagram, SiVk, SiMax } from "react-icons/si";
+import { SiInstagram, SiVk } from "react-icons/si";
 import MaxLogo from "@/components/MaxLogo";
+
+const MAX_URL = "https://max.ru/u/f9LHodD0cOKT6ie5z3UjEOeVzc19VegOtnM4T0jP9RThVVqC30DyPA-1NEE";
 import { Link } from "react-router-dom";
 import { Download } from "lucide-react";
 import { Capacitor } from "@capacitor/core";
@@ -52,10 +54,19 @@ const Footer = () => {
               Частная школа дополнительного образования. Создаём условия для развития лидеров будущего.
             </p>
             <div className="flex space-x-3 pt-2">
+              {/* MAX — цветной логотип, не монограмма */}
+              <a
+                href={MAX_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="MAX"
+                className="w-9 h-9 bg-muted rounded-full flex items-center justify-center border border-border hover:bg-primary/10 hover:border-primary transition-all group"
+              >
+                <MaxLogo className="w-full h-full" />
+              </a>
               {[
-                { i: SiMax,       l: "https://max.ru/u/f9LHodD0cOKT6ie5z3UjEOeVzc19VegOtnM4T0jP9RThVVqC30DyPA-1NEE", label: "MAX",   icon: null },
-                { i: SiVk,        l: "https://vk.com/lichnostplus",                        label: "VK",    icon: null },
-                { i: SiInstagram, l: "https://www.instagram.com/lichnost_plus_gk/",        label: "IG",    icon: null },
+                { i: SiVk,        l: "https://vk.com/lichnostplus",                        label: "VK",   },
+                { i: SiInstagram, l: "https://www.instagram.com/lichnost_plus_gk/",        label: "IG",   },
               ].map((Soc, idx) => (
                 <a
                   key={idx}

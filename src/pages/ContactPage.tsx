@@ -7,7 +7,8 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { MapPin, Phone, Mail, Clock, Send, MessageCircle, Loader2, CheckCircle2 } from "lucide-react";
+import { MapPin, Phone, Mail, Clock, Send, Loader2, CheckCircle2 } from "lucide-react";
+import MaxLogo from "@/components/MaxLogo";
 import { motion } from "framer-motion";
 import { useContactForm } from "@/hooks/use-contact-form";
 
@@ -111,7 +112,7 @@ export default function ContactPage() {
                                     <h2 className="text-xl font-bold mb-2 tracking-tight">Информация</h2>
                                     <div className="space-y-6">
                                         <div className="flex items-start gap-4">
-                                            <div className="bg-gradient-to-br from-primary/15 to-blue-500/15 p-2.5 rounded-lg border border-primary/25" aria-hidden="true"><MessageCircle className="text-primary w-5 h-5" /></div>
+                                            <div className="bg-gradient-to-br from-primary/15 to-blue-500/15 p-2.5 rounded-lg border border-primary/25" aria-hidden="true"><MaxLogo className="w-5 h-5" /></div>
                                             <div>
                                                 <div className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-0.5 flex items-center gap-2">
                                                     Мессенджер MAX
@@ -153,7 +154,7 @@ export default function ContactPage() {
                                     <div className="flex flex-col sm:flex-row gap-3 mt-8">
                                         <Button asChild size="sm" variant="gradient" className="gap-2 rounded-full h-10 font-bold" aria-label="Написать в MAX">
                                             <a href={MAX_URL} target="_blank" rel="noopener noreferrer">
-                                                <MessageCircle className="w-4 h-4" /> Написать в MAX
+                                                <MaxLogo className="w-4 h-4 mr-2" /> Написать в MAX
                                             </a>
                                         </Button>
                                         <Button asChild size="sm" className="gap-2 rounded-full h-10 font-bold" aria-label="Позвонить">

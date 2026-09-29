@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { motion, useScroll, useTransform, useMotionValue, useSpring } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Calendar, GraduationCap, CheckCircle2, Sparkles, BookOpen, Clock, Users2, MessageCircle } from "lucide-react";
+import { ArrowRight, Calendar, GraduationCap, CheckCircle2, Sparkles, BookOpen, Clock, Users2 } from "lucide-react";
+import MaxLogo from "@/components/MaxLogo";
 import { useContent } from "@/hooks/use-content";
 
 type HeroContent = {
@@ -181,14 +182,11 @@ const Hero = () => {
                   Записаться на экскурсию <ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" />
                 </Button>
               </Link>
-              <div className="flex items-center gap-3 py-2 px-4.5 bg-white/60 dark:bg-white/5 backdrop-blur-xl rounded-full border border-white/80 dark:border-white/10 shadow-sm hover:bg-white/80 dark:hover:bg-white/10 transition-colors">
-                <div className="w-9 h-9 bg-primary/10 dark:bg-primary/20 rounded-full flex items-center justify-center">
-                  <MessageCircle className="w-4 h-4 text-primary dark:text-blue-400" />
-                </div>
-                <a href="https://max.ru/u/f9LHodD0cOKT6ie5z3UjEOeVzc19VegOtnM4T0jP9RThVVqC30DyPA-1NEE" target="_blank" rel="noopener noreferrer" className="text-sm font-bold text-foreground hover:text-primary transition-colors pr-1">
-                  Написать в MAX
+              <Button asChild className="w-11 h-11 rounded-full flex items-center justify-center shadow-lg active:scale-95 transition-all bg-white/90 dark:bg-white/10 hover:bg-white dark:hover:bg-white/20 border border-white/60 dark:border-white/20" aria-label="Написать в MAX" title="Написать в MAX">
+                <a href={MAX_URL} target="_blank" rel="noopener noreferrer" className="w-full h-full rounded-full overflow-hidden">
+                  <MaxLogo className="w-full h-full" />
                 </a>
-              </div>
+              </Button>
             </div>
 
             {/* Core Benefits removed: переехали в карточки-фишки внизу hero */}
@@ -276,33 +274,33 @@ const Hero = () => {
 
             {/* Floating Live Indicator stats */}
             <motion.div
-              animate={{ y: [0, -6, 0] }}
-              transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+              animate={{ y: [0, -5, 0] }}
+              transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut" }}
               style={{ x: badgeDepthX }}
-              className="absolute -top-7 -left-9 p-3 rounded-2xl bg-white/90 dark:bg-white/10 backdrop-blur-xl border border-white dark:border-white/10 shadow-xl shadow-black/10 flex items-center gap-2.5 z-20"
+              className="absolute -top-9 -left-10 p-2.5 rounded-2xl bg-white/90 dark:bg-white/10 backdrop-blur-xl border border-white dark:border-white/10 shadow-xl shadow-black/10 flex flex-col items-center gap-1.5 z-20"
             >
-              <div className="w-8 h-8 rounded-xl bg-green-500/10 dark:bg-green-500/20 flex items-center justify-center">
-                <CheckCircle2 className="w-4 h-4 text-green-600 dark:text-green-400" />
+              <div className="w-7 h-7 rounded-lg bg-green-500/12 dark:bg-green-500/20 flex items-center justify-center">
+                <CheckCircle2 className="w-3.5 h-3.5 text-green-600 dark:text-green-400" />
               </div>
-              <div className="pr-1.5">
-                <div className="text-[11px] text-muted-foreground leading-none">Лицензия МО</div>
-                <div className="text-xs font-extrabold text-foreground mt-0.5">Госаккредитация</div>
+              <div className="text-center">
+                <div className="text-[10px] text-muted-foreground leading-none">Лицензия МО</div>
+                <div className="text-[11px] font-extrabold text-foreground mt-0.5">Госаккредитация</div>
               </div>
             </motion.div>
 
             {/* Floating Live Students stats */}
             <motion.div
-              animate={{ y: [0, 6, 0] }}
-              transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+              animate={{ y: [0, 5, 0] }}
+              transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 0.6 }}
               style={{ x: badgeDepthX }}
-              className="absolute -bottom-7 -right-8 p-3 rounded-2xl bg-white/90 dark:bg-white/10 backdrop-blur-xl border border-white dark:border-white/10 shadow-xl shadow-black/10 flex items-center gap-2.5 z-20"
+              className="absolute -bottom-9 -right-10 p-2.5 rounded-2xl bg-white/90 dark:bg-white/10 backdrop-blur-xl border border-white dark:border-white/10 shadow-xl shadow-black/10 flex flex-col items-center gap-1.5 z-20"
             >
-              <div className="w-8 h-8 rounded-xl bg-amber-500/10 dark:bg-amber-500/20 flex items-center justify-center animate-pulse">
-                <Sparkles className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+              <div className="w-7 h-7 rounded-lg bg-amber-500/12 dark:bg-amber-500/20 flex items-center justify-center animate-pulse">
+                <Sparkles className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
               </div>
-              <div className="pr-2">
-                <div className="text-[11px] text-muted-foreground leading-none">Малые классы</div>
-                <div className="text-xs font-extrabold text-foreground mt-0.5">до 12 учеников</div>
+              <div className="text-center">
+                <div className="text-[10px] text-muted-foreground leading-none">Малые классы</div>
+                <div className="text-[11px] font-extrabold text-foreground mt-0.5">до 12 учеников</div>
               </div>
             </motion.div>
           </motion.div>
