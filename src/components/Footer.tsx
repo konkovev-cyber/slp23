@@ -1,6 +1,6 @@
 import { useMemo } from "react";
-import { SiInstagram, SiVk, SiMax } from "react-icons/si";
-import MaxLogo from "@/components/MaxLogo";
+import { SiInstagram, SiVk } from "react-icons/si";
+import MaxLogo, { MaxLogoMono } from "@/components/MaxLogo";
 
 const MAX_URL = "https://max.ru/u/f9LHodD0cOKT6ie5z3UjEOeVzc19VegOtnM4T0jP9RThVVqC30DyPA-1NEE";
 import { Link } from "react-router-dom";
@@ -55,7 +55,7 @@ const Footer = () => {
             </p>
             <div className="flex space-x-3 pt-2">
               {[
-                { i: SiMax,       l: MAX_URL,                             label: "MAX" },
+                { i: MaxLogoMono, l: MAX_URL,                             label: "MAX" },
                 { i: SiVk,        l: "https://vk.com/lichnostplus",       label: "VK"  },
                 { i: SiInstagram, l: "https://www.instagram.com/lichnost_plus_gk/", label: "IG" },
               ].map((Soc, idx) => (
