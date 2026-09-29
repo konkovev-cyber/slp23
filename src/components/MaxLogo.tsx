@@ -1,5 +1,5 @@
 const MaxLogo = ({ className }: { className?: string }) => (
-  <svg viewBox="0 0 640 640" className={className} aria-hidden="true" focusable="false">
+  <svg viewBox="0 0 640 640" className={`max-logo ${className ?? ""}`} aria-hidden="true" focusable="false">
     <defs>
       <linearGradient id="max-bg-grad" x1="0%" y1="90%" x2="100%" y2="10%">
         <stop offset="0%" stopColor="#37B5F0" />

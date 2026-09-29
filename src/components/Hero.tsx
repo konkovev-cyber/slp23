@@ -184,9 +184,12 @@ const Hero = () => {
                   Записаться на экскурсию <ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" />
                 </Button>
               </Link>
-              <Button asChild className="w-11 h-11 rounded-full flex items-center justify-center shadow-lg active:scale-95 transition-all bg-white/90 dark:bg-white/10 hover:bg-white dark:hover:bg-white/20 border border-white/60 dark:border-white/20" aria-label="Написать в MAX" title="Написать в MAX">
-                <a href={MAX_URL} target="_blank" rel="noopener noreferrer" className="w-full h-full rounded-full overflow-hidden">
-                  <MaxLogo className="w-full h-full" />
+              <Button asChild variant="gradient" size="pill" className="h-14 px-7 text-base font-bold">
+                <a href={MAX_URL} target="_blank" rel="noopener noreferrer">
+                  <span className="w-7 h-7 rounded-full bg-white flex items-center justify-center shadow-sm shrink-0">
+                    <MaxLogo className="w-[22px] h-[22px]" />
+                  </span>
+                  Написать в MAX
                 </a>
               </Button>
             </div>
@@ -310,7 +313,7 @@ const Hero = () => {
         </div>
 
         {/* School features: карточки-фишки по низу hero */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mt-16 lg:mt-20">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mt-24 lg:mt-28">
           {FEATURES.map((feature, i) => (
             <motion.div
               key={feature.title}
