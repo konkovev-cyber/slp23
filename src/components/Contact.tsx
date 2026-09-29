@@ -3,8 +3,10 @@ import { motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { MapPin, Phone, Mail, Clock, Send } from "lucide-react";
+import { MapPin, Phone, Mail, Clock, Send, MessageCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+
+const MAX_URL = "https://max.ru/u/f9LHodD0cOKT6ie5z3UjEOeVzc19VegOtnM4T0jP9RThVVqC30DyPA-1NEE";
 
 const Contact = () => {
   const { toast } = useToast();
@@ -49,6 +51,15 @@ const Contact = () => {
             <div className="flex flex-wrap justify-center gap-3">
               <Button
                 asChild
+                className="rounded-full bg-gradient-to-r from-primary to-blue-600 dark:from-blue-500 dark:to-indigo-600 hover:shadow-lg hover:shadow-primary/25 hover:-translate-y-0.5 active:translate-y-0 text-white px-6 h-10 text-xs font-bold shadow-md transition-all uppercase tracking-wider"
+              >
+                <a href={MAX_URL} target="_blank" rel="noopener noreferrer">
+                  <MessageCircle className="w-4 h-4 mr-2" />
+                  Написать в MAX
+                </a>
+              </Button>
+              <Button
+                asChild
                 className="rounded-full bg-primary hover:bg-primary/90 text-white px-6 h-10 text-xs font-bold shadow-md active:scale-95 transition-all uppercase tracking-wider"
               >
                 <a href="tel:+79282619928">
@@ -79,6 +90,21 @@ const Contact = () => {
               className="h-full flex flex-col gap-6"
             >
               <div className="glass-card p-6 rounded-2xl space-y-6 border-border/50 shadow-sm flex-1">
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 bg-gradient-to-br from-primary/15 to-blue-500/15 rounded-xl flex items-center justify-center border border-primary/25 shrink-0">
+                    <MessageCircle className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <h4 className="text-foreground font-bold text-sm mb-0.5 tracking-tight flex items-center gap-2">
+                      Мессенджер MAX
+                      <span className="text-[9px] font-bold uppercase tracking-wider bg-primary/10 text-primary border border-primary/20 rounded-full px-2 py-0.5">основной</span>
+                    </h4>
+                    <a href={MAX_URL} target="_blank" rel="noopener noreferrer" className="text-xs font-bold text-primary hover:text-blue-600 dark:hover:text-blue-400 transition-colors tracking-tight">
+                      Написать нам в MAX →
+                    </a>
+                  </div>
+                </div>
+
                 <div className="flex items-start gap-4">
                   <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center border border-primary/20 shrink-0">
                     <MapPin className="w-5 h-5 text-primary" />

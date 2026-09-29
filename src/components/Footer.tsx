@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { SiInstagram, SiVk } from "react-icons/si";
+import { SiInstagram, SiVk, SiMax } from "react-icons/si";
 import { Mail } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Download } from "lucide-react";
@@ -53,6 +53,7 @@ const Footer = () => {
             </p>
             <div className="flex space-x-3 pt-2">
               {[
+                { i: SiMax,       l: "https://max.ru/u/f9LHodD0cOKT6ie5z3UjEOeVzc19VegOtnM4T0jP9RThVVqC30DyPA-1NEE", label: "MAX",   icon: null },
                 { i: SiVk,        l: "https://vk.com/lichnostplus",                        label: "VK",    icon: null },
                 { i: SiInstagram, l: "https://www.instagram.com/lichnost_plus_gk/",        label: "IG",    icon: null },
               ].map((Soc, idx) => (
@@ -124,6 +125,9 @@ const Footer = () => {
                 г. Горячий Ключ, пер. Школьный, 27
               </p>
               <div className="space-y-1.5 pt-2">
+                <a href="https://max.ru/u/f9LHodD0cOKT6ie5z3UjEOeVzc19VegOtnM4T0jP9RThVVqC30DyPA-1NEE" target="_blank" rel="noopener noreferrer" className="block text-sm font-bold text-primary hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                  Мессенджер MAX <span className="text-[9px] font-bold uppercase tracking-wider bg-primary/10 border border-primary/20 rounded-full px-1.5 py-0.5 ml-1">основной</span>
+                </a>
                 <a href="tel:+79282619928" className="block text-lg font-bold text-foreground hover:text-primary transition-colors tracking-tight">
                   +7 (928) 261-99-28
                 </a>

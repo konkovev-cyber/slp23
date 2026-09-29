@@ -8,8 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { MapPin, Phone, Mail, Clock, Send } from "lucide-react";
+import { MapPin, Phone, Mail, Clock, Send, MessageCircle } from "lucide-react";
 import { motion } from "framer-motion";
+
+const MAX_URL = "https://max.ru/u/f9LHodD0cOKT6ie5z3UjEOeVzc19VegOtnM4T0jP9RThVVqC30DyPA-1NEE";
 
 export default function ContactPage() {
     const { toast } = useToast();
@@ -38,7 +40,7 @@ export default function ContactPage() {
         <div className="min-h-screen bg-background">
             <Helmet>
                 <title>Контакты — Личность ПЛЮС</title>
-                <meta name="description" content="Контакты школы «Личность ПЛЮС»: адрес, телефон, email и карта проезда." />
+                <meta name="description" content="Контакты школы «Личность ПЛЮС»: мессенджер MAX, адрес, телефон, email и карта проезда." />
                 <script type="application/ld+json">
                   {`
                     {
@@ -49,7 +51,7 @@ export default function ContactPage() {
                       "url": "https://slp23.ru/contact",
                       "logo": "https://slp23.ru/logo.png",
                       "image": "https://slp23.ru/logo.png",
-                      "description": "Контакты школы «Личность ПЛЮС»: адрес, телефон, email и карта проезда.",
+                      "description": "Контакты школы «Личность ПЛЮС»: мессенджер MAX, адрес, телефон, email и карта проезда.",
                       "address": {
                         "@type": "PostalAddress",
                         "streetAddress": "переулок Школьный, 27",
@@ -114,6 +116,16 @@ export default function ContactPage() {
                                     <h2 className="text-xl font-bold mb-2 tracking-tight">Информация</h2>
                                     <div className="space-y-6">
                                         <div className="flex items-start gap-4">
+                                            <div className="bg-gradient-to-br from-primary/15 to-blue-500/15 p-2.5 rounded-lg border border-primary/25" aria-hidden="true"><MessageCircle className="text-primary w-5 h-5" /></div>
+                                            <div>
+                                                <div className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-0.5 flex items-center gap-2">
+                                                    Мессенджер MAX
+                                                    <span className="text-[9px] font-bold uppercase tracking-wider bg-primary/10 text-primary border border-primary/20 rounded-full px-2 py-0.5">основной</span>
+                                                </div>
+                                                <a href={MAX_URL} target="_blank" rel="noopener noreferrer" className="text-sm font-bold text-primary hover:text-blue-600 dark:hover:text-blue-400 transition-all">Написать нам в MAX →</a>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-start gap-4">
                                             <div className="bg-primary/10 p-2.5 rounded-lg border border-primary/20" aria-hidden="true"><MapPin className="text-primary w-5 h-5" /></div>
                                             <div>
                                                 <div className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-0.5">Адрес</div>
@@ -144,9 +156,14 @@ export default function ContactPage() {
                                     </div>
 
                                     <div className="flex gap-3 mt-8">
+                                        <Button asChild size="sm" className="flex-1 gap-2 rounded-full h-10 font-bold bg-gradient-to-r from-primary to-blue-600 dark:from-blue-500 dark:to-indigo-600 hover:shadow-lg hover:shadow-primary/25 text-white shadow-sm" aria-label="Написать в MAX">
+                                            <a href={MAX_URL} target="_blank" rel="noopener noreferrer">
+                                                <MessageCircle className="w-4 h-4" /> Написать в MAX
+                                            </a>
+                                        </Button>
                                         <Button asChild size="sm" className="flex-1 gap-2 rounded-full h-10 font-bold bg-primary hover:bg-primary/90 text-white shadow-sm" aria-label="Позвонить">
                                             <a href="tel:+79282619928">
-                                                <Phone className="w-4 h-4" /> +7 (928) 261-99-28
+                                                <Phone className="w-4 h-4" /> Позвонить
                                             </a>
                                         </Button>
                                         <Button asChild size="sm" variant="outline" className="flex-1 gap-2 rounded-full h-10 font-bold border-border shadow-sm" aria-label="Написать email">
