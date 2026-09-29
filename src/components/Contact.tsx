@@ -47,7 +47,9 @@ const Contact = () => {
             <div className="flex flex-wrap justify-center gap-3">
               <Button asChild variant="gradient" size="pill" className="text-xs font-bold uppercase tracking-wider">
                 <a href={MAX_URL} target="_blank" rel="noopener noreferrer">
-                  <MaxLogo className="w-4 h-4 mr-2" />
+                  <span className="w-5 h-5 rounded-full bg-white flex items-center justify-center shadow-sm shrink-0">
+                    <MaxLogo className="w-4 h-4" />
+                  </span>
                   Написать в MAX
                 </a>
               </Button>

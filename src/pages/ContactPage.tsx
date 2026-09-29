@@ -151,18 +151,21 @@ export default function ContactPage() {
                                         </div>
                                     </div>
 
-                                    <div className="flex flex-col sm:flex-row gap-3 mt-8">
-                                        <Button asChild size="sm" variant="gradient" className="gap-2 rounded-full h-10 font-bold" aria-label="Написать в MAX">
+                                    <div className="flex flex-col gap-3 mt-8">
+                                        <Button asChild size="sm" variant="gradient" className="w-full gap-2.5 rounded-full h-11 font-bold justify-center" aria-label="Написать в MAX">
                                             <a href={MAX_URL} target="_blank" rel="noopener noreferrer">
-                                                <MaxLogo className="w-4 h-4 mr-2" /> Написать в MAX
+                                                <span className="w-6 h-6 rounded-full bg-white flex items-center justify-center shadow-sm shrink-0">
+                                                    <MaxLogo className="w-5 h-5" />
+                                                </span>
+                                                Написать в MAX
                                             </a>
                                         </Button>
-                                        <Button asChild size="sm" className="gap-2 rounded-full h-10 font-bold" aria-label="Позвонить">
+                                        <Button asChild size="sm" className="w-full gap-2 rounded-full h-11 font-bold justify-center" aria-label="Позвонить">
                                             <a href="tel:+79282619928">
                                                 <Phone className="w-4 h-4" /> Позвонить
                                             </a>
                                         </Button>
-                                        <Button asChild size="sm" variant="outline" className="gap-2 rounded-full h-10 font-bold" aria-label="Написать email">
+                                        <Button asChild size="sm" variant="outline" className="w-full gap-2 rounded-full h-11 font-bold justify-center" aria-label="Написать email">
                                             <a href="mailto:slichnost5@mail.ru">
                                                 <Mail className="w-4 h-4" /> Email
                                             </a>
@@ -202,7 +205,8 @@ export default function ContactPage() {
                             className="lg:col-span-3"
                             aria-label="Форма обратной связи"
                         >
-                            <article className="glass-card p-8 md:p-10 rounded-xl relative overflow-hidden bg-white/60 dark:bg-card/40 backdrop-blur-md border-border shadow-sm">
+                            <article className="glass-card p-8 md:p-10 rounded-xl relative overflow-hidden bg-white/60 dark:bg-card/40 backdrop-blur-md border-border shadow-sm h-full flex flex-col">
+                                <div className="flex-1">
                                 <h2 className="text-xl font-bold mb-2 tracking-tight">Обратная связь</h2>
                                 <p className="text-sm text-muted-foreground mb-8 font-medium">Оставьте свои данные, и мы перезвоним вам для консультации.</p>
 
@@ -301,6 +305,7 @@ export default function ContactPage() {
                                     </p>
                                 </form>
                                 )}
+                                </div>
                             </article>
                         </motion.section>
                     </div>
