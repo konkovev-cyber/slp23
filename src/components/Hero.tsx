@@ -38,18 +38,21 @@ const Hero = () => {
   const sy = useSpring(my, SPRING_CFG);
 
   // Фон-фото: мягкий сдвиг за курсором (обратный — фон уходит от мыши)
-  const bgX = useTransform(sx, [-0.5, 0.5], [12, -12]);
-  const bgY = useTransform(sy, [-0.5, 0.5], [8, -8]);
+  const bgX = useTransform(sx, [-0.5, 0.5], [10, -10]);
+  const bgY = useTransform(sy, [-0.5, 0.5], [6, -8]);
 
-  // Карточка: 3D-наклон в сторону курсора + лёгкое смещение
-  const cardRotateX = useTransform(sy, [-0.5, 0.5], [5, -5]);
-  const cardRotateY = useTransform(sx, [-0.5, 0.5], [-6, 6]);
-  const cardX = useTransform(sx, [-0.5, 0.5], [-10, 10]);
-  const cardY = useTransform(sy, [-0.5, 0.5], [-8, 8]);
+  // Карточка: мягкий 3D-наклон в сторону курсора + лёгкое смещение
+  const cardRotateX = useTransform(sy, [-0.5, 0.5], [3.5, -3.5]);
+  const cardRotateY = useTransform(sx, [-0.5, 0.5], [-4.5, 4.5]);
+  const cardX = useTransform(sx, [-0.5, 0.5], [-7, 7]);
+  const cardY = useTransform(sy, [-0.5, 0.5], [-6, 6]);
 
   // Блик на карточке следует за курсором
   const glareX = useTransform(sx, [-0.5, 0.5], [-140, 180]);
   const glareY = useTransform(sy, [-0.5, 0.5], [-120, 160]);
+
+  // Значки-плашки: глубина как у фона (двигаются сильнее карточки)
+  const badgeDepthX = useTransform(sx, [-0.5, 0.5], [16, -16]);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLElement>) => {
     if (!enableMouseFx) return;
@@ -207,10 +210,18 @@ const Hero = () => {
             <div className="absolute -top-12 -right-12 w-48 h-48 bg-blue-500/10 rounded-full blur-[60px] dark:bg-blue-500/5 animate-pulse" />
             <div className="absolute -bottom-12 -left-12 w-48 h-48 bg-primary/10 rounded-full blur-[60px] dark:bg-primary/5" />
 
+            {/* Тень-подиум под карточкой: «заземляет» объём и дышит с покачиванием */}
+            <motion.div
+              animate={enableMouseFx ? { opacity: [0.16, 0.07, 0.16], scaleX: [1, 0.9, 1] } : undefined}
+              transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+              style={{ x: "-50%" }}
+              className="absolute -bottom-14 left-1/2 w-72 h-8 bg-black/45 blur-2xl rounded-full pointer-events-none dark:bg-black/70"
+            />
+
             {/* Gentle floating: карточка «висит» и мягко покачивается */}
             <motion.div
-              animate={enableMouseFx ? { y: [0, -10, 0] } : undefined}
-              transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+              animate={enableMouseFx ? { y: [0, -8, 0] } : undefined}
+              transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
             >
             {/* Main Premium Card: 3D-наклон в сторону курсора */}
             <motion.div
@@ -221,7 +232,7 @@ const Hero = () => {
               <motion.div
                 aria-hidden="true"
                 style={{ x: glareX, y: glareY }}
-                className="pointer-events-none absolute -inset-24 z-0 rounded-full bg-[radial-gradient(circle,rgba(255,255,255,0.45),transparent_60%)] dark:bg-[radial-gradient(circle,rgba(255,255,255,0.18),transparent_60%)] blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                className="pointer-events-none absolute -inset-24 z-0 rounded-full bg-[radial-gradient(circle,rgba(255,255,255,0.3),transparent_60%)] dark:bg-[radial-gradient(circle,rgba(255,255,255,0.12),transparent_60%)] blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"
               />
 
               {/* Card top border glow line */}
@@ -271,7 +282,8 @@ const Hero = () => {
             <motion.div
               animate={{ y: [0, -6, 0] }}
               transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute -top-6 -left-8 p-3 rounded-2xl bg-white/85 dark:bg-white/10 backdrop-blur-xl border border-white dark:border-white/10 shadow-lg flex items-center gap-2.5 z-20"
+              style={{ x: badgeDepthX }}
+              className="absolute -top-7 -left-9 p-3 rounded-2xl bg-white/90 dark:bg-white/10 backdrop-blur-xl border border-white dark:border-white/10 shadow-xl shadow-black/10 flex items-center gap-2.5 z-20"
             >
               <div className="w-8 h-8 rounded-xl bg-green-500/10 dark:bg-green-500/20 flex items-center justify-center">
                 <CheckCircle2 className="w-4 h-4 text-green-600 dark:text-green-400" />
@@ -286,7 +298,8 @@ const Hero = () => {
             <motion.div
               animate={{ y: [0, 6, 0] }}
               transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-              className="absolute -bottom-6 -right-6 p-3 rounded-2xl bg-white/85 dark:bg-white/10 backdrop-blur-xl border border-white dark:border-white/10 shadow-lg flex items-center gap-2.5 z-20"
+              style={{ x: badgeDepthX }}
+              className="absolute -bottom-7 -right-8 p-3 rounded-2xl bg-white/90 dark:bg-white/10 backdrop-blur-xl border border-white dark:border-white/10 shadow-xl shadow-black/10 flex items-center gap-2.5 z-20"
             >
               <div className="w-8 h-8 rounded-xl bg-amber-500/10 dark:bg-amber-500/20 flex items-center justify-center animate-pulse">
                 <Sparkles className="w-4 h-4 text-amber-600 dark:text-amber-400" />
