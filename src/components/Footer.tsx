@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { SiInstagram, SiVk, SiMax } from "react-icons/si";
-import { Mail } from "lucide-react";
+import MaxLogo from "@/components/MaxLogo";
 import { Link } from "react-router-dom";
 import { Download } from "lucide-react";
 import { Capacitor } from "@capacitor/core";
@@ -68,13 +68,6 @@ const Footer = () => {
                   <Soc.i className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
                 </a>
               ))}
-              <a
-                href="mailto:slichnost5@mail.ru"
-                aria-label="Email"
-                className="w-9 h-9 bg-muted rounded-full flex items-center justify-center border border-border hover:bg-primary/10 hover:border-primary transition-all group"
-              >
-                <Mail className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
-              </a>
             </div>
           </div>
 
@@ -124,15 +117,18 @@ const Footer = () => {
                 Краснодарский край,<br />
                 г. Горячий Ключ, пер. Школьный, 27
               </p>
-              <div className="space-y-1.5 pt-2">
-                <a href="https://max.ru/u/f9LHodD0cOKT6ie5z3UjEOeVzc19VegOtnM4T0jP9RThVVqC30DyPA-1NEE" target="_blank" rel="noopener noreferrer" className="block text-sm font-bold text-primary hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
-                  Мессенджер MAX <span className="text-[9px] font-bold uppercase tracking-wider bg-primary/10 border border-primary/20 rounded-full px-1.5 py-0.5 ml-1">основной</span>
+              <div className="space-y-3 pt-2">
+                <a href="https://max.ru/u/f9LHodD0cOKT6ie5z3UjEOeVzc19VegOtnM4T0jP9RThVVqC30DyPA-1NEE" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 group">
+                  <span className="w-10 h-10 shrink-0 rounded-xl shadow-md transition-transform group-hover:scale-105">
+                    <MaxLogo className="w-full h-full" />
+                  </span>
+                  <span>
+                    <span className="block text-sm font-bold text-foreground group-hover:text-primary transition-colors">Мессенджер MAX</span>
+                    <span className="block text-[12px] text-muted-foreground">Быстрая связь с нами</span>
+                  </span>
                 </a>
                 <a href="tel:+79282619928" className="block text-lg font-bold text-foreground hover:text-primary transition-colors tracking-tight">
                   +7 (928) 261-99-28
-                </a>
-                <a href="mailto:slichnost5@mail.ru" className="block text-muted-foreground font-medium hover:text-primary transition-colors text-[13px] underline underline-offset-4 decoration-border">
-                  slichnost5@mail.ru
                 </a>
               </div>
             </div>

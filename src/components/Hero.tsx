@@ -19,6 +19,14 @@ const SLIDER_IMAGES = [img1, img2, img3];
 
 const SPRING_CFG = { stiffness: 55, damping: 18, mass: 0.6 };
 
+const FEATURES = [
+  { icon: Users2, title: "Малые группы", desc: "До 12 человек в классе" },
+  { icon: BookOpen, title: "Английский каждый день", desc: "Языковая практика без каникул" },
+  { icon: Clock, title: "Школа полного дня", desc: "9:00 – 18:00, пн–пт" },
+  { icon: Sparkles, title: "Индивидуальный подход", desc: "Программа под каждого ребёнка" },
+  { icon: GraduationCap, title: "Опытные педагоги", desc: "Эксперты своего дела" },
+];
+
 const Hero = () => {
   const { data } = useContent<HeroContent>("hero");
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -183,19 +191,7 @@ const Hero = () => {
               </div>
             </div>
 
-            {/* Core Benefits */}
-            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 pt-4">
-              {[
-                { text: "Малые группы до 12 человек", icon: Users2 },
-                { text: "Английский язык каждый день", icon: BookOpen },
-                { text: "Школа полного дня (9:00 - 18:00)", icon: Clock }
-              ].map((benefit, i) => (
-                <div key={i} className="flex items-center gap-2.5 text-[13px] font-semibold text-foreground/85 bg-white/40 dark:bg-white/5 border border-white/55 dark:border-white/5 px-4 py-2 rounded-xl backdrop-blur-md hover:border-primary/20 dark:hover:border-white/20 transition-all duration-300">
-                  <benefit.icon className="w-4 h-4 text-primary dark:text-blue-400 flex-shrink-0" />
-                  <span>{benefit.text}</span>
-                </div>
-              ))}
-            </div>
+            {/* Core Benefits removed: переехали в карточки-фишки внизу hero */}
           </motion.div>
 
           {/* Right Floating Elements Side */}
@@ -311,6 +307,26 @@ const Hero = () => {
             </motion.div>
           </motion.div>
 
+        </div>
+
+        {/* School features: карточки-фишки по низу hero */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mt-16 lg:mt-20">
+          {FEATURES.map((feature, i) => (
+            <motion.div
+              key={feature.title}
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.55 + i * 0.09, duration: 0.55, ease: "easeOut" }}
+              className="glass-card card-lift p-5 rounded-2xl bg-white/70 dark:bg-card/50 backdrop-blur-xl border border-white/70 dark:border-white/10 relative overflow-hidden group"
+            >
+              <div className="absolute top-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-primary/35 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/10 to-blue-500/10 dark:from-white/5 dark:to-white/5 border border-primary/15 dark:border-white/10 flex items-center justify-center mb-3 group-hover:border-primary/30 transition-colors">
+                <feature.icon className="w-5 h-5 text-primary dark:text-blue-400" />
+              </div>
+              <div className="font-bold text-[13px] text-foreground leading-tight tracking-tight">{feature.title}</div>
+              <div className="text-[11px] text-muted-foreground mt-1 leading-snug">{feature.desc}</div>
+            </motion.div>
+          ))}
         </div>
       </div>
     </section>
