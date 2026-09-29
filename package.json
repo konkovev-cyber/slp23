@@ -11,7 +11,7 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "deploy": "node ftp-deploy.js",
+    "deploy": "node ftp-deploy.cjs",
     "apk:upload": "node ftp-apk-upload.js"
   },
   "dependencies": {
