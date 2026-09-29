@@ -4,6 +4,8 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Calendar, GraduationCap, CheckCircle2, Sparkles, BookOpen, Clock, Users2 } from "lucide-react";
 import MaxLogo from "@/components/MaxLogo";
+
+const MAX_URL = "https://max.ru/u/f9LHodD0cOKT6ie5z3UjEOeVzc19VegOtnM4T0jP9RThVVqC30DyPA-1NEE";
 import { useContent } from "@/hooks/use-content";
 
 type HeroContent = {
