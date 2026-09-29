@@ -282,7 +282,7 @@ const Hero = () => {
               animate={{ y: [0, -5, 0] }}
               transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut" }}
               style={{ x: badgeDepthX }}
-              className="absolute -top-9 -left-10 p-2.5 rounded-2xl bg-white/90 dark:bg-white/10 backdrop-blur-xl border border-white dark:border-white/10 shadow-xl shadow-black/10 flex flex-col items-center gap-1.5 z-20"
+              className="absolute -top-7 -left-10 p-2.5 rounded-2xl bg-white/90 dark:bg-white/10 backdrop-blur-xl border border-white dark:border-white/10 shadow-xl shadow-black/10 flex flex-col items-center gap-1.5 z-20"
             >
               <div className="w-7 h-7 rounded-lg bg-green-500/12 dark:bg-green-500/20 flex items-center justify-center">
                 <CheckCircle2 className="w-3.5 h-3.5 text-green-600 dark:text-green-400" />
@@ -298,7 +298,7 @@ const Hero = () => {
               animate={{ y: [0, 5, 0] }}
               transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 0.6 }}
               style={{ x: badgeDepthX }}
-              className="absolute -bottom-9 -right-10 p-2.5 rounded-2xl bg-white/90 dark:bg-white/10 backdrop-blur-xl border border-white dark:border-white/10 shadow-xl shadow-black/10 flex flex-col items-center gap-1.5 z-20"
+              className="absolute -bottom-8 -right-10 p-2.5 rounded-2xl bg-white/90 dark:bg-white/10 backdrop-blur-xl border border-white dark:border-white/10 shadow-xl shadow-black/10 flex flex-col items-center gap-1.5 z-20"
             >
               <div className="w-7 h-7 rounded-lg bg-amber-500/12 dark:bg-amber-500/20 flex items-center justify-center animate-pulse">
                 <Sparkles className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
@@ -324,9 +324,9 @@ const Hero = () => {
             >
               <div className="absolute top-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-primary/35 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/10 to-blue-500/10 dark:from-white/5 dark:to-white/5 border border-primary/15 dark:border-white/10 flex items-center justify-center mb-3 group-hover:border-primary/30 transition-colors">
-                <feature.icon className="w-5 h-5 text-primary dark:text-blue-400" />
+                <feature.icon className="w-5 h-5 text-primary dark:text-blue-400 group-hover:scale-110 transition-transform duration-300" />
               </div>
-              <div className="font-bold text-[13px] text-foreground leading-tight tracking-tight">{feature.title}</div>
+              <div className="font-bold text-[13px] text-foreground leading-tight tracking-tight group-hover:text-primary transition-colors duration-300">{feature.title}</div>
               <div className="text-[11px] text-muted-foreground mt-1 leading-snug">{feature.desc}</div>
             </motion.div>
           ))}
