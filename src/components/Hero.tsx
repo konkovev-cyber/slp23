@@ -2,10 +2,18 @@ import { useState, useEffect } from "react";
 import { motion, useScroll, useTransform, useMotionValue, useSpring } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Calendar, GraduationCap, CheckCircle2, Sparkles, BookOpen, Clock, Users2 } from "lucide-react";
+import { ArrowRight, Calendar, GraduationCap, CheckCircle2, Sparkles, BookOpen, Clock, Users2, ChevronDown } from "lucide-react";
+import { AnimatePresence } from "framer-motion";
 import MaxLogo from "@/components/MaxLogo";
 
 const MAX_URL = "https://max.ru/u/f9LHodD0cOKT6ie5z3UjEOeVzc19VegOtnM4T0jP9RThVVqC30DyPA-1NEE";
+
+const ROTATING_WORDS = [
+  "Частная школа будущего",
+  "Пространство для лидеров",
+  "Английский каждый день",
+  "Индивидуальный подход",
+];
 import { useContent } from "@/hooks/use-content";
 
 type HeroContent = {
@@ -33,8 +41,16 @@ const FEATURES = [
 const Hero = () => {
   const { data } = useContent<HeroContent>("hero");
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [wordIndex, setWordIndex] = useState(0);
   const { scrollY } = useScroll();
   const y1 = useTransform(scrollY, [0, 500], [0, 120]); // Parallax effect
+
+  // Ротация слов в подзаголовке (пропускается при prefers-reduced-motion)
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const timer = setInterval(() => setWordIndex((i) => (i + 1) % ROTATING_WORDS.length), 3800);
+    return () => clearInterval(timer);
+  }, []);
 
   // Mouse-follow FX: только для мыши на десктопе и при отсутствии
   // prefers-reduced-motion (иначе значения остаются на нуле)
@@ -168,7 +184,18 @@ const Hero = () => {
                 Личность <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-500 filter drop-shadow-sm">ПЛЮС</span>
               </h1>
               <h2 className="text-2xl md:text-4xl font-extrabold tracking-tight text-foreground/90 max-w-lg mx-auto lg:mx-0">
-                Частная школа будущего
+                <AnimatePresence mode="wait">
+                  <motion.span
+                    key={wordIndex}
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.35, ease: "easeOut" }}
+                    className="inline-block"
+                  >
+                    {ROTATING_WORDS[wordIndex]}
+                  </motion.span>
+                </AnimatePresence>
               </h2>
             </div>
 
@@ -313,7 +340,7 @@ const Hero = () => {
         </div>
 
         {/* School features: карточки-фишки по низу hero */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mt-24 lg:mt-28">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mt-28 lg:mt-36">
           {FEATURES.map((feature, i) => (
             <motion.div
               key={feature.title}
@@ -330,6 +357,15 @@ const Hero = () => {
               <div className="text-[11px] text-muted-foreground mt-1 leading-snug">{feature.desc}</div>
             </motion.div>
           ))}
+        </div>
+
+        {/* Scroll-индикатор: ведёт к следующей секции */}
+        <div className="flex justify-center mt-10">
+          <a href="#about" aria-label="Прокрутить вниз" className="flex flex-col items-center">
+            <motion.div animate={{ y: [0, 6, 0] }} transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}>
+              <ChevronDown className="w-5 h-5 text-muted-foreground/70" />
+            </motion.div>
+          </a>
         </div>
       </div>
     </section>
