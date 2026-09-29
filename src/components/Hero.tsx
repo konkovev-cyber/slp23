@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform, useMotionValue, useSpring } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Calendar, GraduationCap, Phone, CheckCircle2, Sparkles, BookOpen, Clock, Users2 } from "lucide-react";
@@ -17,11 +17,51 @@ import img3 from "@/assets/activities.jpg";
 
 const SLIDER_IMAGES = [img1, img2, img3];
 
+const SPRING_CFG = { stiffness: 55, damping: 18, mass: 0.6 };
+
 const Hero = () => {
   const { data } = useContent<HeroContent>("hero");
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const { scrollY } = useScroll();
   const y1 = useTransform(scrollY, [0, 500], [0, 120]); // Parallax effect
+
+  // Mouse-follow FX: только для мыши на десктопе и при отсутствии
+  // prefers-reduced-motion (иначе значения остаются на нуле)
+  const enableMouseFx =
+    typeof window !== "undefined" &&
+    window.matchMedia("(pointer: fine)").matches &&
+    !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  const mx = useMotionValue(0);
+  const my = useMotionValue(0);
+  const sx = useSpring(mx, SPRING_CFG);
+  const sy = useSpring(my, SPRING_CFG);
+
+  // Фон-фото: мягкий сдвиг за курсором (обратный — фон уходит от мыши)
+  const bgX = useTransform(sx, [-0.5, 0.5], [12, -12]);
+  const bgY = useTransform(sy, [-0.5, 0.5], [8, -8]);
+
+  // Карточка: 3D-наклон в сторону курсора + лёгкое смещение
+  const cardRotateX = useTransform(sy, [-0.5, 0.5], [5, -5]);
+  const cardRotateY = useTransform(sx, [-0.5, 0.5], [-6, 6]);
+  const cardX = useTransform(sx, [-0.5, 0.5], [-10, 10]);
+  const cardY = useTransform(sy, [-0.5, 0.5], [-8, 8]);
+
+  // Блик на карточке следует за курсором
+  const glareX = useTransform(sx, [-0.5, 0.5], [-140, 180]);
+  const glareY = useTransform(sy, [-0.5, 0.5], [-120, 160]);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLElement>) => {
+    if (!enableMouseFx) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    mx.set((e.clientX - rect.left) / rect.width - 0.5);
+    my.set((e.clientY - rect.top) / rect.height - 0.5);
+  };
+
+  const handleMouseLeave = () => {
+    mx.set(0);
+    my.set(0);
+  };
 
   const content = data?.content;
   const isVisible = data?.is_visible ?? true;
@@ -40,35 +80,38 @@ const Hero = () => {
   const phone = content?.phone ?? "+7 (928) 261-99-28";
 
   return (
-    <section id="home" className="relative min-h-[92vh] flex items-center pt-28 pb-20 overflow-hidden bg-[#fafafa] dark:bg-black transition-colors duration-300">
+    <section id="home" onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave} className="relative min-h-[92vh] flex items-center pt-28 pb-20 overflow-hidden bg-[#fafafa] dark:bg-black transition-colors duration-300">
       {/* Background grid overlay */}
       <div className="absolute inset-0 z-1 bg-[linear-gradient(to_right,#80808007_1px,transparent_1px),linear-gradient(to_bottom,#80808007_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
 
       {/* Seamless cross-fade background slider with PARALLAX */}
       <motion.div style={{ y: y1 }} className="absolute inset-0 z-0 overflow-hidden h-[120%] -top-[10%] select-none">
-        {SLIDER_IMAGES.map((img, idx) => (
-          <motion.div
-            key={idx}
-            initial={{ opacity: 0 }}
-            animate={{
-              opacity: currentImageIndex === idx ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 0.3 : 0.55) : 0,
-              scale: currentImageIndex === idx ? 1.02 : 1.15
-            }}
-            transition={{ duration: 3, ease: "easeInOut" }}
-            className="absolute inset-0"
-          >
-            <img
-              src={img}
-              className="w-full h-full object-cover pointer-events-none filter brightness-[0.95] contrast-[1.02]"
-              alt=""
-              role="presentation"
-              width="1920"
-              height="1080"
-              decoding="async"
-              loading={idx === 0 ? "eager" : "lazy"}
-            />
-          </motion.div>
-        ))}
+        {/* Mouse-follow parallax: фото мягко уходит за курсором */}
+        <motion.div style={{ x: bgX, y: bgY }} className="absolute inset-0">
+          {SLIDER_IMAGES.map((img, idx) => (
+            <motion.div
+              key={idx}
+              initial={{ opacity: 0 }}
+              animate={{
+                opacity: currentImageIndex === idx ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 0.3 : 0.55) : 0,
+                scale: currentImageIndex === idx ? 1.05 : 1.15
+              }}
+              transition={{ duration: 3, ease: "easeInOut" }}
+              className="absolute inset-0"
+            >
+              <img
+                src={img}
+                className="w-full h-full object-cover pointer-events-none filter brightness-[0.95] contrast-[1.02]"
+                alt=""
+                role="presentation"
+                width="1920"
+                height="1080"
+                decoding="async"
+                loading={idx === 0 ? "eager" : "lazy"}
+              />
+            </motion.div>
+          ))}
+        </motion.div>
 
         {/* Improved Sleek Gradients */}
         <div className="absolute inset-0 bg-gradient-to-r from-[#fafafa] via-[#fafafa]/80 to-transparent dark:from-black dark:via-black/70 dark:to-transparent lg:w-3/5" />
@@ -159,14 +202,29 @@ const Hero = () => {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             transition={{ duration: 0.9, delay: 0.3 }}
             className="w-full max-w-[420px] relative mt-8 lg:mt-0 select-none z-10"
+            style={{ perspective: 1200 }}
           >
             {/* Interactive Glowing Backplates */}
             <div className="absolute -top-12 -right-12 w-48 h-48 bg-blue-500/10 rounded-full blur-[60px] dark:bg-blue-500/5 animate-pulse" />
             <div className="absolute -bottom-12 -left-12 w-48 h-48 bg-primary/10 rounded-full blur-[60px] dark:bg-primary/5" />
 
-            {/* Main Premium Card */}
-            <div className="relative glass-card p-8 rounded-3xl overflow-hidden shadow-2xl bg-white/70 dark:bg-white/5 backdrop-blur-2xl border border-white/80 dark:border-white/10 ring-1 ring-black/5">
-              
+            {/* Gentle floating: карточка «висит» и мягко покачивается */}
+            <motion.div
+              animate={enableMouseFx ? { y: [0, -10, 0] } : undefined}
+              transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+            >
+            {/* Main Premium Card: 3D-наклон в сторону курсора */}
+            <motion.div
+              style={{ rotateX: cardRotateX, rotateY: cardRotateY, x: cardX, y: cardY, transformPerspective: 1200 }}
+              className="relative glass-card p-8 rounded-3xl overflow-hidden shadow-2xl bg-white/70 dark:bg-white/5 backdrop-blur-2xl border border-white/80 dark:border-white/10 ring-1 ring-black/5 group"
+              >
+              {/* Card glare: блик следует за курсором */}
+              <motion.div
+                aria-hidden="true"
+                style={{ x: glareX, y: glareY }}
+                className="pointer-events-none absolute -inset-24 z-0 rounded-full bg-[radial-gradient(circle,rgba(255,255,255,0.45),transparent_60%)] dark:bg-[radial-gradient(circle,rgba(255,255,255,0.18),transparent_60%)] blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+              />
+
               {/* Card top border glow line */}
               <div className="absolute top-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
               
@@ -207,7 +265,8 @@ const Hero = () => {
                   </Button>
                 </Link>
               </div>
-            </div>
+            </motion.div>
+            </motion.div>
 
             {/* Floating Live Indicator stats */}
             <motion.div
