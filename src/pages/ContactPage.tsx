@@ -1,4 +1,4 @@
-import { useRef, useMemo, useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
@@ -7,34 +7,29 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/hooks/use-toast";
-import { MapPin, Phone, Mail, Clock, Send, MessageCircle } from "lucide-react";
+import { MapPin, Phone, Mail, Clock, Send, MessageCircle, Loader2, CheckCircle2 } from "lucide-react";
 import { motion } from "framer-motion";
+import { useContactForm } from "@/hooks/use-contact-form";
 
 const MAX_URL = "https://max.ru/u/f9LHodD0cOKT6ie5z3UjEOeVzc19VegOtnM4T0jP9RThVVqC30DyPA-1NEE";
 
 export default function ContactPage() {
-    const { toast } = useToast();
-    const [formData, setFormData] = useState({
-        name: "",
-        phone: "",
-        email: "",
-        age: "",
-        message: "",
-    });
+    const {
+        formData,
+        setField,
+        handlePhoneInput,
+        handleBlur,
+        fieldErrors,
+        formError,
+        status,
+        submit,
+        reset,
+        summaryRef,
+    } = useContactForm();
 
     // Map logic
     const constructorHash = "4f61ac17bbf756654de58429231d443241ac89a38745ebe8760ff57bfecb15e8";
     const iframeSrc = `https://yandex.ru/map-widget/v1/?um=constructor%3A${constructorHash}&source=constructor&scroll=true`;
-
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        toast({
-            title: "Заявка отправлена!",
-            description: "Мы свяжемся с вами в ближайшее время.",
-        });
-        setFormData({ name: "", phone: "", email: "", age: "", message: "" });
-    };
 
     return (
         <div className="min-h-screen bg-background">
@@ -155,18 +150,18 @@ export default function ContactPage() {
                                         </div>
                                     </div>
 
-                                    <div className="flex gap-3 mt-8">
-                                        <Button asChild size="sm" className="flex-1 gap-2 rounded-full h-10 font-bold bg-gradient-to-r from-primary to-blue-600 dark:from-blue-500 dark:to-indigo-600 hover:shadow-lg hover:shadow-primary/25 text-white shadow-sm" aria-label="Написать в MAX">
+                                    <div className="flex flex-col sm:flex-row gap-3 mt-8">
+                                        <Button asChild size="sm" variant="gradient" className="gap-2 rounded-full h-10 font-bold" aria-label="Написать в MAX">
                                             <a href={MAX_URL} target="_blank" rel="noopener noreferrer">
                                                 <MessageCircle className="w-4 h-4" /> Написать в MAX
                                             </a>
                                         </Button>
-                                        <Button asChild size="sm" className="flex-1 gap-2 rounded-full h-10 font-bold bg-primary hover:bg-primary/90 text-white shadow-sm" aria-label="Позвонить">
+                                        <Button asChild size="sm" className="gap-2 rounded-full h-10 font-bold" aria-label="Позвонить">
                                             <a href="tel:+79282619928">
                                                 <Phone className="w-4 h-4" /> Позвонить
                                             </a>
                                         </Button>
-                                        <Button asChild size="sm" variant="outline" className="flex-1 gap-2 rounded-full h-10 font-bold border-border shadow-sm" aria-label="Написать email">
+                                        <Button asChild size="sm" variant="outline" className="gap-2 rounded-full h-10 font-bold" aria-label="Написать email">
                                             <a href="mailto:slichnost5@mail.ru">
                                                 <Mail className="w-4 h-4" /> Email
                                             </a>
@@ -210,42 +205,101 @@ export default function ContactPage() {
                                 <h2 className="text-xl font-bold mb-2 tracking-tight">Обратная связь</h2>
                                 <p className="text-sm text-muted-foreground mb-8 font-medium">Оставьте свои данные, и мы перезвоним вам для консультации.</p>
 
-                                <form onSubmit={handleSubmit} className="space-y-5">
+                                {status === "success" ? (
+                                    <div role="status" className="text-center py-12 space-y-6">
+                                        <motion.div
+                                            initial={{ scale: 0.8, opacity: 0 }}
+                                            animate={{ scale: 1, opacity: 1 }}
+                                            transition={{ duration: 0.4 }}
+                                            className="w-16 h-16 mx-auto rounded-full bg-green-500/10 border border-green-500/25 flex items-center justify-center"
+                                        >
+                                            <CheckCircle2 className="w-8 h-8 text-green-600 dark:text-green-400" />
+                                        </motion.div>
+                                        <h3 className="text-2xl font-black text-foreground tracking-tighter">Заявка отправлена!</h3>
+                                        <p className="text-sm text-muted-foreground font-medium max-w-sm mx-auto">
+                                            Мы получили заявку и свяжемся с вами в ближайшее время. Для быстрой связи напишите нам в MAX.
+                                        </p>
+                                        <Button variant="outline" size="pill" className="text-xs font-bold uppercase tracking-wider" onClick={reset}>
+                                            Отправить ещё одну
+                                        </Button>
+                                    </div>
+                                ) : (
+                                <form onSubmit={(e) => { e.preventDefault(); submit(); }} className="space-y-5">
+                                    {formError && (
+                                        <div
+                                            ref={summaryRef}
+                                            role="alert"
+                                            tabIndex={-1}
+                                            className="rounded-xl bg-destructive/10 border border-destructive/25 px-4 py-3 text-xs font-semibold text-destructive focus:outline-none"
+                                        >
+                                            {formError}
+                                        </div>
+                                    )}
                                     <div className="grid md:grid-cols-2 gap-5">
                                         <div className="space-y-1.5">
                                             <label htmlFor="contact-name" className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground ml-1">Как к вам обращаться?</label>
-                                            <Input id="contact-name" required value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} placeholder="Имя" className="h-12 md:h-11 rounded-lg bg-background/50 focus:ring-2 ring-primary/20 text-base" />
+                                            <Input id="contact-name" required value={formData.name} onChange={e => setField("name", e.target.value)} onBlur={() => handleBlur("name")} aria-invalid={!!fieldErrors.name} aria-describedby={fieldErrors.name ? "contact-name-err" : undefined} placeholder="Имя" className={`h-12 md:h-11 rounded-lg bg-background/50 focus:ring-2 ring-primary/20 text-base ${fieldErrors.name ? "border-destructive/60" : ""}`} />
+                                            {fieldErrors.name && <p role="alert" id="contact-name-err" className="text-[10px] font-semibold text-destructive">{fieldErrors.name}</p>}
                                         </div>
                                         <div className="space-y-1.5">
                                             <label htmlFor="contact-phone" className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground ml-1">Контактный телефон</label>
-                                            <Input id="contact-phone" required type="tel" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} placeholder="+7 (___) ___-__-__" className="h-12 md:h-11 rounded-lg bg-background/50 focus:ring-2 ring-primary/20 text-base" />
+                                            <div className="relative">
+                                                <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/50 pointer-events-none" aria-hidden="true" />
+                                                <Input id="contact-phone" required type="tel" value={formData.phone} onChange={e => handlePhoneInput(e.target.value)} onBlur={() => handleBlur("phone")} aria-invalid={!!fieldErrors.phone} aria-describedby={fieldErrors.phone ? "contact-phone-err" : undefined} placeholder="+7 (___) ___-__-__" className={`h-12 md:h-11 rounded-lg bg-background/50 focus:ring-2 ring-primary/20 text-base pl-11 pr-4 ${fieldErrors.phone ? "border-destructive/60" : ""}`} />
+                                            </div>
+                                            {fieldErrors.phone && <p role="alert" id="contact-phone-err" className="text-[10px] font-semibold text-destructive">{fieldErrors.phone}</p>}
                                         </div>
                                     </div>
 
                                     <div className="grid md:grid-cols-2 gap-5">
                                         <div className="space-y-1.5">
                                             <label htmlFor="contact-email" className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground ml-1">Email адрес</label>
-                                            <Input id="contact-email" type="email" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} placeholder="example@mail.ru" className="h-12 md:h-11 rounded-lg bg-background/50 focus:ring-2 ring-primary/20 text-base" />
+                                            <div className="relative">
+                                                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/50 pointer-events-none" aria-hidden="true" />                                                <Input id="contact-email" type="email" value={formData.email} onChange={e => setField("email", e.target.value)} onBlur={() => handleBlur("email")} aria-invalid={!!fieldErrors.email} aria-describedby={fieldErrors.email ? "contact-email-err" : undefined} placeholder="example@mail.ru" className={`h-12 md:h-11 rounded-lg bg-background/50 focus:ring-2 ring-primary/20 text-base pl-11 pr-4 ${fieldErrors.email ? "border-destructive/60" : ""}`} />
+                                            </div>
+                                            {fieldErrors.email && <p role="alert" id="contact-email-err" className="text-[10px] font-semibold text-destructive">{fieldErrors.email}</p>}
                                         </div>
                                         <div className="space-y-1.5">
                                             <label htmlFor="contact-age" className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground ml-1">Возраст ребёнка</label>
-                                            <Input id="contact-age" value={formData.age} onChange={e => setFormData({ ...formData, age: e.target.value })} placeholder="Например: 7 лет" className="h-12 md:h-11 rounded-lg bg-background/50 focus:ring-2 ring-primary/20 text-base" />
+                                            <Input id="contact-age" value={formData.age} onChange={e => setField("age", e.target.value)} placeholder="Например: 7 лет" className="h-12 md:h-11 rounded-lg bg-background/50 focus:ring-2 ring-primary/20 text-base" autoComplete="off" />
                                         </div>
                                     </div>
 
                                     <div className="space-y-1.5">
                                         <label htmlFor="contact-message" className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground ml-1">Ваше сообщение</label>
-                                        <Textarea id="contact-message" value={formData.message} onChange={e => setFormData({ ...formData, message: e.target.value })} placeholder="Задайте ваш вопрос..." rows={4} className="rounded-lg bg-background/50 focus:ring-2 ring-primary/20 resize-none p-4 text-base min-h-[120px]" />
+                                        <Textarea id="contact-message" value={formData.message} onChange={e => setField("message", e.target.value)} placeholder="Задайте ваш вопрос..." rows={4} className="rounded-lg bg-background/50 focus:ring-2 ring-primary/20 resize-none p-4 text-base min-h-[120px]" />
                                     </div>
 
-                                    <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-white font-bold h-14 md:h-12 rounded-full shadow-md shadow-primary/20 transition-all text-base active:scale-95">
-                                        Отправить запрос <Send className="w-4 h-4 ml-2" aria-hidden="true" />
+                                    {/* Honeypot: скрытое поле для ботов */}
+                                    <input
+                                        type="text"
+                                        name="company_website"
+                                        value={formData.company_website}
+                                        onChange={e => setField("company_website", e.target.value)}
+                                        className="absolute -left-[9999px] h-0 w-0 opacity-0 pointer-events-none"
+                                        tabIndex={-1}
+                                        autoComplete="off"
+                                        aria-hidden="true"
+                                    />
+
+                                    <Button type="submit" variant="gradient" className="w-full font-bold h-14 md:h-12 rounded-full text-base" disabled={status === "submitting"}>
+                                        {status === "submitting" ? (
+                                            <>
+                                                <Loader2 className="w-4 h-4 mr-2 animate-spin" aria-hidden="true" />
+                                                Отправляем...
+                                            </>
+                                        ) : (
+                                            <>
+                                                Отправить запрос <Send className="w-4 h-4 ml-2" aria-hidden="true" />
+                                            </>
+                                        )}
                                     </Button>
 
                                     <p className="text-[10px] text-center text-muted-foreground uppercase tracking-widest leading-relaxed">
                                         Нажимая кнопку, вы соглашаетесь на обработку персональных данных
                                     </p>
                                 </form>
+                                )}
                             </article>
                         </motion.section>
                     </div>

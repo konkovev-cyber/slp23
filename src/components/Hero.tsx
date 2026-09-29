@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { motion, useScroll, useTransform, useMotionValue, useSpring } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Calendar, GraduationCap, Phone, CheckCircle2, Sparkles, BookOpen, Clock, Users2 } from "lucide-react";
+import { ArrowRight, Calendar, GraduationCap, CheckCircle2, Sparkles, BookOpen, Clock, Users2, MessageCircle } from "lucide-react";
 import { useContent } from "@/hooks/use-content";
 
 type HeroContent = {
@@ -77,7 +77,6 @@ const Hero = () => {
 
   const badgeText = content?.badge_text ?? "Прием на 2026/27 год открыт";
   const lead = content?.lead ?? "Российское образование с фокусом на результат и гармоничное развитие личности ребенка в Горячем Ключе.";
-  const phone = content?.phone ?? "+7 (928) 261-99-28";
 
   return (
     <section id="home" onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave} className="relative min-h-[92vh] flex items-center pt-28 pb-20 overflow-hidden bg-[#fafafa] dark:bg-black transition-colors duration-300">
@@ -167,16 +166,16 @@ const Hero = () => {
             {/* CTA Buttons Block */}
             <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-2">
               <Link to="/contact" className="w-full sm:w-auto">
-                <Button size="lg" className="w-full sm:w-auto rounded-full h-14 px-8 text-base font-bold shadow-lg shadow-primary/20 hover:shadow-primary/35 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 bg-gradient-to-r from-primary to-blue-600 dark:from-blue-500 dark:to-indigo-600 border-none text-white">
+                <Button variant="gradient" size="pillLg" className="w-full sm:w-auto h-14 px-8 text-base font-bold">
                   Записаться на экскурсию <ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" />
                 </Button>
               </Link>
               <div className="flex items-center gap-3 py-2 px-4.5 bg-white/60 dark:bg-white/5 backdrop-blur-xl rounded-full border border-white/80 dark:border-white/10 shadow-sm hover:bg-white/80 dark:hover:bg-white/10 transition-colors">
                 <div className="w-9 h-9 bg-primary/10 dark:bg-primary/20 rounded-full flex items-center justify-center">
-                  <Phone className="w-4 h-4 text-primary dark:text-blue-400" />
+                  <MessageCircle className="w-4 h-4 text-primary dark:text-blue-400" />
                 </div>
-                <a href={`tel:${phone.replace(/\D/g, '')}`} className="text-sm font-bold text-foreground hover:text-primary transition-colors pr-1">
-                  {phone}
+                <a href="https://max.ru/u/f9LHodD0cOKT6ie5z3UjEOeVzc19VegOtnM4T0jP9RThVVqC30DyPA-1NEE" target="_blank" rel="noopener noreferrer" className="text-sm font-bold text-foreground hover:text-primary transition-colors pr-1">
+                  Написать в MAX
                 </a>
               </div>
             </div>

@@ -3,29 +3,24 @@ import { motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { MapPin, Phone, Mail, Clock, Send, MessageCircle } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { MapPin, Phone, Mail, Clock, Send, MessageCircle, Loader2, CheckCircle2 } from "lucide-react";
+import { useContactForm } from "@/hooks/use-contact-form";
 
 const MAX_URL = "https://max.ru/u/f9LHodD0cOKT6ie5z3UjEOeVzc19VegOtnM4T0jP9RThVVqC30DyPA-1NEE";
 
 const Contact = () => {
-  const { toast } = useToast();
-  const [formData, setFormData] = useState({
-    name: "",
-    phone: "",
-    email: "",
-    age: "",
-    message: "",
-  });
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    toast({
-      title: "Заявка отправлена!",
-      description: "Мы свяжемся с вами в ближайшее время.",
-    });
-    setFormData({ name: "", phone: "", email: "", age: "", message: "" });
-  };
+  const {
+    formData,
+    setField,
+    handlePhoneInput,
+    handleBlur,
+    fieldErrors,
+    formError,
+    status,
+    submit,
+    reset,
+    summaryRef,
+  } = useContactForm();
 
   const constructorHash = "4f61ac17bbf756654de58429231d443241ac89a38745ebe8760ff57bfecb15e8";
   const iframeSrc = useMemo(
@@ -49,29 +44,19 @@ const Contact = () => {
             </p>
 
             <div className="flex flex-wrap justify-center gap-3">
-              <Button
-                asChild
-                className="rounded-full bg-gradient-to-r from-primary to-blue-600 dark:from-blue-500 dark:to-indigo-600 hover:shadow-lg hover:shadow-primary/25 hover:-translate-y-0.5 active:translate-y-0 text-white px-6 h-10 text-xs font-bold shadow-md transition-all uppercase tracking-wider"
-              >
+              <Button asChild variant="gradient" size="pill" className="text-xs font-bold uppercase tracking-wider">
                 <a href={MAX_URL} target="_blank" rel="noopener noreferrer">
                   <MessageCircle className="w-4 h-4 mr-2" />
                   Написать в MAX
                 </a>
               </Button>
-              <Button
-                asChild
-                className="rounded-full bg-primary hover:bg-primary/90 text-white px-6 h-10 text-xs font-bold shadow-md active:scale-95 transition-all uppercase tracking-wider"
-              >
+              <Button asChild size="pill" className="text-xs font-bold uppercase tracking-wider">
                 <a href="tel:+79282619928">
                   <Phone className="w-4 h-4 mr-2" />
                   Позвонить
                 </a>
               </Button>
-              <Button
-                asChild
-                variant="outline"
-                className="rounded-full px-6 h-10 text-xs font-bold shadow-md active:scale-95 transition-all uppercase tracking-wider"
-              >
+              <Button asChild variant="outline" size="pill" className="text-xs font-bold uppercase tracking-wider">
                 <a href="mailto:slichnost5@mail.ru">
                   <Mail className="w-4 h-4 mr-2" />
                   Написать email
@@ -167,69 +152,146 @@ const Contact = () => {
             className="lg:col-span-3"
           >
             <div className="glass-card p-6 md:p-8 rounded-2xl relative overflow-hidden bg-white/40 dark:bg-card/40 backdrop-blur-md border-border/50 h-full">
-              <form onSubmit={handleSubmit} className="relative space-y-5">
+              {status === "success" ? (
+                <div role="status" className="relative h-full flex flex-col items-center justify-center text-center space-y-5 py-10">
+                  <motion.div
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ duration: 0.4 }}
+                    className="w-16 h-16 rounded-full bg-green-500/10 border border-green-500/25 flex items-center justify-center"
+                  >
+                    <CheckCircle2 className="w-8 h-8 text-green-600 dark:text-green-400" />
+                  </motion.div>
+                  <h3 className="text-2xl font-black text-foreground tracking-tighter">Заявка отправлена!</h3>
+                  <p className="text-sm text-muted-foreground font-medium max-w-sm leading-relaxed">
+                    Мы получили заявку и свяжемся с вами в ближайшее время. Для быстрой связи напишите нам в MAX.
+                  </p>
+                  <Button variant="outline" size="pill" className="text-xs font-bold uppercase tracking-wider" onClick={reset}>
+                    Отправить ещё одну
+                  </Button>
+                </div>
+              ) : (
+              <form onSubmit={(e) => { e.preventDefault(); submit(); }} className="relative space-y-5">
+                {formError && (
+                  <div
+                    ref={summaryRef}
+                    tabIndex={-1}
+                    role="alert"
+                    className="rounded-xl bg-destructive/10 border border-destructive/25 px-4 py-3 text-xs font-semibold text-destructive focus:outline-none"
+                  >
+                    {formError}
+                  </div>
+                )}
                 <div className="grid md:grid-cols-2 gap-5">
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">Имя</label>
+                    <label htmlFor="contact-c-name" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">Имя</label>
                     <Input
+                      id="contact-c-name"
                       placeholder="Как к вам обращаться?"
                       className="h-10 rounded-xl bg-background border-border/50 text-sm font-medium placeholder:text-muted-foreground/40 px-4 focus:ring-1 ring-primary/20"
                       value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      onChange={(e) => setField("name", e.target.value)}
+                      onBlur={() => handleBlur("name")}
+                      aria-invalid={!!fieldErrors.name}
+                      aria-describedby={fieldErrors.name ? "contact-c-name-err" : undefined}
                       required
                     />
+                    {fieldErrors.name && <p role="alert" className="text-[10px] font-semibold text-destructive">{fieldErrors.name}</p>}
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">Телефон</label>
-                    <Input
-                      placeholder="+7 (___) ___"
-                      className="h-10 rounded-xl bg-background border-border/50 text-sm font-medium placeholder:text-muted-foreground/40 px-4 focus:ring-1 ring-primary/20"
-                      value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      required
-                    />
+                    <label htmlFor="contact-c-phone" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">Телефон</label>
+                    <div className="relative">
+                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/50 pointer-events-none" aria-hidden="true" />
+                      <Input
+                        id="contact-c-phone"
+                        placeholder="+7 (___) ___-__-__"
+                        className={`h-10 rounded-xl bg-background border-border/50 text-sm font-medium placeholder:text-muted-foreground/40 pl-10 pr-4 focus:ring-1 ring-primary/20 ${fieldErrors.phone ? "border-destructive/60" : ""}`}
+                        value={formData.phone}
+                        onChange={(e) => handlePhoneInput(e.target.value)}
+                        onBlur={() => handleBlur("phone")}
+                        aria-invalid={!!fieldErrors.phone}
+                        aria-describedby={fieldErrors.phone ? "contact-c-phone-err" : undefined}
+                        inputMode="tel"
+                        autoComplete="tel"
+                        required
+                      />
+                    </div>
+                    {fieldErrors.phone && <p role="alert" className="text-[10px] font-semibold text-destructive">{fieldErrors.phone}</p>}
                   </div>
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-5">
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">Email</label>
-                    <Input
-                      placeholder="example@mail.ru"
-                      className="h-10 rounded-xl bg-background border-border/50 text-sm font-medium placeholder:text-muted-foreground/40 px-4 focus:ring-1 ring-primary/20"
-                      value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    />
+                    <label htmlFor="contact-c-email" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">Email</label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/50 pointer-events-none" aria-hidden="true" />
+                      <Input
+                        id="contact-c-email"
+                        type="email"
+                        placeholder="example@mail.ru"
+                        className={`h-10 rounded-xl bg-background border-border/50 text-sm font-medium placeholder:text-muted-foreground/40 pl-10 pr-4 focus:ring-1 ring-primary/20 ${fieldErrors.email ? "border-destructive/60" : ""}`}
+                        value={formData.email}
+                        onChange={(e) => setField("email", e.target.value)}
+                        onBlur={() => handleBlur("email")}
+                        aria-invalid={!!fieldErrors.email}
+                        aria-describedby={fieldErrors.email ? "contact-c-email-err" : undefined}
+                        autoComplete="email"
+                      />
+                    </div>
+                    {fieldErrors.email && <p role="alert" className="text-[10px] font-semibold text-destructive">{fieldErrors.email}</p>}
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">Возраст ребенка</label>
+                    <label htmlFor="contact-c-age" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">Возраст ребенка</label>
                     <Input
+                      id="contact-c-age"
                       placeholder="Например: 7 лет"
                       className="h-10 rounded-xl bg-background border-border/50 text-sm font-medium placeholder:text-muted-foreground/40 px-4 focus:ring-1 ring-primary/20"
                       value={formData.age}
-                      onChange={(e) => setFormData({ ...formData, age: e.target.value })}
+                      onChange={(e) => setField("age", e.target.value)}
+                      autoComplete="off"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">Сообщение</label>
+                  <label htmlFor="contact-c-message" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">Сообщение</label>
                   <Textarea
+                    id="contact-c-message"
                     placeholder="Ваш вопрос или комментарий..."
                     className="min-h-[100px] rounded-xl bg-background border-border/50 text-sm font-medium placeholder:text-muted-foreground/40 p-4 resize-none focus:ring-1 ring-primary/20"
                     value={formData.message}
-                    onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                    onChange={(e) => setField("message", e.target.value)}
                   />
                 </div>
 
-                <Button className="w-full h-11 rounded-full bg-primary hover:bg-primary/90 text-white font-bold text-sm transition-all shadow-lg shadow-primary/10 uppercase tracking-widest">
-                  Записаться на экскурсию
+                {/* Honeypot: скрытое поле для ботов */}
+                <input
+                  type="text"
+                  name="company_website"
+                  value={formData.company_website}
+                  onChange={(e) => setField("company_website", e.target.value)}
+                  className="absolute -left-[9999px] h-0 w-0 opacity-0 pointer-events-none"
+                  tabIndex={-1}
+                  autoComplete="off"
+                  aria-hidden="true"
+                />
+
+                <Button type="submit" variant="gradient" className="w-full h-11 rounded-full font-bold text-sm uppercase tracking-widest" disabled={status === "submitting"}>
+                  {status === "submitting" ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" aria-hidden="true" />
+                      Отправляем...
+                    </>
+                  ) : (
+                    <>Записаться на экскурсию</>
+                  )}
                 </Button>
 
                 <p className="text-[9px] text-center text-muted-foreground uppercase tracking-widest leading-relaxed font-bold opacity-60">
                   Нажимая кнопку, вы подтверждаете согласие на обработку персональных данных
                 </p>
               </form>
+              )}
             </div>
           </motion.div>
         </div>
