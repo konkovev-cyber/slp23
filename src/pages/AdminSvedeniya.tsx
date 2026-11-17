@@ -20,14 +20,17 @@ const SECTIONS = [
     { id: "structure",      title: "Структура и органы",    type: "text"                  },
     { id: "documents",      title: "Документы",             type: "text"                  },
     { id: "education",      title: "Образование",           type: "text"                  },
-    { id: "standards",      title: "Стандарты",             type: "text"                  },
     { id: "management",     title: "Руководство",           type: "persons-management"    },
     { id: "teachers",       title: "Пед. состав",           type: "persons-teacher"       },
     { id: "facilities",     title: "Мат.-тех. обеспечение", type: "text"                  },
     { id: "paid-services",  title: "Платные услуги",        type: "text"                  },
     { id: "finance",        title: "Финансы",               type: "text"                  },
     { id: "vacancies",      title: "Вакансии",              type: "text"                  },
+    { id: "scholarships",   title: "Стипендии и поддержка", type: "text"                  },
     { id: "accessibility",  title: "Доступная среда",       type: "text"                  },
+    { id: "international",  title: "Междунар. сотрудничество", type: "text"              },
+    { id: "catering",       title: "Организация питания",   type: "text"                  },
+    { id: "standards",      title: "Стандарты",             type: "text"                  },
 ] as const;
 
 type SubTab = "text" | "docs";

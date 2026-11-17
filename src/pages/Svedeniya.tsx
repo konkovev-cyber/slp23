@@ -10,7 +10,7 @@ import {
     ChevronLeft, Printer, FileText, FileSpreadsheet,
     File, Download, Eye, X, Phone, Mail, BookOpen, GraduationCap,
     Clock, Award, Building2, MapPin, Globe, Hash, Scale, Calendar,
-    Users, UserCheck, Star, Play, Briefcase
+    Users, UserCheck, Star, Play, Briefcase, Utensils
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -381,22 +381,23 @@ function PersonCard({ p, onOpen }: { p: Person; onOpen: (p: Person) => void }) {
 // ─── Основные сведения ────────────────────────────────────────────────────────
 function BasicInfoBlock({ info }: { info: BasicInfoData }) {
     const rows: { icon: React.ElementType; label: string; value: string | undefined }[] = [
-        { icon: Building2,  label: "Полное наименование",            value: info.full_name             },
-        { icon: Building2,  label: "Краткое наименование",           value: info.short_name            },
-        { icon: MapPin,     label: "Юридический адрес",              value: info.legal_address         },
-        { icon: MapPin,     label: "Фактический адрес",              value: info.actual_address        },
-        { icon: Phone,      label: "Телефон",                        value: info.phone                 },
-        { icon: Phone,      label: "Факс",                           value: info.fax                   },
-        { icon: Mail,       label: "Электронная почта",              value: info.email                 },
-        { icon: Globe,      label: "Сайт",                           value: info.website               },
-        { icon: Clock,      label: "Режим работы",                   value: info.work_hours            },
-        { icon: Hash,       label: "ИНН",                            value: info.inn                   },
-        { icon: Hash,       label: "ОГРН",                           value: info.ogrn                  },
-        { icon: Hash,       label: "КПП",                            value: info.kpp                   },
-        { icon: Scale,      label: "Лицензия №",                     value: info.license_number        },
-        { icon: Calendar,   label: "Дата выдачи лицензии",           value: info.license_date ? new Date(info.license_date).toLocaleDateString("ru-RU") : undefined },
-        { icon: Scale,      label: "Аккредитация №",                 value: info.accreditation_number  },
-        { icon: Calendar,   label: "Дата аккредитации",              value: info.accreditation_date ? new Date(info.accreditation_date).toLocaleDateString("ru-RU") : undefined },
+        { icon: Building2,  label: "Полное наименование",                             value: info.full_name             },
+        { icon: Building2,  label: "Сокращенное наименование",                         value: info.short_name            },
+        { icon: Calendar,   label: "Дата создания образовательной организации",        value: info.created_date ? (info.created_date.includes("2026") && !info.created_date.includes("-") ? info.created_date : new Date(info.created_date).toLocaleDateString("ru-RU")) : undefined },
+        { icon: Users,      label: "Учредитель (учредители)",                         value: info.founder               },
+        { icon: MapPin,     label: "Место нахождения",                                value: info.legal_address         },
+        { icon: MapPin,     label: "Место осуществления образовательной деятельности",  value: info.actual_address        },
+        { icon: MapPin,     label: "Места осуществления образовательной деятельности, сведения о которых в соответствии с 273-ФЗ не включаются в реестр лицензий", value: "отсутствуют" },
+        { icon: Phone,      label: "Контактный телефон",                              value: info.phone                 },
+        { icon: Phone,      label: "Факс",                                            value: info.fax                   },
+        { icon: Mail,       label: "Электронная почта",                               value: info.email                 },
+        { icon: Globe,      label: "Официальный сайт",                                value: info.website               },
+        { icon: Clock,      label: "Режим и график работы",                           value: info.work_hours            },
+        { icon: Hash,       label: "ИНН",                                             value: info.inn                   },
+        { icon: Hash,       label: "ОГРН",                                            value: info.ogrn                  },
+        { icon: Hash,       label: "КПП",                                             value: info.kpp                   },
+        { icon: Scale,      label: "Лицензия на осуществление образовательной деятельности", value: info.license_number ? (info.license_date ? `${info.license_number} от ${new Date(info.license_date).toLocaleDateString("ru-RU")}` : info.license_number) : undefined },
+        { icon: Award,      label: "Государственная аккредитация",                    value: info.accreditation_number  },
     ].filter(r => r.value);
 
     if (!rows.length) return null;
@@ -410,17 +411,17 @@ function BasicInfoBlock({ info }: { info: BasicInfoData }) {
             )}
             <dl className="divide-y divide-border/40 rounded-xl border border-border/60 overflow-hidden bg-white/60 dark:bg-card/40">
                 {rows.map(({ icon: Icon, label, value }) => (
-                    <div key={label} className="grid grid-cols-[auto_1fr] gap-3 items-start px-5 py-3 hover:bg-muted/30 transition-colors">
-                        <dt className="flex items-center gap-2 text-xs font-semibold text-muted-foreground whitespace-nowrap min-w-[200px]">
+                    <div key={label} className="grid grid-cols-1 md:grid-cols-[280px_1fr] gap-2 md:gap-4 items-start px-5 py-3 hover:bg-muted/30 transition-colors">
+                        <dt className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
                             <Icon className="w-3.5 h-3.5 shrink-0 text-primary/60" />
-                            {label}
+                            <span>{label}</span>
                         </dt>
                         <dd className="text-sm text-foreground font-medium">
-                            {label === "Сайт"
+                            {label === "Официальный сайт"
                                 ? <a href={value} target="_blank" rel="noreferrer" className="text-primary hover:underline">{value}</a>
                                 : label === "Электронная почта"
                                 ? <a href={`mailto:${value}`} className="text-primary hover:underline">{value}</a>
-                                : label === "Телефон" || label === "Факс"
+                                : label === "Контактный телефон" || label === "Факс"
                                 ? <a href={`tel:${value}`} className="text-primary hover:underline">{value}</a>
                                 : value}
                         </dd>
@@ -433,18 +434,21 @@ function BasicInfoBlock({ info }: { info: BasicInfoData }) {
 
 // ─── Список разделов ──────────────────────────────────────────────────────────
 const SECTIONS = [
-    { id: "basic",         title: "Основные сведения",     icon: Building2,  type: "basic"      },
-    { id: "structure",     title: "Структура и органы",    icon: Building2,  type: "text"       },
-    { id: "documents",     title: "Документы",             icon: FileText,   type: "text"       },
-    { id: "education",     title: "Образование",           icon: BookOpen,   type: "text"       },
-    { id: "standards",     title: "Стандарты",             icon: Award,      type: "text"       },
-    { id: "management",    title: "Руководство",           icon: UserCheck,  type: "management" },
-    { id: "teachers",      title: "Педагоги",              icon: Users,      type: "teachers"   },
-    { id: "facilities",    title: "Оснащение",             icon: Building2,  type: "text"       },
-    { id: "paid-services", title: "Платные услуги",        icon: Hash,       type: "text"       },
-    { id: "finance",       title: "Финансы",               icon: Scale,      type: "text"       },
-    { id: "vacancies",     title: "Вакансии",              icon: Users,      type: "text"       },
-    { id: "accessibility", title: "Доступность",           icon: MapPin,     type: "text"       },
+    { id: "basic",         title: "Основные сведения",                               icon: Building2,  type: "basic"      },
+    { id: "structure",     title: "Структура и органы управления",                   icon: Building2,  type: "text"       },
+    { id: "documents",     title: "Документы",                                       icon: FileText,   type: "text"       },
+    { id: "education",     title: "Образование",                                     icon: BookOpen,   type: "text"       },
+    { id: "management",    title: "Руководство",                                     icon: UserCheck,  type: "management" },
+    { id: "teachers",      title: "Педагогический состав",                           icon: Users,      type: "teachers"   },
+    { id: "facilities",    title: "Материально-техническое обеспечение",             icon: Building2,  type: "text"       },
+    { id: "paid-services", title: "Платные образовательные услуги",                  icon: Hash,       type: "text"       },
+    { id: "finance",       title: "Финансово-хозяйственная деятельность",            icon: Scale,      type: "text"       },
+    { id: "vacancies",     title: "Вакантные места для приема (перевода)",           icon: Users,      type: "text"       },
+    { id: "scholarships",  title: "Стипендии и меры поддержки обучающихся",          icon: Award,      type: "text"       },
+    { id: "accessibility", title: "Доступная среда",                                 icon: MapPin,     type: "text"       },
+    { id: "international", title: "Международное сотрудничество",                   icon: Globe,      type: "text"       },
+    { id: "catering",      title: "Организация питания",                             icon: Utensils,   type: "text"       },
+    { id: "standards",     title: "Образовательные стандарты и требования",          icon: Award,      type: "text"       },
 ];
 
 // ─── Основная страница ────────────────────────────────────────────────────────
@@ -528,10 +532,10 @@ export default function Svedeniya() {
                 return hasBasic || hasText || hasDocs;
             }
             if (s.id === "management") {
-                return managers.length > 0 || hasDocs;
+                return managers.length > 0 || hasDocs || !isHtmlEmpty(contentMap[s.id]);
             }
             if (s.id === "teachers") {
-                return teachers.length > 0 || hasDocs;
+                return teachers.length > 0 || hasDocs || !isHtmlEmpty(contentMap[s.id]);
             }
             const hasText = !isHtmlEmpty(contentMap[s.id]);
             return hasText || hasDocs;
@@ -638,51 +642,74 @@ export default function Svedeniya() {
                                                 <h2 className="text-xl font-bold text-foreground tracking-tight">{s.title}</h2>
                                             </div>
                                             <p className="text-[13px] text-muted-foreground font-medium mb-6 ml-12">
-                                                {s.id === "basic"         && "Ключевая информация об организации: наименование, адрес, контакты и реквизиты."}
-                                                {s.id === "structure"     && "Описание структуры управления, подразделений и органов управления."}
-                                                {s.id === "documents"     && "Учредительные документы, локальные акты, правила приёма, устав и прочее."}
-                                                {s.id === "education"     && "Сведения о реализуемых программах, формах обучения и возрастных группах."}
-                                                {s.id === "standards"     && "Информация о стандартах и используемых подходах к обучению."}
-                                                {s.id === "management"    && "Сведения о руководителях, контакты, образование."}
-                                                {s.id === "teachers"      && "Информация о педагогах, квалификации и направлениях работы."}
-                                                {s.id === "facilities"    && "Помещения, оборудование, учебные материалы и условия реализации."}
-                                                {s.id === "paid-services" && "Порядок оказания платных услуг, стоимость, договоры и условия."}
-                                                {s.id === "finance"       && "Сведения о финансировании, отчётности и хозяйственной деятельности."}
-                                                {s.id === "vacancies"     && "Информация о наличии свободных мест по программам."}
-                                                {s.id === "accessibility" && "Условия доступности для обучающихся с ОВЗ."}
+                                                {s.id === "basic"         && "Полное и сокращенное наименование, дата создания, учредители, адрес, контакты и реквизиты."}
+                                                {s.id === "structure"     && "Структура и органы управления образовательной организацией."}
+                                                {s.id === "documents"     && "Учредительные документы, локальные нормативные акты, правила приема и режим занятий."}
+                                                {s.id === "education"     && "Реализуемые образовательные программы, формы обучения, численность обучающихся и языки образования."}
+                                                {s.id === "management"    && "Руководитель образовательной организации и контактная информация."}
+                                                {s.id === "teachers"      && "Персональный состав педагогических работников и квалификация."}
+                                                {s.id === "facilities"    && "Материально-техническое обеспечение, оборудованные кабинеты и доступная среда."}
+                                                {s.id === "paid-services" && "Порядок оказания платных образовательных услуг, утверждение стоимости и договор."}
+                                                {s.id === "finance"       && "Информация об объеме образовательной деятельности, поступлении и расходовании средств."}
+                                                {s.id === "vacancies"     && "Количество вакантных мест для приема (перевода) по образовательным программам."}
+                                                {s.id === "scholarships"  && "Наличие и условия предоставления стипендий и мер поддержки обучающихся."}
+                                                {s.id === "accessibility" && "Специальные условия для получения образования инвалидами и лицами с ОВЗ."}
+                                                {s.id === "international" && "Сведения о заключенных договорах с иностранными и международными организациями."}
+                                                {s.id === "catering"      && "Организация и условия питания в образовательной организации."}
+                                                {s.id === "standards"     && "Федеральные государственные образовательные стандарты и требования."}
                                             </p>
 
                                             {/* ─── Основные сведения ─── */}
                                             {s.type === "basic" && (
-                                                basicInfo && Object.values(basicInfo).some(Boolean)
-                                                    ? <BasicInfoBlock info={basicInfo} />
-                                                    : contentMap[s.id]
-                                                        ? <div className="prose prose-sm max-w-none dark:prose-invert"
+                                                <div className="space-y-6">
+                                                    {basicInfo && Object.values(basicInfo).some(Boolean) && (
+                                                        <BasicInfoBlock info={basicInfo} />
+                                                    )}
+                                                    {contentMap[s.id] && !isHtmlEmpty(contentMap[s.id]) && (
+                                                        <div className="prose prose-sm max-w-none dark:prose-invert prose-headings:text-foreground prose-p:text-foreground/80 mt-4"
                                                             dangerouslySetInnerHTML={{ __html: contentMap[s.id] }} />
-                                                        : <Placeholder />
+                                                    )}
+                                                    {(!basicInfo || !Object.values(basicInfo).some(Boolean)) && isHtmlEmpty(contentMap[s.id]) && (
+                                                        <Placeholder />
+                                                    )}
+                                                </div>
                                             )}
 
                                             {/* ─── Руководство ─── */}
                                             {s.type === "management" && (
-                                                managers.length > 0
-                                                    ? <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                                                        {managers.map(p => <PersonCard key={p.id} p={p} onOpen={openPerson} />)}
-                                                    </div>
-                                                    : <Placeholder />
+                                                <div className="space-y-6">
+                                                    {contentMap[s.id] && !isHtmlEmpty(contentMap[s.id]) && (
+                                                        <div className="prose prose-sm max-w-none dark:prose-invert prose-headings:text-foreground prose-p:text-foreground/80"
+                                                            dangerouslySetInnerHTML={{ __html: contentMap[s.id] }} />
+                                                    )}
+                                                    {managers.length > 0 && (
+                                                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                                                            {managers.map(p => <PersonCard key={p.id} p={p} onOpen={openPerson} />)}
+                                                        </div>
+                                                    )}
+                                                    {!contentMap[s.id] && managers.length === 0 && <Placeholder />}
+                                                </div>
                                             )}
 
                                             {/* ─── Педагоги ─── */}
                                             {s.type === "teachers" && (
-                                                teachers.length > 0
-                                                    ? <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                                                        {teachers.map(p => <PersonCard key={p.id} p={p} onOpen={openPerson} />)}
-                                                    </div>
-                                                    : <Placeholder />
+                                                <div className="space-y-6">
+                                                    {contentMap[s.id] && !isHtmlEmpty(contentMap[s.id]) && (
+                                                        <div className="prose prose-sm max-w-none dark:prose-invert prose-headings:text-foreground prose-p:text-foreground/80"
+                                                            dangerouslySetInnerHTML={{ __html: contentMap[s.id] }} />
+                                                    )}
+                                                    {teachers.length > 0 && (
+                                                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                                                            {teachers.map(p => <PersonCard key={p.id} p={p} onOpen={openPerson} />)}
+                                                        </div>
+                                                    )}
+                                                    {!contentMap[s.id] && teachers.length === 0 && <Placeholder />}
+                                                </div>
                                             )}
 
                                             {/* ─── Текстовый раздел ─── */}
                                             {s.type === "text" && (
-                                                contentMap[s.id]
+                                                contentMap[s.id] && !isHtmlEmpty(contentMap[s.id])
                                                     ? <div className="prose prose-sm max-w-none dark:prose-invert prose-headings:text-foreground prose-p:text-foreground/80"
                                                         dangerouslySetInnerHTML={{ __html: contentMap[s.id] }} />
                                                     : <Placeholder />
