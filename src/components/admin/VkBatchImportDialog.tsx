@@ -30,12 +30,11 @@ type VkBatchImportDialogProps = {
 
 export function VkBatchImportDialog({ onImportSuccess }: VkBatchImportDialogProps) {
     const VK_PRESETS = [
-        { label: "slp23", url: "https://vk.com/slp23" },
         { label: "lichnostplus", url: "https://vk.ru/lichnostplus" },
     ];
 
     const [isOpen, setIsOpen] = useState(false);
-    const [url, setUrl] = useState("https://vk.com/slp23");
+    const [url, setUrl] = useState("https://vk.ru/lichnostplus");
     const [count, setCount] = useState(10);
     const [isLoading, setIsLoading] = useState(false);
     const [isImporting, setIsImporting] = useState(false);
@@ -165,7 +164,7 @@ export function VkBatchImportDialog({ onImportSuccess }: VkBatchImportDialogProp
                 onImportSuccess();
                 setIsOpen(false);
                 setPosts([]);
-                setUrl("https://vk.com/slp23");
+                setUrl("https://vk.ru/lichnostplus");
             }
         } catch (err: any) {
             toast({ title: "Ошибка пакетного импорта", description: err?.message, variant: "destructive" });
