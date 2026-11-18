@@ -8,14 +8,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
-import { useIsAdmin } from "@/hooks/use-is-admin";
 
 export default function AdminLogin() {
   const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
   const { userId } = useAuth();
-  const { isAdmin } = useIsAdmin(userId);
 
   const redirectPath = useMemo(() => {
     const params = new URLSearchParams(location.search);
@@ -69,7 +67,7 @@ export default function AdminLogin() {
               className="w-full"
               onClick={() => {
                 if (redirectPath) return navigate(redirectPath, { replace: true });
-                return navigate(isAdmin ? "/admin/dashboard" : "/admin/access", { replace: true });
+                return navigate("/admin/dashboard", { replace: true });
               }}
             >
               {redirectPath ? "Продолжить" : "Перейти в дашборд"}

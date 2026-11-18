@@ -22,21 +22,66 @@ export function useIsAdmin(userId: string | null): State {
       }
       setIsLoading(true);
 
-      // Use a SECURITY DEFINER DB function to avoid any RLS edge-cases.
-      const { data, error } = await supabase.rpc("has_role", {
-        _user_id: userId,
-        _role: "admin",
-      });
-      if (cancelled) return;
-      if (error) {
-        // If RLS blocks or any error occurs, treat as not admin.
-        setIsAdmin(false);
-        setIsLoading(false);
-        return;
+      // 1. Прямой запрос к user_roles (надёжнее, чем RPC с двойным overload)
+      try {
+        const { data: ur, error: urErr } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", userId)
+          .maybeSingle();
+
+        if (!urErr && ur && (ur as any).role === "admin") {
+          if (!cancelled) {
+            setIsAdmin(true);
+            setIsLoading(false);
+          }
+          return;
+        }
+      } catch {
+        // продолжаем к следующему варианту
       }
 
-      setIsAdmin(Boolean(data));
-      setIsLoading(false);
+      // 2. Проверка через profiles.role
+      try {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("role")
+          .eq("auth_id", userId)
+          .maybeSingle();
+
+        if (profile && (profile as any).role === "admin") {
+          if (!cancelled) {
+            setIsAdmin(true);
+            setIsLoading(false);
+          }
+          return;
+        }
+      } catch {
+        // продолжаем
+      }
+
+      // 3. Попытка через RPC has_role (может вернуть PGRST203, тогда игнорируем)
+      try {
+        const { data, error } = await supabase.rpc("has_role", {
+          _user_id: userId,
+          _role: "admin",
+        });
+
+        if (!error && data === true) {
+          if (!cancelled) {
+            setIsAdmin(true);
+            setIsLoading(false);
+          }
+          return;
+        }
+      } catch {
+        // игнорируем
+      }
+
+      if (!cancelled) {
+        setIsAdmin(false);
+        setIsLoading(false);
+      }
     };
     run();
     return () => {
