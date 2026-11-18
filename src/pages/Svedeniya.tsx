@@ -378,12 +378,125 @@ function PersonCard({ p, onOpen }: { p: Person; onOpen: (p: Person) => void }) {
     );
 }
 
+function formatDateString(str?: string) {
+    if (!str) return undefined;
+    if (str.includes(".") && !str.includes("-")) return str;
+    const parts = str.split("-");
+    if (parts.length === 3) {
+        return `${parts[2].padStart(2, "0")}.${parts[1].padStart(2, "0")}.${parts[0]}`;
+    }
+    const d = new Date(str);
+    return isNaN(d.getTime()) ? str : d.toLocaleDateString("ru-RU");
+}
+
+const FALLBACK_MANAGERS: Person[] = [
+    {
+        id: "fb-mgmt-1",
+        name: "Киян Юлия Юрьевна",
+        title: "Директор",
+        description: "Руководитель ЧОУ СОШ «Личность Плюс».",
+        image_url: null,
+        video_url: null,
+        sort_order: 1,
+        role_type: "management",
+        phone: "+7 (928) 261-99-28",
+        email: "slichnost5@mail.ru",
+        education: "Высшее педагогическое",
+        category: "Высшая категория",
+        experience: "Более 15 лет",
+        subjects: null,
+    },
+];
+
+const FALLBACK_TEACHERS: Person[] = [
+    {
+        id: "fb-tch-1",
+        name: "Иманзулова Вера Олеговна",
+        title: "Заместитель директора по учебной части, преподаватель программы «ПЛЮС-3»",
+        description: null,
+        image_url: null,
+        video_url: null,
+        sort_order: 1,
+        role_type: "teacher",
+        phone: null,
+        email: null,
+        education: "Высшее педагогическое",
+        category: "Высшая категория",
+        experience: null,
+        subjects: "ПЛЮС-3",
+    },
+    {
+        id: "fb-tch-2",
+        name: "Сабитова Кристина Александровна",
+        title: "Преподаватель программы «Team Up»",
+        description: null,
+        image_url: null,
+        video_url: null,
+        sort_order: 2,
+        role_type: "teacher",
+        phone: null,
+        email: null,
+        education: "Высшее педагогическое",
+        category: null,
+        experience: null,
+        subjects: "Английский язык, Team Up",
+    },
+    {
+        id: "fb-tch-3",
+        name: "Дубровина Мария Андреевна",
+        title: "Преподаватель программы «ПЛЮС-3»",
+        description: null,
+        image_url: null,
+        video_url: null,
+        sort_order: 3,
+        role_type: "teacher",
+        phone: null,
+        email: null,
+        education: "Высшее педагогическое",
+        category: null,
+        experience: null,
+        subjects: "ПЛЮС-3",
+    },
+    {
+        id: "fb-tch-4",
+        name: "Беленко Анастасия Анатольевна",
+        title: "Преподаватель программы «ПЛЮС-2»",
+        description: null,
+        image_url: null,
+        video_url: null,
+        sort_order: 4,
+        role_type: "teacher",
+        phone: null,
+        email: null,
+        education: "Высшее педагогическое",
+        category: null,
+        experience: null,
+        subjects: "ПЛЮС-2",
+    },
+    {
+        id: "fb-tch-5",
+        name: "Нестеренко Ирина Андреевна",
+        title: "Преподаватель программы «Олимпиадная математика»",
+        description: null,
+        image_url: null,
+        video_url: null,
+        sort_order: 5,
+        role_type: "teacher",
+        phone: null,
+        email: null,
+        education: "Высшее",
+        category: null,
+        experience: null,
+        subjects: "Математика, Олимпиадная математика",
+    },
+];
+
 // ─── Основные сведения ────────────────────────────────────────────────────────
 function BasicInfoBlock({ info }: { info: BasicInfoData }) {
     const rows: { icon: React.ElementType; label: string; value: string | undefined }[] = [
         { icon: Building2,  label: "Полное наименование",                             value: info.full_name             },
         { icon: Building2,  label: "Сокращенное наименование",                         value: info.short_name            },
-        { icon: Calendar,   label: "Дата создания образовательной организации",        value: info.created_date ? (info.created_date.includes("2026") && !info.created_date.includes("-") ? info.created_date : new Date(info.created_date).toLocaleDateString("ru-RU")) : undefined },
+        { icon: Calendar,   label: "Дата создания образовательной организации",        value: formatDateString(info.created_date) },
         { icon: Users,      label: "Учредитель (учредители)",                         value: info.founder               },
         { icon: MapPin,     label: "Место нахождения",                                value: info.legal_address         },
         { icon: MapPin,     label: "Место осуществления образовательной деятельности",  value: info.actual_address        },
@@ -396,7 +509,7 @@ function BasicInfoBlock({ info }: { info: BasicInfoData }) {
         { icon: Hash,       label: "ИНН",                                             value: info.inn                   },
         { icon: Hash,       label: "ОГРН",                                            value: info.ogrn                  },
         { icon: Hash,       label: "КПП",                                             value: info.kpp                   },
-        { icon: Scale,      label: "Лицензия на осуществление образовательной деятельности", value: info.license_number ? (info.license_date ? `${info.license_number} от ${new Date(info.license_date).toLocaleDateString("ru-RU")}` : info.license_number) : undefined },
+        { icon: Scale,      label: "Лицензия на осуществление образовательной деятельности", value: info.license_number ? (info.license_date ? `${info.license_number} от ${formatDateString(info.license_date)}` : info.license_number) : undefined },
         { icon: Award,      label: "Государственная аккредитация",                    value: info.accreditation_number  },
     ].filter(r => r.value);
 
@@ -481,25 +594,27 @@ export default function Svedeniya() {
         catch { return null; }
     }, [rawContent]);
 
-    const { data: managers = [] } = useQuery<Person[]>({
+    const { data: dbManagers = [] } = useQuery<Person[]>({
         queryKey: ["persons_public", "management"],
         queryFn: async () => {
             const { data, error } = await supabase.from("teachers" as any)
                 .select("*").eq("role_type", "management").order("sort_order");
-            if (error) { console.error(error); return []; }
+            if (error) { return []; }
             return (data ?? []) as Person[];
         },
     });
+    const managers = dbManagers.length > 0 ? dbManagers : FALLBACK_MANAGERS;
 
-    const { data: teachers = [] } = useQuery<Person[]>({
+    const { data: dbTeachers = [] } = useQuery<Person[]>({
         queryKey: ["persons_public", "teacher"],
         queryFn: async () => {
             const { data, error } = await supabase.from("teachers" as any)
                 .select("*").eq("role_type", "teacher").order("sort_order");
-            if (error) { console.error(error); return []; }
+            if (error) { return []; }
             return (data ?? []) as Person[];
         },
     });
+    const teachers = dbTeachers.length > 0 ? dbTeachers : FALLBACK_TEACHERS;
 
     const { data: allDocs = [] } = useQuery<DocRow[]>({
         queryKey: ["svedeniya_documents_all_public"],

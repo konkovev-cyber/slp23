@@ -34,3 +34,7 @@ _tools/
 # Large files
 *.rar
 *.apk
+
+# Local / Agent tools
+.kilo/
+supabase/.temp/

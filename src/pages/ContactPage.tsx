@@ -116,7 +116,7 @@ export default function ContactPage() {
                                             <div>
                                                 <div className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-0.5 flex items-center gap-2">
                                                     Мессенджер MAX
-                                                    <span className="text-[9px] font-bold uppercase tracking-wider bg-primary/10 text-primary border border-primary/20 rounded-full px-2 py-0.5">основной</span>
+                                                    <span className="text-[9px] font-bold tracking-wider bg-primary/10 text-primary border border-primary/20 rounded-full px-2 py-0.5 whitespace-nowrap">Быстрая связь с нами</span>
                                                 </div>
                                                 <a href={MAX_URL} target="_blank" rel="noopener noreferrer" className="text-sm font-bold text-primary hover:text-blue-600 dark:hover:text-blue-400 transition-all">Написать нам в MAX →</a>
                                             </div>

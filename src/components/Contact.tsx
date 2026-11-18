@@ -85,7 +85,7 @@ const Contact = () => {
                   <div>
                     <h4 className="text-foreground font-bold text-sm mb-0.5 tracking-tight flex items-center gap-2">
                       Мессенджер MAX
-                      <span className="text-[9px] font-bold uppercase tracking-wider bg-primary/10 text-primary border border-primary/20 rounded-full px-2 py-0.5">основной</span>
+                      <span className="text-[9px] font-bold tracking-wider bg-primary/10 text-primary border border-primary/20 rounded-full px-2 py-0.5 whitespace-nowrap">Быстрая связь с нами</span>
                     </h4>
                     <a href={MAX_URL} target="_blank" rel="noopener noreferrer" className="text-xs font-bold text-primary hover:text-blue-600 dark:hover:text-blue-400 transition-colors tracking-tight">
                       Написать нам в MAX →

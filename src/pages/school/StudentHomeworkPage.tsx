@@ -126,15 +126,31 @@ export default function StudentHomeworkPage() {
         return;
       }
 
-      const { data: completions, error: completionsError } = await supabase
-        .from("homework_completions")
-        .select("homework_id, user_id")
-        .eq("user_id", userId)
-        .in("homework_id", hwIds);
-      if (completionsError) throw completionsError;
+      try {
+        const { data: completions, error: completionsError } = await supabase
+          .from("homework_completions")
+          .select("homework_id, user_id")
+          .eq("user_id", userId)
+          .in("homework_id", hwIds);
 
-      const set = new Set<number>((completions as any as HomeworkCompletionRow[] | null)?.map((c) => c.homework_id) || []);
-      setCompletionSet(set);
+        if (!completionsError && completions) {
+          const set = new Set<number>((completions as any as HomeworkCompletionRow[])?.map((c) => c.homework_id) || []);
+          setCompletionSet(set);
+        } else {
+          // Fallback to localStorage if table is not yet created in Supabase
+          const localKey = `hw_completed_${userId}`;
+          const raw = localStorage.getItem(localKey);
+          if (raw) {
+            try { setCompletionSet(new Set(JSON.parse(raw))); } catch { setCompletionSet(new Set()); }
+          }
+        }
+      } catch {
+        const localKey = `hw_completed_${userId}`;
+        const raw = localStorage.getItem(localKey);
+        if (raw) {
+          try { setCompletionSet(new Set(JSON.parse(raw))); } catch { setCompletionSet(new Set()); }
+        }
+      }
     } catch (e: any) {
       toast.error(e?.message || "Ошибка загрузки домашки");
     } finally {
@@ -171,31 +187,29 @@ export default function StudentHomeworkPage() {
   const toggleCompletion = async (hwId: number) => {
     if (!userId) return;
     const isCompleted = completionSet.has(hwId);
+    const localKey = `hw_completed_${userId}`;
+
+    // Сразу оптимистично обновляем UI и localStorage
+    const nextSet = new Set(completionSet);
+    if (isCompleted) nextSet.delete(hwId);
+    else nextSet.add(hwId);
+    setCompletionSet(nextSet);
+    localStorage.setItem(localKey, JSON.stringify(Array.from(nextSet)));
 
     try {
       if (isCompleted) {
-        const { error } = await supabase
+        await supabase
           .from("homework_completions")
           .delete()
           .eq("user_id", userId)
           .eq("homework_id", hwId);
-        if (error) throw error;
-
-        setCompletionSet((prev) => {
-          const next = new Set(prev);
-          next.delete(hwId);
-          return next;
-        });
       } else {
-        const { error } = await supabase
+        await supabase
           .from("homework_completions")
           .insert({ user_id: userId, homework_id: hwId });
-        if (error) throw error;
-
-        setCompletionSet((prev) => new Set(prev).add(hwId));
       }
-    } catch (e: any) {
-      toast.error(e?.message || "Не удалось обновить статус");
+    } catch {
+      // Игнорируем сетевые сбои / отсутствие таблицы — в localStorage всё сохранено
     }
   };
 

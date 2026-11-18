@@ -70,7 +70,7 @@ export default function AdminSvedeniya() {
 
     // ── сохранение ──
     const saveMutation = useMutation({
-        mutationFn: async () => {
+        mutationFn: async (overrideContentMap?: Record<string, string>) => {
             const { data: existing } = await supabase
                 .from("site_content")
                 .select("id")
@@ -78,7 +78,7 @@ export default function AdminSvedeniya() {
                 .maybeSingle();
 
             const fullContent = {
-                ...contentMap,
+                ...(overrideContentMap || contentMap),
                 __basic_form: JSON.stringify(basicInfo),
             };
 
@@ -122,9 +122,10 @@ export default function AdminSvedeniya() {
     };
     const cancelEdit = (id: string) => setEditing(p => ({ ...p, [id]: false }));
     const saveEdit = (id: string) => {
-        setContentMap(prev => ({ ...prev, [id]: draft[id] || "" }));
+        const updated = { ...contentMap, [id]: draft[id] || "" };
+        setContentMap(updated);
         setEditing(p => ({ ...p, [id]: false }));
-        // сохраняем через общую кнопку "Сохранить всё"
+        saveMutation.mutate(updated);
     };
 
     return (

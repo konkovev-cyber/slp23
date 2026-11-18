@@ -24,11 +24,11 @@ async function checkTables() {
     }
 
     console.log('Existing tables:');
-    data.forEach((t: any) => console.log('- ' + t.table_name));
+    data.forEach((t) => console.log('- ' + t.table_name));
 
     const requiredTables = ['posts', 'post_media', 'profiles', 'user_roles'];
     requiredTables.forEach(rt => {
-        if (!data.some((t: any) => t.table_name === rt)) {
+        if (!data.some((t) => t.table_name === rt)) {
             console.warn(`WARNING: Table "${rt}" is missing!`);
         } else {
             console.log(`OK: Table "${rt}" exists.`);

@@ -13,7 +13,12 @@ import {
   Activity,
   UserPlus,
   BookOpen,
-  Trophy
+  Trophy,
+  Inbox,
+  Phone,
+  Mail,
+  Calendar,
+  MessageSquare
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -26,6 +31,7 @@ export default function AdminDashboard() {
       const { count: postsCount } = await supabase.from("posts" as any).select("*", { count: 'exact', head: true });
       const { count: teachersCount } = await supabase.from("teachers" as any).select("*", { count: 'exact', head: true });
       const { count: honorCount } = await supabase.from("honor_board" as any).select("*", { count: 'exact', head: true });
+      const { count: requestsCount } = await supabase.from("contact_requests" as any).select("*", { count: 'exact', head: true });
       
       // School stats
       const { count: sysTeachersCount } = await supabase.from("profiles").select("*", { count: 'exact', head: true }).eq("role", "teacher");
@@ -46,12 +52,26 @@ export default function AdminDashboard() {
         posts: postsCount || 0,
         teachers: teachersCount || 0,
         honor: honorCount || 0,
+        requests: requestsCount || 0,
         sysTeachers: sysTeachersCount || 0,
         students: studentsCount || 0,
         classes: classesCount || 0,
         lessons: lessonsCount || 0,
         avgGrade: avg,
       };
+    },
+  });
+
+  const { data: recentRequests = [], isLoading: loadingRequests } = useQuery({
+    queryKey: ["recent_contact_requests"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("contact_requests" as any)
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(10);
+      if (error) return [];
+      return (data || []) as any[];
     },
   });
 
@@ -227,6 +247,58 @@ export default function AdminDashboard() {
           </Card>
         ))}
       </div>
+
+      {/* Contact Requests Widget */}
+      <Card className="p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-semibold flex items-center gap-2">
+            <Inbox className="w-4 h-4 text-primary" />
+            Заявки с сайта
+            {stats?.requests !== undefined && (
+              <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-mono">
+                {stats.requests}
+              </span>
+            )}
+          </h3>
+        </div>
+        {loadingRequests ? (
+          <div className="flex justify-center py-6">
+            <Activity className="w-5 h-5 animate-spin text-muted-foreground" />
+          </div>
+        ) : recentRequests.length === 0 ? (
+          <p className="text-muted-foreground text-sm py-4 text-center">Заявок пока нет</p>
+        ) : (
+          <div className="divide-y max-h-80 overflow-y-auto">
+            {recentRequests.map((r: any) => (
+              <div key={r.id} className="py-3 flex flex-col gap-1">
+                <div className="flex flex-wrap items-center gap-3">
+                  <span className="font-semibold text-sm">{r.name}</span>
+                  <a href={`tel:${r.phone}`} className="text-xs text-primary flex items-center gap-1 hover:underline">
+                    <Phone className="w-3 h-3" />{r.phone}
+                  </a>
+                  {r.email && (
+                    <a href={`mailto:${r.email}`} className="text-xs text-primary flex items-center gap-1 hover:underline">
+                      <Mail className="w-3 h-3" />{r.email}
+                    </a>
+                  )}
+                  <span className="text-xs text-muted-foreground ml-auto flex items-center gap-1">
+                    <Calendar className="w-3 h-3" />
+                    {new Date(r.created_at).toLocaleDateString('ru-RU')}
+                  </span>
+                </div>
+                {r.child_age && (
+                  <p className="text-xs text-muted-foreground">Возраст ребёнка: {r.child_age}</p>
+                )}
+                {r.message && (
+                  <p className="text-xs text-muted-foreground line-clamp-2 flex items-start gap-1">
+                    <MessageSquare className="w-3 h-3 mt-0.5 shrink-0" />{r.message}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </Card>
 
       <div className="grid gap-6 md:grid-cols-3">
         <Card className="md:col-span-2 p-6 bg-primary/[0.02] border-dashed border-2">
