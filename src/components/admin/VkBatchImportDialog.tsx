@@ -29,8 +29,13 @@ type VkBatchImportDialogProps = {
 };
 
 export function VkBatchImportDialog({ onImportSuccess }: VkBatchImportDialogProps) {
+    const VK_PRESETS = [
+        { label: "slp23", url: "https://vk.com/slp23" },
+        { label: "lichnostplus", url: "https://vk.ru/lichnostplus" },
+    ];
+
     const [isOpen, setIsOpen] = useState(false);
-    const [url, setUrl] = useState("");
+    const [url, setUrl] = useState("https://vk.com/slp23");
     const [count, setCount] = useState(10);
     const [isLoading, setIsLoading] = useState(false);
     const [isImporting, setIsImporting] = useState(false);
@@ -160,7 +165,7 @@ export function VkBatchImportDialog({ onImportSuccess }: VkBatchImportDialogProp
                 onImportSuccess();
                 setIsOpen(false);
                 setPosts([]);
-                setUrl("");
+                setUrl("https://vk.com/slp23");
             }
         } catch (err: any) {
             toast({ title: "Ошибка пакетного импорта", description: err?.message, variant: "destructive" });
@@ -194,6 +199,18 @@ export function VkBatchImportDialog({ onImportSuccess }: VkBatchImportDialogProp
                                 onChange={(e) => setUrl(e.target.value)}
                                 onKeyDown={(e) => e.key === "Enter" && handleFetch()}
                             />
+                            <div className="flex gap-1 pt-0.5">
+                                {VK_PRESETS.map((p) => (
+                                    <button
+                                        key={p.url}
+                                        type="button"
+                                        onClick={() => setUrl(p.url)}
+                                        className={`text-[11px] px-2 py-0.5 rounded border transition-colors ${url === p.url ? "bg-blue-100 border-blue-400 text-blue-700 font-medium" : "border-muted-foreground/30 text-muted-foreground hover:border-blue-400 hover:text-blue-600"}`}
+                                    >
+                                        {p.label}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
                         <div className="w-24 space-y-1">
                             <Label>Кол-во</Label>
