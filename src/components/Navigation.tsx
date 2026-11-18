@@ -60,12 +60,15 @@ const Navigation = () => {
   }, [visibility]);
 
   const svedeniyaItems = [
+    { label: "Сведения об ОО (Главная)", href: "/svedeniya" },
     { label: "Основные сведения", href: "/svedeniya#basic" },
     { label: "Структура и органы", href: "/svedeniya#structure" },
     { label: "Документы", href: "/svedeniya#documents" },
     { label: "Образование", href: "/svedeniya#education" },
     { label: "Руководство", href: "/svedeniya#management" },
-    { label: "Пед. состав", href: "/svedeniya#teachers" },
+    { label: "Педагогический состав", href: "/svedeniya#teachers" },
+    { label: "МТО и доступная среда", href: "/svedeniya#facilities" },
+    { label: "Платные услуги", href: "/svedeniya#paid-services" },
   ];
 
   const navLinkClass = "text-[11px] font-bold uppercase tracking-widest text-foreground/80 hover:text-primary px-4 h-10 flex items-center transition-all hover:bg-transparent focus:bg-transparent data-[state=open]:text-primary cursor-pointer outline-none";
@@ -141,7 +144,7 @@ const Navigation = () => {
 
               <DropdownMenu>
                 <DropdownMenuTrigger className={cn(navLinkClass, "gap-1")}>
-                  Сведения <ChevronDown className="w-3 h-3 mt-0.5" />
+                  Сведения об ОО <ChevronDown className="w-3 h-3 mt-0.5" />
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-[240px] p-1.5 bg-card/95 backdrop-blur-md border border-border rounded-xl shadow-xl mt-2 animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 duration-200">
                   {svedeniyaItems.map((item) => (
@@ -268,7 +271,7 @@ const Navigation = () => {
                   aria-expanded={isSvedeniyaMenuOpen}
                   aria-label="Меню раздела Сведения"
                 >
-                  <span>Сведения</span>
+                  <span>Сведения об организации</span>
                   <ChevronDown className={cn("w-5 h-5 transition-all", isSvedeniyaMenuOpen && "rotate-180")} aria-hidden="true" />
                 </button>
                 <AnimatePresence>

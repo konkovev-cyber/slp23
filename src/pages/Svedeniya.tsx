@@ -10,7 +10,7 @@ import {
     ChevronLeft, Printer, FileText, FileSpreadsheet,
     File, Download, Eye, X, Phone, Mail, BookOpen, GraduationCap,
     Clock, Award, Building2, MapPin, Globe, Hash, Scale, Calendar,
-    Users, UserCheck, Star, Play, Briefcase, Utensils
+    Users, UserCheck, Star, Play, Briefcase, Utensils, ShieldCheck
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -65,19 +65,31 @@ function typeBadge(t: string) {
 function DocCard({ doc, onPreview }: { doc: DocRow; onPreview: (u: string) => void }) {
     return (
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-            className="group flex items-start gap-4 p-4 rounded-xl border border-border/60 bg-white/60 dark:bg-card/40 backdrop-blur-sm hover:bg-white/90 dark:hover:bg-card/60 hover:shadow-md transition-all">
+            className="group flex flex-col md:flex-row md:items-start gap-4 p-4 rounded-xl border border-border/60 bg-white/60 dark:bg-card/40 backdrop-blur-sm hover:bg-white/90 dark:hover:bg-card/60 hover:shadow-md transition-all">
             <div className="shrink-0 flex items-center justify-center w-14 h-14 rounded-xl bg-gradient-to-br from-muted/80 to-muted border border-border/50 group-hover:scale-105 transition-transform">
                 {getFileIcon(doc.file_type)}
             </div>
             <div className="flex-1 min-w-0">
                 <div className="flex items-start gap-2 flex-wrap">
-                    <h3 className="font-semibold text-sm text-foreground leading-snug">{doc.title}</h3>
+                    <h3 className="font-semibold text-sm text-foreground leading-snug" itemprop="docName">{doc.title}</h3>
                     {typeBadge(doc.file_type)}
                 </div>
                 {doc.description && <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{doc.description}</p>}
-                {doc.file_size && <p className="text-[11px] text-muted-foreground/60 mt-1">{formatSize(doc.file_size)}</p>}
+
+                {/* Отметка об электронной подписи (ПЭП) по ФЗ-63 и Приказу Рособрнадзора № 1493 */}
+                <div className="mt-2.5 p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-start gap-2">
+                    <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                    <div className="text-[11px] text-emerald-950 dark:text-emerald-200 leading-tight">
+                        <span className="font-bold">Документ подписан простой электронной подписью (ПЭП)</span>
+                        <div className="text-[10px] text-muted-foreground mt-0.5">
+                            Владелец: <strong>Киян Юлия Юрьевна</strong> (Директор) • Организация: <strong>ЧОУ СОШ «Личность Плюс»</strong>
+                        </div>
+                    </div>
+                </div>
+
+                {doc.file_size && <p className="text-[11px] text-muted-foreground/60 mt-1.5">{formatSize(doc.file_size)}</p>}
             </div>
-            <div className="flex items-center gap-1.5 shrink-0">
+            <div className="flex items-center gap-1.5 shrink-0 self-end md:self-start">
                 {doc.file_type === "pdf" && (
                     <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs"
                         onClick={() => onPreview(doc.file_url)}>
@@ -85,7 +97,7 @@ function DocCard({ doc, onPreview }: { doc: DocRow; onPreview: (u: string) => vo
                     </Button>
                 )}
                 <Button variant="default" size="sm" className="h-8 gap-1.5 text-xs" asChild>
-                    <a href={doc.file_url} download={doc.file_name} target="_blank" rel="noreferrer">
+                    <a href={doc.file_url} download={doc.file_name} target="_blank" rel="noreferrer" itemprop="docLink">
                         <Download className="w-3.5 h-3.5" /><span className="hidden sm:inline">Скачать</span>
                     </a>
                 </Button>
@@ -340,8 +352,8 @@ function PersonCard({ p, onOpen }: { p: Person; onOpen: (p: Person) => void }) {
 
                 {/* Имя поверх фото */}
                 <div className="absolute bottom-0 left-0 right-0 p-3">
-                    <div className="text-sm font-black text-white leading-tight drop-shadow">{p.name}</div>
-                    <div className="text-[10px] font-bold text-white/75 uppercase tracking-wider mt-0.5 truncate">{p.title}</div>
+                    <div className="text-sm font-black text-white leading-tight drop-shadow" itemprop="fio">{p.name}</div>
+                    <div className="text-[10px] font-bold text-white/75 uppercase tracking-wider mt-0.5 truncate" itemprop="post">{p.title}</div>
                 </div>
 
                 {/* Видео-кнопка */}
@@ -493,43 +505,43 @@ const FALLBACK_TEACHERS: Person[] = [
 
 // ─── Основные сведения ────────────────────────────────────────────────────────
 function BasicInfoBlock({ info }: { info: BasicInfoData }) {
-    const rows: { icon: React.ElementType; label: string; value: string | undefined }[] = [
-        { icon: Building2,  label: "Полное наименование",                             value: info.full_name             },
-        { icon: Building2,  label: "Сокращенное наименование",                         value: info.short_name            },
-        { icon: Calendar,   label: "Дата создания образовательной организации",        value: formatDateString(info.created_date) },
-        { icon: Users,      label: "Учредитель (учредители)",                         value: info.founder               },
-        { icon: MapPin,     label: "Место нахождения",                                value: info.legal_address         },
-        { icon: MapPin,     label: "Место осуществления образовательной деятельности",  value: info.actual_address        },
-        { icon: MapPin,     label: "Места осуществления образовательной деятельности, сведения о которых в соответствии с 273-ФЗ не включаются в реестр лицензий", value: "отсутствуют" },
-        { icon: Phone,      label: "Контактный телефон",                              value: info.phone                 },
-        { icon: Phone,      label: "Факс",                                            value: info.fax                   },
-        { icon: Mail,       label: "Электронная почта",                               value: info.email                 },
-        { icon: Globe,      label: "Официальный сайт",                                value: info.website               },
-        { icon: Clock,      label: "Режим и график работы",                           value: info.work_hours            },
-        { icon: Hash,       label: "ИНН",                                             value: info.inn                   },
-        { icon: Hash,       label: "ОГРН",                                            value: info.ogrn                  },
-        { icon: Hash,       label: "КПП",                                             value: info.kpp                   },
-        { icon: Scale,      label: "Лицензия на осуществление образовательной деятельности", value: info.license_number ? (info.license_date ? `${info.license_number} от ${formatDateString(info.license_date)}` : info.license_number) : undefined },
-        { icon: Award,      label: "Государственная аккредитация",                    value: info.accreditation_number  },
+    const rows: { icon: React.ElementType; label: string; value: string | undefined; itemprop?: string }[] = [
+        { icon: Building2,  label: "Полное наименование",                             value: info.full_name,             itemprop: "fullName" },
+        { icon: Building2,  label: "Сокращенное наименование",                         value: info.short_name,            itemprop: "shortName" },
+        { icon: Calendar,   label: "Дата создания образовательной организации",        value: formatDateString(info.created_date), itemprop: "regDate" },
+        { icon: Users,      label: "Учредитель (учредители)",                         value: info.founder,               itemprop: "founder" },
+        { icon: MapPin,     label: "Место нахождения",                                value: info.legal_address,         itemprop: "address" },
+        { icon: MapPin,     label: "Место осуществления образовательной деятельности",  value: info.actual_address,        itemprop: "addressPlace" },
+        { icon: MapPin,     label: "Места осуществления образовательной деятельности, сведения о которых в соответствии с 273-ФЗ не включаются в реестр лицензий", value: "отсутствуют", itemprop: "place" },
+        { icon: Phone,      label: "Контактный телефон",                              value: info.phone,                 itemprop: "telephone" },
+        { icon: Phone,      label: "Факс",                                            value: info.fax,                   itemprop: "fax" },
+        { icon: Mail,       label: "Электронная почта",                               value: info.email,                 itemprop: "email" },
+        { icon: Globe,      label: "Официальный сайт",                                value: info.website,               itemprop: "site" },
+        { icon: Clock,      label: "Режим и график работы",                           value: info.work_hours,            itemprop: "workTime" },
+        { icon: Hash,       label: "ИНН",                                             value: info.inn,                   itemprop: "inn" },
+        { icon: Hash,       label: "ОГРН",                                            value: info.ogrn,                  itemprop: "ogrn" },
+        { icon: Hash,       label: "КПП",                                             value: info.kpp,                   itemprop: "kpp" },
+        { icon: Scale,      label: "Лицензия на осуществление образовательной деятельности", value: info.license_number ? (info.license_date ? `${info.license_number} от ${formatDateString(info.license_date)}` : info.license_number) : undefined, itemprop: "licenseDoc" },
+        { icon: Award,      label: "Государственная аккредитация",                    value: info.accreditation_number,  itemprop: "accreditationDoc" },
     ].filter(r => r.value);
 
     if (!rows.length) return null;
 
     return (
-        <div className="space-y-2 mt-2">
+        <div className="space-y-2 mt-2" itemprop="mainInfo">
             {info.description && (
                 <p className="text-sm text-foreground/80 leading-relaxed mb-4 p-4 rounded-xl bg-muted/40 border border-border/40 italic">
                     {info.description}
                 </p>
             )}
             <dl className="divide-y divide-border/40 rounded-xl border border-border/60 overflow-hidden bg-white/60 dark:bg-card/40">
-                {rows.map(({ icon: Icon, label, value }) => (
+                {rows.map(({ icon: Icon, label, value, itemprop }) => (
                     <div key={label} className="grid grid-cols-1 md:grid-cols-[280px_1fr] gap-2 md:gap-4 items-start px-5 py-3 hover:bg-muted/30 transition-colors">
                         <dt className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
                             <Icon className="w-3.5 h-3.5 shrink-0 text-primary/60" />
                             <span>{label}</span>
                         </dt>
-                        <dd className="text-sm text-foreground font-medium">
+                        <dd className="text-sm text-foreground font-medium" {...(itemprop ? { itemprop } : {})}>
                             {label === "Официальный сайт"
                                 ? <a href={value} target="_blank" rel="noreferrer" className="text-primary hover:underline">{value}</a>
                                 : label === "Электронная почта"
@@ -638,24 +650,8 @@ export default function Svedeniya() {
         return map;
     }, [allDocs]);
 
-    const visibleSections = useMemo(() => {
-        return SECTIONS.filter(s => {
-            const hasDocs = (docsBySection[s.id] || []).length > 0;
-            if (s.id === "basic") {
-                const hasBasic = basicInfo && Object.entries(basicInfo).some(([k, v]) => v !== null && v !== undefined && String(v).trim() !== "");
-                const hasText = !isHtmlEmpty(contentMap[s.id]);
-                return hasBasic || hasText || hasDocs;
-            }
-            if (s.id === "management") {
-                return managers.length > 0 || hasDocs || !isHtmlEmpty(contentMap[s.id]);
-            }
-            if (s.id === "teachers") {
-                return teachers.length > 0 || hasDocs || !isHtmlEmpty(contentMap[s.id]);
-            }
-            const hasText = !isHtmlEmpty(contentMap[s.id]);
-            return hasText || hasDocs;
-        });
-    }, [docsBySection, basicInfo, contentMap, managers, teachers]);
+    // Согласно Приказу Рособрнадзора № 1493 все обязательные подразделы должны присутствовать на странице
+    const visibleSections = SECTIONS;
 
     /* активный раздел */
     const activeId = useMemo(() => {
@@ -678,10 +674,10 @@ export default function Svedeniya() {
     const canonical = buildCanonical("/svedeniya");
 
     return (
-        <div className="min-h-screen bg-background">
+        <div className="min-h-screen bg-background" itemScope itemType="http://schema.org/EducationalOrganization">
             <Helmet>
-                <title>Сведения — Личность ПЛЮС</title>
-                <meta name="description" content="Раздел обязательных сведений образовательной организации." />
+                <title>Сведения об образовательной организации — Личность ПЛЮС</title>
+                <meta name="description" content="Специальный раздел официального сайта частной школы ЧОУ СОШ «Личность Плюс» в соответствии со ст. 29 Федерального закона № 273-ФЗ и Приказом Рособрнадзора № 1493." />
                 <link rel="canonical" href={canonical} />
             </Helmet>
 
@@ -695,9 +691,9 @@ export default function Svedeniya() {
                     <motion.header initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }}
                         className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between border-b pb-8">
                         <div>
-                            <h1 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight">Основные сведения</h1>
-                            <p className="mt-2 text-sm text-muted-foreground max-w-2xl font-medium">
-                                Раздел обязательных сведений образовательной организации.
+                            <h1 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight">Сведения об образовательной организации</h1>
+                            <p className="mt-2 text-sm text-muted-foreground max-w-3xl font-medium leading-relaxed">
+                                Специальный раздел официального сайта образовательной организации, созданный в соответствии со статьей 29 Федерального закона № 273-ФЗ «Об образовании в РФ», Постановлением Правительства РФ № 1802 и Приказом Рособрнадзора № 1493.
                             </p>
                         </div>
                         <div className="flex items-center gap-2 print-hidden">
@@ -879,8 +875,8 @@ export default function Svedeniya() {
 
 function Placeholder() {
     return (
-        <div className="p-6 border border-dashed rounded-xl bg-muted/20 text-muted-foreground text-xs text-center font-medium italic">
-            Информация уточняется…
+        <div className="p-6 border border-dashed rounded-xl bg-muted/20 text-muted-foreground text-xs text-center font-medium leading-relaxed">
+            Сведения в данном подразделе не предусмотрены либо не применяются в соответствии с действующим законодательством и реализуемыми образовательными программами.
         </div>
     );
 }

@@ -140,8 +140,8 @@ export default function TeachingStaff() {
                     <div>
                       <div className="flex items-start justify-between mb-2">
                         <div>
-                          <h3 className="text-xl font-bold text-foreground tracking-tight leading-none mb-1">{t.name}</h3>
-                          <div className="text-[10px] text-primary font-bold uppercase tracking-widest">{t.title}</div>
+                          <h3 className="text-xl font-bold text-foreground tracking-tight leading-none mb-1" itemprop="fio">{t.name}</h3>
+                          <div className="text-[10px] text-primary font-bold uppercase tracking-widest" itemprop="post">{t.title}</div>
                         </div>
                       </div>
 

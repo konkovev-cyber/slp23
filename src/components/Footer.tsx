@@ -91,7 +91,7 @@ const Footer = () => {
             <ul className="space-y-3.5">
               <li>
                 <Link to="/svedeniya" className="text-muted-foreground hover:text-primary transition-colors text-[13px] font-medium">
-                  Сведения об организации
+                  Сведения об образовательной организации
                 </Link>
               </li>
               <li>

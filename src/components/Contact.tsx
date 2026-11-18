@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -290,8 +291,11 @@ const Contact = () => {
                   )}
                 </Button>
 
-                <p className="text-[9px] text-center text-muted-foreground uppercase tracking-widest leading-relaxed font-bold opacity-60">
-                  Нажимая кнопку, вы подтверждаете согласие на обработку персональных данных
+                <p className="text-[10px] text-center text-muted-foreground leading-relaxed">
+                  Нажимая кнопку, вы подтверждаете согласие на{" "}
+                  <Link to="/privacy" className="underline hover:text-primary transition-colors font-medium">
+                    обработку персональных данных
+                  </Link>
                 </p>
               </form>
               )}

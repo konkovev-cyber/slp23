@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
@@ -300,8 +301,11 @@ export default function ContactPage() {
                                         )}
                                     </Button>
 
-                                    <p className="text-[10px] text-center text-muted-foreground uppercase tracking-widest leading-relaxed">
-                                        Нажимая кнопку, вы соглашаетесь на обработку персональных данных
+                                    <p className="text-[10px] text-center text-muted-foreground leading-relaxed">
+                                        Нажимая кнопку, вы соглашаетесь на{" "}
+                                        <Link to="/privacy" className="underline hover:text-primary transition-colors font-medium">
+                                            обработку персональных данных
+                                        </Link>
                                     </p>
                                 </form>
                                 )}
