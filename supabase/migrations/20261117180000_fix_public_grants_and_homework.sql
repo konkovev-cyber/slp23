@@ -6,6 +6,23 @@
 -- 1. Выдача прав SELECT для анонимных пользователей на публичные таблицы
 GRANT USAGE ON SCHEMA public TO anon, authenticated;
 
+-- Совместимость has_role(uuid, app_role) при наличии типа app_role
+DO $$ 
+BEGIN
+  IF EXISTS (SELECT 1 FROM pg_type WHERE typname = 'app_role') THEN
+    CREATE OR REPLACE FUNCTION public.has_role(_user_id uuid, _role public.app_role)
+    RETURNS boolean
+    LANGUAGE sql
+    STABLE
+    SECURITY DEFINER
+    SET search_path = public
+    AS $fn$
+      SELECT public.has_role(_user_id, _role::text);
+    $fn$;
+    GRANT EXECUTE ON FUNCTION public.has_role(uuid, public.app_role) TO authenticated, anon;
+  END IF;
+END $$;
+
 -- Таблица учителей и руководства (для главной страницы и раздела /svedeniya)
 DO $$
 BEGIN
@@ -48,7 +65,7 @@ BEGIN
             SELECT 1 FROM pg_policies 
             WHERE schemaname = 'public' AND tablename = 'gallery' AND policyname = 'Admins can manage gallery'
         ) THEN
-            CREATE POLICY "Admins can manage gallery" ON public.gallery FOR ALL USING (public.has_role(auth.uid(), 'admin'::public.app_role));
+            CREATE POLICY "Admins can manage gallery" ON public.gallery FOR ALL USING (public.has_role(auth.uid(), 'admin'));
         END IF;
     END IF;
 END $$;
@@ -118,8 +135,8 @@ BEGIN
             ON public.contact_requests 
             FOR ALL 
             TO authenticated
-            USING (public.has_role(auth.uid(), 'admin'::public.app_role))
-            WITH CHECK (public.has_role(auth.uid(), 'admin'::public.app_role));
+            USING (public.has_role(auth.uid(), 'admin'))
+            WITH CHECK (public.has_role(auth.uid(), 'admin'));
         END IF;
     END IF;
 END $$;
